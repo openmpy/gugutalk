@@ -71,6 +71,9 @@ struct ReportView: View {
                 }
                 .padding()
             }
+            .onTapGesture {
+                hideKeyboard()
+            }
         }
         .safeAreaInset(edge: .bottom) {
             Button {

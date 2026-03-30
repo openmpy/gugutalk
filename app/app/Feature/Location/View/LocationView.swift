@@ -28,6 +28,9 @@ struct LocationView: View {
                         }
                     }
                 }
+                .refreshable {
+
+                }
             }
             .navigationTitle("위치")
             .navigationBarTitleDisplayMode(.inline)

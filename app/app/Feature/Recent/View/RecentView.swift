@@ -30,6 +30,9 @@ struct RecentView: View {
                         }
                     }
                 }
+                .refreshable {
+                    
+                }
             }
             .navigationTitle("최근")
             .navigationBarTitleDisplayMode(.inline)

@@ -84,6 +84,9 @@ struct ProfileEditorView: View {
                 }
                 .padding()
             }
+            .onTapGesture {
+                hideKeyboard()
+            }
         }
         .safeAreaInset(edge: .bottom) {
             Button {

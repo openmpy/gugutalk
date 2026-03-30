@@ -18,6 +18,9 @@ struct ChatSearchView: View {
                     }
                 }
             }
+            .onTapGesture {
+                hideKeyboard()
+            }
         }
         .searchable(
             text: $keyword,

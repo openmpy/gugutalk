@@ -21,6 +21,9 @@ struct MemberSearchView: View {
                     }
                 }
             }
+            .onTapGesture {
+                hideKeyboard()
+            }
         }
         .searchable(
             text: $keyword,

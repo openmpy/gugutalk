@@ -18,6 +18,9 @@ struct MessageView: View {
                 }
                 .padding(.horizontal)
             }
+            .onTapGesture {
+                hideKeyboard()
+            }
         }
         .safeAreaInset(edge: .top) {
             GlassEffectContainer(spacing: 5) {
