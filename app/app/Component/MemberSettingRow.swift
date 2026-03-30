@@ -1,0 +1,53 @@
+import SwiftUI
+
+struct MemberSettingRow: View {
+
+    let nickname: String
+    let createdAt: String
+    let gender: String
+    let age: Int
+
+    var body: some View {
+        HStack(spacing: 15) {
+            Image(systemName: "person.fill")
+                .font(.title)
+                .frame(width: 65, height: 65)
+                .foregroundColor(Color(.systemGray3))
+                .background(Color(.systemGray6), in: Circle())
+
+            VStack(alignment: .leading) {
+                Text(nickname)
+                    .foregroundColor(.primary)
+                    .font(.default.bold())
+
+                VStack(alignment: .leading) {
+                    HStack {
+                        Text(gender == "MALE" ? "남자" : "여자")
+                        Text("·")
+                        Text("\(age)살")
+                    }
+
+                    Text(createdAt.dateLabel)
+                        .foregroundColor(.gray)
+                        .font(.footnote)
+                }
+                .foregroundColor(.gray)
+                .font(.footnote)
+            }
+
+            Spacer()
+
+            Button {
+
+            } label: {
+                Image(systemName: "trash.fill")
+                    .font(.default)
+                    .frame(width: 40, height: 40)
+                    .foregroundColor(.white)
+                    .background(.red, in: Circle())
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 5)
+    }
+}

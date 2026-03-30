@@ -22,14 +22,17 @@ struct SettingView: View {
 
                     VStack(spacing: 0) {
                         NavigationLink {
+                            LikeListView()
                         } label : {
                             SettingRow(title: "좋아요 목록", icon: "heart.fill", color: .red)
                         }
                         NavigationLink {
+                            PrivateImageListView()
                         } label: {
                             SettingRow(title: "비밀 사진 목록", icon: "photo.fill", color: .green)
                         }
                         NavigationLink {
+                            BlockListView()
                         } label: {
                             SettingRow(title: "차단 목록", icon: "nosign", color: .red)
                         }
