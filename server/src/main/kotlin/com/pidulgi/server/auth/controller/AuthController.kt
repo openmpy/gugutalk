@@ -17,7 +17,7 @@ class AuthController(
     private val authService: AuthService,
 ) {
 
-    @PostMapping("/auth/phone/send")
+    @PostMapping("/v1/auth/phone/send")
     fun sendCodeVerificationCode(
         servletRequest: HttpServletRequest,
         @RequestParam phoneNumber: String
@@ -26,7 +26,7 @@ class AuthController(
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/auth/signup")
+    @PostMapping("/v1/auth/signup")
     fun signup(
         @RequestBody request: SignupRequest,
     ): ResponseEntity<SignupResponse> {
@@ -34,7 +34,7 @@ class AuthController(
         return ResponseEntity.ok(response)
     }
 
-    @PutMapping("/auth/activate")
+    @PutMapping("/v1/auth/activate")
     fun activate(
         @Login memberId: Long,
         @RequestBody request: ActivateRequest
@@ -43,7 +43,7 @@ class AuthController(
         return ResponseEntity.ok().build()
     }
 
-    @DeleteMapping("/auth/logout")
+    @DeleteMapping("/v1/auth/logout")
     fun logout(
         @Login memberId: Long,
         @RequestBody request: LogoutRequest

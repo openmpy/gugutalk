@@ -2,14 +2,29 @@ import SwiftUI
 
 struct SignupView: View {
 
+    @StateObject private var vm = SignupViewModel()
+
     @State private var phoneNumber: String = ""
     @State private var verificationCode: String = ""
+    @State private var sendVerificationCode = false
     @State private var password: String = ""
     @State private var password2: String = ""
     @State private var selectGender: String = "MALE"
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var goActivate: Bool = false
+    @State private var timeRemaining: Int = 0
+    @State private var timer: Timer?
 
+    private var isPhoneNumberValid: Bool {
+        phoneNumber.starts(with: "010") && phoneNumber.count == 11
+    }
+    private var isPasswordValid: Bool {
+        password == password2
+    }
     private var isSubmit: Bool {
-        !phoneNumber.isEmpty && !verificationCode.isEmpty && !password.isEmpty && !password2.isEmpty
+        isPhoneNumberValid && !verificationCode.isEmpty &&
+        !password.isEmpty && !password2.isEmpty && sendVerificationCode
     }
 
     var body: some View {
@@ -32,18 +47,28 @@ struct SignupView: View {
                             .keyboardType(.numberPad)
 
                         Button {
+                            if !isPhoneNumberValid {
+                                showAlert = true
+                                alertMessage = "올바른 휴대폰 번호를 입력해주세요."
+                                return
+                            }
 
+                            Task {
+                                if await vm.sendCodeVerificationCode(phoneNumber: phoneNumber) {
+                                    startTimer()
+                                }
+                            }
                         } label: {
-                            Text("전송")
+                            Text(sendVerificationCode ? "\(timeRemaining)" : "전송")
                                 .font(.subheadline.bold())
                                 .frame(width: 60, height: 40)
                                 .foregroundColor(.white)
                                 .background(
-                                    !phoneNumber.isEmpty ? .blue : Color(.systemGray3),
+                                    isPhoneNumberValid && !sendVerificationCode ? .blue : Color(.systemGray3),
                                     in: RoundedRectangle(cornerRadius: 20)
                                 )
                         }
-                        .disabled(phoneNumber.isEmpty)
+                        .disabled(!isPhoneNumberValid || sendVerificationCode)
                     }
 
                     TextField("인증 번호", text: $verificationCode)
@@ -69,6 +94,7 @@ struct SignupView: View {
                         .scrollContentBackground(.hidden)
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
+                        .textContentType(.oneTimeCode)
 
                     SecureField("비밀번호 확인", text: $password2)
                         .padding(.horizontal, 16)
@@ -77,6 +103,7 @@ struct SignupView: View {
                         .scrollContentBackground(.hidden)
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
+                        .textContentType(.oneTimeCode)
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
@@ -122,8 +149,23 @@ struct SignupView: View {
             hideKeyboard()
         }
         .safeAreaInset(edge: .bottom) {
-            NavigationLink {
-                ActivateView()
+            Button {
+                if password != password2 {
+                    showAlert = true
+                    alertMessage = "비밀번호가 일치하지 않습니다."
+                    return
+                }
+
+                Task {
+                    if await vm.signup(
+                        phoneNumber: phoneNumber,
+                        verificationCode: verificationCode,
+                        password: password,
+                        gender: selectGender
+                    ) {
+                        goActivate = true
+                    }
+                }
             } label: {
                 Text("회원가입")
                     .font(.default.bold())
@@ -135,8 +177,40 @@ struct SignupView: View {
             .disabled(!isSubmit)
             .padding()
         }
+        .onDisappear {
+            timer?.invalidate()
+            timer = nil
+        }
         .navigationTitle("회원가입")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $goActivate) {
+            ActivateView()
+        }
+        .alert("알림", isPresented: $showAlert) {
+            Button("확인", role: .cancel) { }
+        } message: {
+            Text(alertMessage)
+        }
+        .alert("에러", isPresented: $vm.showErrorAlert) {
+            Button("확인", role: .cancel) { }
+        } message: {
+            Text(vm.errorMessage)
+        }
+    }
+
+    private func startTimer() {
+        sendVerificationCode = true
+        timeRemaining = 300
+
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            } else {
+                sendVerificationCode = false
+                timer?.invalidate()
+            }
+        }
     }
 }
 

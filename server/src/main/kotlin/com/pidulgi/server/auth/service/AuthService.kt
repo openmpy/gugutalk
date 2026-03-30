@@ -68,7 +68,7 @@ class AuthService(
         val key = AUTH_VERIFICATION_CODE_KEY + request.phoneNumber
         val value = redisTemplate.opsForValue().get(key)
 
-        value ?: throw CustomException("인증 번호가 만료되었습니다.")
+        value ?: throw CustomException("존재하지 않는 인증 번호입니다.")
 
         if (value != request.verificationCode) {
             throw CustomException("인증 번호가 일치하지 않습니다.")
