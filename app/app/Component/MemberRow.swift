@@ -49,8 +49,6 @@ struct MemberRow: View {
 
                     if let distance = distance {
                         Text(String(format: "%.1f", distance) + "km")
-                            .font(.caption)
-                            .foregroundColor(Color(.systemGray))
                     }
                 }
                 .foregroundColor(.gray)
