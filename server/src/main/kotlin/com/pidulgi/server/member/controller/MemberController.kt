@@ -1,6 +1,7 @@
 package com.pidulgi.server.member.controller
 
 import com.pidulgi.server.common.auth.Login
+import com.pidulgi.server.member.dto.request.MemberUpdateLocationRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.service.MemberService
@@ -31,11 +32,20 @@ class MemberController(
         return ResponseEntity.ok().build()
     }
 
-    @PutMapping("/v1/members/bump")
+    @PutMapping("/v1/members/me/bump")
     fun bump(
         @Login memberId: Long,
     ): ResponseEntity<Unit> {
         memberService.bump(memberId)
+        return ResponseEntity.ok().build()
+    }
+
+    @PutMapping("/v1/members/me/location")
+    fun updateLocation(
+        @Login memberId: Long,
+        @RequestBody request: MemberUpdateLocationRequest,
+    ): ResponseEntity<Unit> {
+        memberService.updateLocation(memberId, request)
         return ResponseEntity.ok().build()
     }
 }

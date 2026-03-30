@@ -43,10 +43,10 @@ class Member(
     val comment: String? = "반갑습니다.",
 
     @Column(name = "latitude", nullable = true)
-    val latitude: Double? = null,
+    var latitude: Double? = null,
 
     @Column(name = "longitude", nullable = true)
-    val longitude: Double? = null,
+    var longitude: Double? = null,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -71,5 +71,10 @@ class Member(
 
     fun bump() {
         this.updatedAt = LocalDateTime.now()
+    }
+
+    fun updateLocation(latitude: Double?, longitude: Double?) {
+        this.latitude = latitude
+        this.longitude = longitude
     }
 }

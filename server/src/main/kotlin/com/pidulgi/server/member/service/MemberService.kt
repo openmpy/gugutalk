@@ -4,6 +4,7 @@ import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
 import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
 import com.pidulgi.server.common.auth.ACCESS_TOKEN_EXPIRE_HOURS
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.member.dto.request.MemberUpdateLocationRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.repository.MemberRepository
@@ -61,5 +62,13 @@ class MemberService(
             ?: throw CustomException("존재하지 않는 회원입니다."))
 
         member.bump()
+    }
+
+    @Transactional
+    fun updateLocation(memberId: Long, request: MemberUpdateLocationRequest) {
+        val member = (memberRepository.findByIdOrNull(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+
+        member.updateLocation(request.latitude, request.longitude)
     }
 }

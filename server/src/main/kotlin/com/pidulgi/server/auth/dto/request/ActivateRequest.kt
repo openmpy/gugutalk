@@ -5,7 +5,7 @@ data class ActivateRequest(
     val images: List<ActivateImageRequest> = emptyList(),
     val nickname: String,
     val birthYear: Int,
-    val bio: String?,
+    val bio: String? = null,
 ) {
 
     data class ActivateImageRequest(
