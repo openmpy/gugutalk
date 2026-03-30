@@ -95,6 +95,10 @@ class AuthService(
         val member = memberRepository.findByIdOrNull(memberId)
             ?: throw CustomException("존재하지 않는 회원입니다.")
 
+        if (memberRepository.existsByNickname(request.nickname)) {
+            throw CustomException("이미 가입된 닉네임입니다.")
+        }
+
         val profileKey = request.images.firstOrNull()?.key
         member.activate(
             profileKey,
