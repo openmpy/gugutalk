@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RecentView: View {
 
-    @State private var selectGender = "ALL"
+    @State private var selectGender: String = "ALL"
 
     var body: some View {
         NavigationStack {
@@ -27,8 +27,8 @@ struct RecentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        // 검색
+                    NavigationLink {
+                        MemberSearchView()
                     } label: {
                         Image(systemName: "magnifyingglass")
                             .font(.title3)

@@ -1,13 +1,11 @@
 import SwiftUI
 
-struct LocationView: View {
+struct MemberSearchView: View {
 
-    @State private var selectGender: String = "ALL"
+    @State private var keyword: String = ""
 
     var body: some View {
-        NavigationStack {
-            GenderSelector(selectGender: $selectGender)
-
+        VStack {
             ScrollView {
                 LazyVStack {
                     ForEach(0..<10) { _ in
@@ -23,12 +21,20 @@ struct LocationView: View {
                     }
                 }
             }
-            .navigationTitle("위치")
-            .navigationBarTitleDisplayMode(.inline)
         }
+        .searchable(
+            text: $keyword,
+            placement: .navigationBarDrawer(displayMode: .always),
+            prompt: "닉네임 입력"
+        )
+        .navigationTitle("회원 검색")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 
 #Preview {
-    LocationView()
+    NavigationStack {
+        MemberSearchView()
+    }
 }
