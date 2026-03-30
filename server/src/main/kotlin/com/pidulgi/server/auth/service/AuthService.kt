@@ -21,7 +21,7 @@ import java.time.Duration
 import java.util.*
 
 private const val AUTH_VERIFICATION_CODE_KEY = "auth:phone:code:"
-private const val AUTH_REFRESH_TOKEN_KEY = "auth:refresh-token:"
+const val AUTH_REFRESH_TOKEN_KEY = "auth:refresh-token:"
 const val AUTH_ACCESS_TOKEN_BLACKLIST_KEY = "auth:access-token:blacklist:"
 
 private const val AUTH_VERIFICATION_CODE_MINUTES: Long = 5

@@ -1,17 +1,24 @@
 package com.pidulgi.server.member.service
 
+import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
+import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
+import com.pidulgi.server.common.auth.ACCESS_TOKEN_EXPIRE_HOURS
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.repository.MemberRepository
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 import java.time.LocalDate
 
 @Service
 class MemberService(
 
     private val memberRepository: MemberRepository,
+    private val redisTemplate: StringRedisTemplate,
 ) {
 
     @Transactional(readOnly = true)
@@ -28,5 +35,23 @@ class MemberService(
             member.bio,
             0
         )
+    }
+
+    @Transactional
+    fun withdraw(memberId: Long, request: MemberWithdrawRequest) {
+        val member = (memberRepository.findByIdOrNull(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+
+        val accessTokenBlacklist = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + request.accessToken
+        val refreshToken = AUTH_REFRESH_TOKEN_KEY + request.refreshToken
+
+        redisTemplate.opsForValue().set(
+            accessTokenBlacklist,
+            memberId.toString(),
+            Duration.ofHours(ACCESS_TOKEN_EXPIRE_HOURS)
+        )
+        redisTemplate.delete(refreshToken)
+
+        member.withdraw()
     }
 }

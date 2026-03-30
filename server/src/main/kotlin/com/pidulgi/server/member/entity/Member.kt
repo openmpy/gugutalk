@@ -55,7 +55,7 @@ class Member(
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "deleted_at", nullable = true)
-    val deletedAt: LocalDateTime? = null
+    var deletedAt: LocalDateTime? = null
 ) {
 
     fun activate(profileKey: String?, nickname: String, birthYear: Int, bio: String?) {
@@ -63,5 +63,9 @@ class Member(
         this.nickname = nickname
         this.birthYear = birthYear
         this.bio = bio
+    }
+
+    fun withdraw() {
+        this.deletedAt = LocalDateTime.now()
     }
 }
