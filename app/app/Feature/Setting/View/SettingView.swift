@@ -41,6 +41,7 @@ struct SettingView: View {
 
                     VStack(spacing: 0) {
                         NavigationLink {
+                            PointView()
                         } label: {
                             SettingRow(title: "포인트", icon: "star.circle.fill", color: .yellow)
                         }
