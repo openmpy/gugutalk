@@ -5,7 +5,10 @@ struct MemberProfileView: View {
     @State private var showMenu: Bool = false
     @State private var showMessage: Bool = false
     @State private var showBlock: Bool = false
+    @State private var goReport: Bool = false
     @State private var message: String = ""
+    
+    @Namespace var namespace
     
     var body: some View {
         VStack {
@@ -26,91 +29,70 @@ struct MemberProfileView: View {
                 .aspectRatio(4/3, contentMode: .fit)
                 .clipped()
                 
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Text("닉네임")
-                            .font(.title.bold())
-                            .foregroundColor(.primary)
+                MemberProfileInfo(
+                    nickname: "닉네임",
+                    updatedAt: "2026-03-30T12:00:00.0000",
+                    gender: "MALE",
+                    age: 20,
+                    bio: "자기소개",
+                    likes: 100,
+                    distance: 12.34
+                )
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            GlassEffectContainer {
+                HStack(spacing: 25) {
+                    Button {
                         
-                        Spacer()
-                        
-                        Text("방금 전")
-                            .font(.default)
-                            .foregroundColor(.gray)
+                    } label: {
+                        Image(systemName: "heart.fill")
+                            .font(.title)
+                            .frame(width: 60, height: 60)
+                            .foregroundColor(.red)
+                            .glassEffect(.regular.interactive())
+                            .glassEffectUnion(id: 1, namespace: namespace)
                     }
                     
-                    HStack {
-                        Text("남자")
-                        Text("·")
-                        Text("20살")
-                        Text("·")
-                        Text("♥ 100")
-                        
-                        Spacer()
-                        
-                        Text("12.3km")
+                    Button {
+                        showMessage = true
+                    } label: {
+                        Image(systemName: "envelope.fill")
+                            .font(.title)
+                            .frame(width: 60, height: 60)
+                            .foregroundColor(.blue)
+                            .glassEffect(.regular.interactive())
+                            .glassEffectUnion(id: 1, namespace: namespace)
                     }
-                    .font(.default)
-                    .foregroundColor(.gray)
-                    .padding(.bottom)
                     
-                    Text("자기소개")
-                        .foregroundColor(.primary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding()
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "photo.fill")
+                            .font(.title)
+                            .frame(width: 60, height: 60)
+                            .foregroundColor(.green)
+                            .glassEffect(.regular.interactive())
+                            .glassEffectUnion(id: 1, namespace: namespace)
+                    }
+                    
+                    Button {
+                        showBlock = true
+                    } label: {
+                        Image(systemName: "nosign")
+                            .font(.title)
+                            .frame(width: 60, height: 60)
+                            .foregroundColor(.orange)
+                            .glassEffect(.regular.interactive())
+                            .glassEffectUnion(id: 1, namespace: namespace)
+                    }
                 }
-                .padding()
             }
         }
         .navigationTitle("프로필")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
-            ToolbarItem(placement: .bottomBar) {
-                HStack {
-                    Button {
-                        // 하트
-                    } label: {
-                        Image(systemName: "heart.fill")
-                            .font(.title3)
-                            .foregroundColor(.red)
-                    }
-                    
-                    Spacer()
-                    
-                    Button {
-                        showMessage = true
-                    } label: {
-                        Image(systemName: "envelope.fill")
-                            .font(.title3)
-                            .foregroundColor(.blue)
-                    }
-                    
-                    Spacer()
-                    
-                    Button {
-                        // 비밀사진
-                    } label: {
-                        Image(systemName: "photo.fill")
-                            .font(.title3)
-                            .foregroundColor(.green)
-                    }
-                    
-                    Spacer()
-                    
-                    Button {
-                        showBlock = true
-                    } label: {
-                        Image(systemName: "nosign")
-                            .font(.title3)
-                            .foregroundColor(.orange)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-            }
-            
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showMenu = true
@@ -122,11 +104,17 @@ struct MemberProfileView: View {
                 .confirmationDialog("메뉴", isPresented: $showMenu) {
                     Button("비밀 사진 공개") {
                     }
-                    Button("신고하기", role: .destructive) {
+                    
+                    Button("신고", role: .destructive) {
+                        goReport = true
                     }
-                    Button("취소", role: .cancel) {}
+                    
+                    Button("취소", role: .cancel) { }
                 }
             }
+        }
+        .navigationDestination(isPresented: $goReport) {
+            ReportView()
         }
         .alert("쪽지", isPresented: $showMessage) {
             TextField("내용 입력", text: $message)
