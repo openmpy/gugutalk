@@ -17,3 +17,6 @@ spring:
     redis:
       host: localhost
       password:
+
+jwt:
+  secret-key: 7JWI64WV7ZWY7IOI7Jqw

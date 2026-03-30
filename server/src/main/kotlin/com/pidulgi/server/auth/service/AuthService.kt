@@ -4,6 +4,7 @@ import com.pidulgi.server.auth.dto.request.SignupRequest
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.entity.PhoneVerification
 import com.pidulgi.server.auth.repository.PhoneVerificationRepository
+import com.pidulgi.server.common.auth.JwtProvider
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.util.ClientIpExtractor
 import com.pidulgi.server.member.entity.Member
@@ -24,6 +25,7 @@ class AuthService(
     private val memberRepository: MemberRepository,
     private val phoneVerificationRepository: PhoneVerificationRepository,
     private val redisTemplate: StringRedisTemplate,
+    private val jwtProvider: JwtProvider,
 ) {
 
     @Transactional
@@ -81,8 +83,8 @@ class AuthService(
 
         return SignupResponse(
             member.id,
-            "access-token",
-            "refresh-token"
+            jwtProvider.generateAccessToken(member.id),
+            jwtProvider.generateRefreshToken(member.id),
         )
     }
 }
