@@ -24,9 +24,10 @@ struct MyProfieView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
+                    ProfileEditorView()
                 } label: {
                     Text("편집")
-                        .font(.subheadline.bold())
+                        .font(.subheadline)
                         .foregroundColor(.primary)
                 }
             }

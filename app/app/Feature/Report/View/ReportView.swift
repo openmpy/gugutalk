@@ -70,7 +70,7 @@ struct ReportView: View {
                                 .disableAutocorrection(true)
                         }
                     }
-                    .padding(.horizontal)
+                    .padding()
                 }
             }
             .safeAreaInset(edge: .bottom) {
