@@ -13,6 +13,7 @@ struct SettingView: View {
                 VStack(spacing: 15) {
                     VStack(spacing: 0) {
                         NavigationLink {
+                            MyProfieView()
                         } label : {
                             SettingRow(title: "내 프로필", icon: "person.crop.circle.fill", color: .blue)
                         }

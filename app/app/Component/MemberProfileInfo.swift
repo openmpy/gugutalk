@@ -3,7 +3,7 @@ import SwiftUI
 struct MemberProfileInfo: View {
     
     let nickname: String
-    let updatedAt: String
+    let updatedAt: String?
     let gender: String
     let age: Int
     let bio: String
@@ -18,10 +18,12 @@ struct MemberProfileInfo: View {
                     .foregroundColor(.primary)
                 
                 Spacer()
-                
-                Text(updatedAt.relativeTime)
-                    .font(.default)
-                    .foregroundColor(.gray)
+
+                if let updatedAt = updatedAt {
+                    Text(updatedAt.relativeTime)
+                        .font(.default)
+                        .foregroundColor(.gray)
+                }
             }
             
             HStack {
