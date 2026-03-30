@@ -28,7 +28,7 @@ class AuthenticationPrincipalArgumentResolver(
         val servletRequest = webRequest.getNativeRequest(HttpServletRequest::class.java)
         val accessToken = servletRequest?.let { AuthenticationExtractor.extract(it) }
 
-        if (accessToken == null) {
+        if (accessToken == null || jwtProvider.isBlacklist(accessToken)) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
         if (!jwtProvider.validateToken(accessToken)) {

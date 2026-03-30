@@ -1,22 +1,29 @@
 package com.pidulgi.server.common.auth
 
+import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
 import io.jsonwebtoken.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.*
 
+const val ACCESS_TOKEN_EXPIRE_HOURS: Long = 1
+
 @Component
-class JwtProvider {
+class JwtProvider(
+
+    private val redisTemplate: StringRedisTemplate
+) {
 
     @Value("\${jwt.secret-key}")
     private lateinit var secretKey: String
 
     private val log: Logger by lazy { LoggerFactory.getLogger("JwtProvider") }
 
-    private val accessTokenExpiry = Duration.ofHours(1)
+    private val accessTokenExpiry = Duration.ofHours(ACCESS_TOKEN_EXPIRE_HOURS)
     private val refreshTokenExpiry = Duration.ofDays(30)
 
     fun generateAccessToken(memberId: Long): String {
@@ -56,6 +63,12 @@ class JwtProvider {
     fun extractMemberId(token: String): Long {
         val payload = getPayload(token)
         return payload.subject.toLong()
+    }
+
+    fun isBlacklist(accessToken: String): Boolean {
+        return redisTemplate.opsForValue().get(
+            AUTH_ACCESS_TOKEN_BLACKLIST_KEY + accessToken
+        ) != null
     }
 
     private fun getPayload(token: String): Claims {

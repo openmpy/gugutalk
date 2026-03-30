@@ -1,6 +1,7 @@
 package com.pidulgi.server.auth.controller
 
 import com.pidulgi.server.auth.dto.request.ActivateRequest
+import com.pidulgi.server.auth.dto.request.LogoutRequest
 import com.pidulgi.server.auth.dto.request.SignupRequest
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.service.AuthService
@@ -39,6 +40,15 @@ class AuthController(
         @RequestBody request: ActivateRequest
     ): ResponseEntity<Unit> {
         authService.activate(memberId, request)
+        return ResponseEntity.ok().build()
+    }
+
+    @DeleteMapping("/auth/logout")
+    fun logout(
+        @Login memberId: Long,
+        @RequestBody request: LogoutRequest
+    ): ResponseEntity<Unit> {
+        authService.logout(memberId, request)
         return ResponseEntity.ok().build()
     }
 }

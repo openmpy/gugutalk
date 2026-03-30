@@ -1,10 +1,12 @@
 package com.pidulgi.server.auth.service
 
 import com.pidulgi.server.auth.dto.request.ActivateRequest
+import com.pidulgi.server.auth.dto.request.LogoutRequest
 import com.pidulgi.server.auth.dto.request.SignupRequest
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.entity.PhoneVerification
 import com.pidulgi.server.auth.repository.PhoneVerificationRepository
+import com.pidulgi.server.common.auth.ACCESS_TOKEN_EXPIRE_HOURS
 import com.pidulgi.server.common.auth.JwtProvider
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.util.ClientIpExtractor
@@ -18,7 +20,10 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.util.*
 
-private const val AUTH_VERIFICATION_CODE_KEY = "auth:verification-code:"
+private const val AUTH_VERIFICATION_CODE_KEY = "auth:phone:code:"
+private const val AUTH_REFRESH_TOKEN_KEY = "auth:refresh-token:"
+const val AUTH_ACCESS_TOKEN_BLACKLIST_KEY = "auth:access-token:blacklist:"
+
 private const val AUTH_VERIFICATION_CODE_MINUTES: Long = 5
 
 @Service
@@ -79,14 +84,19 @@ class AuthService(
             nickname = UUID.randomUUID().toString().replace("-", "").substring(0, 10),
             gender = request.gender,
         )
-
         memberRepository.save(member)
+
+        val accessToken = jwtProvider.generateAccessToken(member.id)
+        val refreshToken = jwtProvider.generateRefreshToken(member.id)
+        val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
+
+        redisTemplate.opsForValue().set(refreshTokenKey, member.id.toString())
         redisTemplate.delete(key)
 
         return SignupResponse(
             member.id,
-            jwtProvider.generateAccessToken(member.id),
-            jwtProvider.generateRefreshToken(member.id),
+            accessToken,
+            refreshToken,
         )
     }
 
@@ -106,5 +116,21 @@ class AuthService(
             request.birthYear,
             request.bio
         )
+    }
+
+    @Transactional
+    fun logout(memberId: Long, request: LogoutRequest) {
+        memberRepository.findByIdOrNull(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다.")
+
+        val accessTokenBlacklist = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + request.accessToken
+        val refreshToken = AUTH_REFRESH_TOKEN_KEY + request.refreshToken
+
+        redisTemplate.opsForValue().set(
+            accessTokenBlacklist,
+            memberId.toString(),
+            Duration.ofHours(ACCESS_TOKEN_EXPIRE_HOURS)
+        )
+        redisTemplate.delete(refreshToken)
     }
 }
