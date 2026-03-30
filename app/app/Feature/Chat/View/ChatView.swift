@@ -12,12 +12,16 @@ struct ChatView: View {
                 ScrollView {
                     LazyVStack {
                         ForEach(0..<10) { _ in
-                            ChatRow(
-                                nickname: "닉네임",
-                                updatedAt: "2026-03-30T12:00:00.0000",
-                                content: "마지막 채팅 내용",
-                                unreads: 1
-                            )
+                            NavigationLink {
+                                MessageView()
+                            } label: {
+                                ChatRow(
+                                    nickname: "닉네임",
+                                    updatedAt: "2026-03-30T12:00:00.0000",
+                                    content: "마지막 채팅 내용",
+                                    unreads: 1
+                                )
+                            }
                         }
                     }
                 }

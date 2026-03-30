@@ -16,6 +16,11 @@ extension String {
         return String.relativeFormatter.localizedString(for: date, relativeTo: Date())
     }
 
+    var ampmTime: String {
+        guard let date = toDate else { return "" }
+        return String.timeFormatter.string(from: date)
+    }
+
     private static let inputFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
@@ -28,5 +33,12 @@ extension String {
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.unitsStyle = .full
         return formatter
+    }()
+
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ko_KR")
+        f.dateFormat = "a hh:mm"
+        return f
     }()
 }

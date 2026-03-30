@@ -41,8 +41,8 @@ struct ChatRow: View {
                             .font(.caption2.bold())
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(.gray)
-                            .foregroundColor(Color(.systemBackground))
+                            .background(Color(.systemGray2))
+                            .foregroundColor(.white)
                             .clipShape(Capsule())
                     }
                 }

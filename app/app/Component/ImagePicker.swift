@@ -36,7 +36,7 @@ struct ImagePicker: View {
                     ) {
                         Image(systemName: "plus")
                             .font(.title)
-                            .foregroundStyle(Color(.systemGray2))
+                            .foregroundStyle(Color(.systemGray3))
                             .frame(width: 100, height: 100)
                             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
                     }

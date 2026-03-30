@@ -13,22 +13,8 @@ struct MemberProfileView: View {
     var body: some View {
         VStack {
             ScrollView {
-                TabView {
-                    ForEach(0..<10) { i in
-                        Image(systemName: "person.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .padding(100)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .foregroundColor(Color(.systemGray3))
-                            .background(Color(.systemGray6))
-                            .tag(i)
-                    }
-                }
-                .tabViewStyle(PageTabViewStyle())
-                .aspectRatio(4/3, contentMode: .fit)
-                .clipped()
-                
+                MemberProfileImage()
+
                 MemberProfileInfo(
                     nickname: "닉네임",
                     updatedAt: "2026-03-30T12:00:00.0000",

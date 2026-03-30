@@ -84,7 +84,7 @@ struct ReportView: View {
                         .padding(.vertical)
                         .glassEffect(.regular.tint(Color(.red)).interactive())
                 }
-                .padding(.horizontal)
+                .padding()
             }
             .navigationTitle("신고")
             .navigationBarTitleDisplayMode(.inline)
