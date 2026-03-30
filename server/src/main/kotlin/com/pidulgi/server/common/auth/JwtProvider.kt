@@ -1,7 +1,8 @@
 package com.pidulgi.server.common.auth
 
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
+import io.jsonwebtoken.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Duration
@@ -12,6 +13,8 @@ class JwtProvider {
 
     @Value("\${jwt.secret-key}")
     private lateinit var secretKey: String
+
+    private val log: Logger by lazy { LoggerFactory.getLogger("JwtProvider") }
 
     private val accessTokenExpiry = Duration.ofHours(1)
     private val refreshTokenExpiry = Duration.ofDays(30)
@@ -34,5 +37,31 @@ class JwtProvider {
             .claim("type", "refresh")
             .signWith(SignatureAlgorithm.HS256, secretKey)
             .compact()
+    }
+
+    fun validateToken(token: String): Boolean =
+        runCatching {
+            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
+        }.onFailure { e ->
+            when (e) {
+                is ExpiredJwtException -> log.warn("토큰이 만료되었습니다. {}", e.message)
+                is UnsupportedJwtException -> log.warn("지원되지 않는 토큰입니다. {}", e.message)
+                is MalformedJwtException -> log.warn("형식이 잘못된 토큰입니다. {}", e.message)
+                is SecurityException -> log.warn("유효하지 않은 서명입니다. {}", e.message)
+                is IllegalArgumentException -> log.warn("토큰 클레임이 비어 있습니다. {}", e.message)
+                else -> log.warn("알 수 없는 오류가 발생했습니다. {}", e.message)
+            }
+        }.isSuccess
+
+    fun extractMemberId(token: String): Long {
+        val payload = getPayload(token)
+        return payload.subject.toLong()
+    }
+
+    private fun getPayload(token: String): Claims {
+        return Jwts.parser()
+            .setSigningKey(secretKey)
+            .parseClaimsJws(token)
+            .body
     }
 }
