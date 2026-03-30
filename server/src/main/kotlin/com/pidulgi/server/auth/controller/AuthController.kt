@@ -16,7 +16,7 @@ class AuthController(
     private val authService: AuthService,
 ) {
 
-    @PostMapping("/auth/verification-code")
+    @PostMapping("/auth/phone/send")
     fun sendCodeVerificationCode(
         servletRequest: HttpServletRequest,
         @RequestParam phoneNumber: String
