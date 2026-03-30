@@ -52,7 +52,7 @@ class Member(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "updated_at", nullable = false)
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    var updatedAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "deleted_at", nullable = true)
     var deletedAt: LocalDateTime? = null
@@ -67,5 +67,9 @@ class Member(
 
     fun withdraw() {
         this.deletedAt = LocalDateTime.now()
+    }
+
+    fun bump() {
+        this.updatedAt = LocalDateTime.now()
     }
 }

@@ -30,4 +30,12 @@ class MemberController(
         memberService.withdraw(memberId, request)
         return ResponseEntity.ok().build()
     }
+
+    @PutMapping("/v1/members/bump")
+    fun bump(
+        @Login memberId: Long,
+    ): ResponseEntity<Unit> {
+        memberService.bump(memberId)
+        return ResponseEntity.ok().build()
+    }
 }

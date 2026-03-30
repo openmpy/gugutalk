@@ -54,4 +54,12 @@ class MemberService(
 
         member.withdraw()
     }
+
+    @Transactional
+    fun bump(memberId: Long) {
+        val member = (memberRepository.findByIdOrNull(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+
+        member.bump()
+    }
 }
