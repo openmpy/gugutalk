@@ -24,20 +24,20 @@ class Member(
     val password: String,
 
     @Column(name = "profile_key", nullable = true)
-    val profileKey: String? = null,
+    var profileKey: String? = null,
 
     @Column(name = "nickname", nullable = false)
-    val nickname: String,
+    var nickname: String,
 
     @Column(name = "birth_year", nullable = false)
-    val birthYear: Int = 2000,
+    var birthYear: Int = 2000,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", nullable = false)
     val gender: Gender,
 
     @Column(name = "bio", nullable = true)
-    val bio: String? = null,
+    var bio: String? = null,
 
     @Column(name = "comment", nullable = true)
     val comment: String? = "반갑습니다.",
@@ -56,4 +56,12 @@ class Member(
 
     @Column(name = "deleted_at", nullable = true)
     val deletedAt: LocalDateTime? = null
-)
+) {
+
+    fun activate(profileKey: String?, nickname: String, birthYear: Int, bio: String?) {
+        this.profileKey = profileKey
+        this.nickname = nickname
+        this.birthYear = birthYear
+        this.bio = bio
+    }
+}

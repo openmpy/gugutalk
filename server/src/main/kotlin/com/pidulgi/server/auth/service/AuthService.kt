@@ -1,5 +1,6 @@
 package com.pidulgi.server.auth.service
 
+import com.pidulgi.server.auth.dto.request.ActivateRequest
 import com.pidulgi.server.auth.dto.request.SignupRequest
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.entity.PhoneVerification
@@ -11,6 +12,7 @@ import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberRepository
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -85,6 +87,20 @@ class AuthService(
             member.id,
             jwtProvider.generateAccessToken(member.id),
             jwtProvider.generateRefreshToken(member.id),
+        )
+    }
+
+    @Transactional
+    fun activate(memberId: Long, request: ActivateRequest) {
+        val member = memberRepository.findByIdOrNull(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다.")
+
+        val profileKey = request.images.firstOrNull()?.key
+        member.activate(
+            profileKey,
+            request.nickname,
+            request.birthYear,
+            request.bio
         )
     }
 }
