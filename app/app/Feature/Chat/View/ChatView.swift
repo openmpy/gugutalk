@@ -26,8 +26,8 @@ struct ChatView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        // 검색
+                    NavigationLink {
+                        ChatSearchView()
                     } label: {
                         Image(systemName: "magnifyingglass")
                             .font(.title3)
