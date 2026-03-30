@@ -1,15 +1,19 @@
 package com.pidulgi.server.auth.service
 
+import com.pidulgi.server.auth.dto.request.SignupRequest
+import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.entity.PhoneVerification
 import com.pidulgi.server.auth.repository.PhoneVerificationRepository
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.util.ClientIpExtractor
+import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberRepository
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
+import java.util.*
 
 private const val AUTH_VERIFICATION_CODE_KEY = "auth:verification-code:"
 private const val AUTH_VERIFICATION_CODE_MINUTES: Long = 5
@@ -48,5 +52,36 @@ class AuthService(
             )
             phoneVerificationRepository.save(verification)
         }
+    }
+
+    @Transactional
+    fun signup(request: SignupRequest): SignupResponse {
+        val key = AUTH_VERIFICATION_CODE_KEY + request.phoneNumber
+        val value = redisTemplate.opsForValue().get(key)
+
+        value ?: throw CustomException("인증 번호가 만료되었습니다.")
+
+        if (value != request.verificationCode) {
+            throw CustomException("인증 번호가 일치하지 않습니다.")
+        }
+        if (memberRepository.existsByPhoneNumber(request.phoneNumber)) {
+            throw CustomException("이미 가입된 휴대폰 번호입니다.")
+        }
+
+        val member = Member(
+            phoneNumber = request.phoneNumber,
+            password = request.password,
+            nickname = UUID.randomUUID().toString().replace("-", "").substring(0, 10),
+            gender = request.gender,
+        )
+
+        memberRepository.save(member)
+        redisTemplate.delete(key)
+
+        return SignupResponse(
+            member.id,
+            "access-token",
+            "refresh-token"
+        )
     }
 }
