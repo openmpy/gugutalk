@@ -69,6 +69,7 @@ class AuthService(
         }
 
         val member = Member(
+            uuid = request.uuid,
             phoneNumber = request.phoneNumber,
             password = request.password,
             nickname = UUID.randomUUID().toString().replace("-", "").substring(0, 10),

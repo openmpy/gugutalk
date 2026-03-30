@@ -14,6 +14,9 @@ class Member(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
+    @Column(name = "uuid", nullable = false)
+    val uuid: String,
+
     @Column(name = "phone_number", nullable = false)
     val phoneNumber: String,
 
