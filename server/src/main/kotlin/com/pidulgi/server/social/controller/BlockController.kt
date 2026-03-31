@@ -1,9 +1,12 @@
 package com.pidulgi.server.social.controller
 
 import com.pidulgi.server.common.auth.Login
+import com.pidulgi.server.common.dto.CursorResponse
+import com.pidulgi.server.social.dto.response.BlockResponse
 import com.pidulgi.server.social.service.BlockService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
 
 @RequestMapping("/api")
 @RestController
@@ -28,5 +31,16 @@ class BlockController(
     ): ResponseEntity<Unit> {
         blockService.remove(blockerId, blockedId)
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/v1/social/blocks")
+    fun getBlockedMembers(
+        @Login blockerId: Long,
+        @RequestParam(required = false) cursorId: Long?,
+        @RequestParam(required = false) cursorDate: LocalDateTime?,
+        @RequestParam(defaultValue = "20") size: Int,
+    ): ResponseEntity<CursorResponse<BlockResponse>> {
+        val response = blockService.getBlockedMembers(blockerId, cursorId, cursorDate, size)
+        return ResponseEntity.ok(response)
     }
 }

@@ -1,16 +1,23 @@
 package com.pidulgi.server.social.service
 
+import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.social.dto.response.BlockResponse
 import com.pidulgi.server.social.entity.Block
 import com.pidulgi.server.social.repository.BlockRepository
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class BlockService(
 
     private val blockRepository: BlockRepository,
 ) {
+
+    @Value("\${s3.endpoint}")
+    private lateinit var endpoint: String
 
     @Transactional
     fun add(blockerId: Long, blockedId: Long) {
@@ -34,5 +41,35 @@ class BlockService(
             ?: throw CustomException("차단을 한 적이 없습니다."))
 
         blockRepository.delete(block)
+    }
+
+    @Transactional(readOnly = true)
+    fun getBlockedMembers(
+        blockerId: Long,
+        cursorId: Long?,
+        cursorDate: LocalDateTime?,
+        size: Int = 20
+    ): CursorResponse<BlockResponse> {
+        val result = blockRepository.findBlocksByCursor(blockerId, cursorId, cursorDate, size + 1)
+            .map {
+                BlockResponse(
+                    blockId = it.blockId,
+                    memberId = it.memberId,
+                    nickname = it.nickname,
+                    gender = it.gender,
+                    birthYear = it.birthYear,
+                    profileUrl = it.profileKey?.let { "$endpoint$it" },
+                    createdAt = it.createdAt,
+                )
+            }
+        val hasNext = result.size > size
+        val items = if (hasNext) result.dropLast(1) else result
+
+        return CursorResponse(
+            payload = items,
+            nextId = if (hasNext) items.last().blockId else null,
+            nextDateAt = if (hasNext) items.last().createdAt else null,
+            hasNext = hasNext
+        )
     }
 }
