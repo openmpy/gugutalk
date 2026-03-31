@@ -8,6 +8,7 @@ import com.pidulgi.server.member.repository.PrivateImageGrantRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
@@ -62,7 +63,7 @@ class PrivateImageGrantService(
                 memberId = it.memberId,
                 nickname = it.nickname,
                 gender = it.gender,
-                birthYear = it.birthYear,
+                age = LocalDate.now().year - it.birthYear,
                 profileUrl = it.profileKey?.let { "$endpoint$it" },
                 createdAt = it.createdAt,
             )

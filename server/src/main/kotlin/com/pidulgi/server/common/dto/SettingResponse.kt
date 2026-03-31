@@ -9,7 +9,7 @@ data class SettingResponse(
     val memberId: Long,
     val nickname: String,
     val gender: Gender,
-    val birthYear: Int,
+    val age: Int,
     val profileUrl: String?,
     val createdAt: LocalDateTime,
 )

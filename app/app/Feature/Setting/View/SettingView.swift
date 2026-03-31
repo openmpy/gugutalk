@@ -31,7 +31,7 @@ struct SettingView: View {
                             SettingRow(title: "좋아요 목록", icon: "heart.fill", color: .red)
                         }
                         NavigationLink {
-                            PrivateImageListView()
+                            PrivateImageGrantListView()
                         } label: {
                             SettingRow(title: "비밀 사진 목록", icon: "photo.fill", color: .green)
                         }

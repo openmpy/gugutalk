@@ -1,8 +1,8 @@
 import SwiftUI
 
-struct LikeListView: View {
+struct PrivateImageGrantListView: View {
 
-    @StateObject private var vm = LikeListViewModel()
+    @StateObject private var vm = PrivateImageGrantListViewModel()
 
     var body: some View {
         VStack {
@@ -22,7 +22,7 @@ struct LikeListView: View {
                             .onAppear {
                                 if it.id == vm.members.last?.id {
                                     Task {
-                                        await vm.loadMoreLikedMember()
+                                        await vm.loadMoreGrantedMember()
                                     }
                                 }
                             }
@@ -32,21 +32,16 @@ struct LikeListView: View {
             }
         }
         .task {
-            await vm.getLikedMember()
+            await vm.getGrantedMember()
         }
-        .navigationTitle("좋아요 목록")
+        .navigationTitle("비밀 사진 목록")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
-        .alert("에러", isPresented: $vm.showErrorAlert) {
-            Button("확인", role: .cancel) { }
-        } message: {
-            Text(vm.errorMessage)
-        }
     }
 }
 
 #Preview {
     NavigationStack {
-        LikeListView()
+        PrivateImageGrantListView()
     }
 }

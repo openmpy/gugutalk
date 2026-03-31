@@ -6,6 +6,7 @@ final class ActivateViewModel: ObservableObject {
 
     private let authService = AuthService.shared
     private let memberService = MemberService.shared
+    private let memberImageService = MemberImageService.shared
     private let s3Service = S3Service.shared
 
     @Published var showErrorAlert: Bool = false
@@ -23,7 +24,7 @@ final class ActivateViewModel: ObservableObject {
             let urlRequest = images.map { _ in
                 MemberGetPresignedUrlRequest(imageType: "PUBLIC", contentType: "image/jpeg")
             }
-            let response = try await memberService.getPresignedUrls(images: urlRequest)
+            let response = try await memberImageService.getPresignedUrls(images: urlRequest)
 
             // 2. S3 업로드
             for (it, presigned) in zip(images, response.presigned) {
