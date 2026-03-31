@@ -67,7 +67,7 @@ class MemberCustomRepositoryImpl(
         comment = row[5] as String?,
         profileKey = row[6] as String?,
         updatedAt = row[7] as LocalDateTime,
-        distance = (row[8] as BigDecimal?)?.toDouble(),
+        distance = (row[8] as? Number)?.toDouble(),
         likes = (row[9] as Number).toInt(),
     )
 }
