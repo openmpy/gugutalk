@@ -12,6 +12,8 @@ import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.GeometryFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.repository.findByIdOrNull
@@ -82,7 +84,13 @@ class MemberService(
     @Transactional
     fun updateLocation(memberId: Long, request: MemberUpdateLocationRequest) {
         val member = getMember(memberId)
-        member.updateLocation(request.latitude, request.longitude)
+        val point = request.longitude?.let { longitude ->
+            request.latitude?.let { latitude ->
+                GeometryFactory().createPoint(Coordinate(longitude, latitude))
+            }
+        }
+
+        member.updateLocation(point)
     }
 
     private fun getMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)

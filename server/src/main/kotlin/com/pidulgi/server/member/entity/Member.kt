@@ -3,6 +3,7 @@ package com.pidulgi.server.member.entity
 import com.pidulgi.server.member.entity.type.Gender
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
+import org.locationtech.jts.geom.Point
 import java.time.LocalDateTime
 
 @SQLRestriction("deleted_at IS NULL")
@@ -42,11 +43,8 @@ class Member(
     @Column(name = "comment", nullable = true)
     val comment: String? = "반갑습니다.",
 
-    @Column(name = "latitude", nullable = true)
-    var latitude: Double? = null,
-
-    @Column(name = "longitude", nullable = true)
-    var longitude: Double? = null,
+    @Column(columnDefinition = "geography(Point,4326)")
+    var location: Point? = null,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -73,8 +71,8 @@ class Member(
         this.updatedAt = LocalDateTime.now()
     }
 
-    fun updateLocation(latitude: Double?, longitude: Double?) {
-        this.latitude = latitude
-        this.longitude = longitude
+    fun updateLocation(location: Point?) {
+        this.location = location
+        this.updatedAt = LocalDateTime.now()
     }
 }
