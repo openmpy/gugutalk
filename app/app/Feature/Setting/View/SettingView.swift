@@ -101,10 +101,24 @@ struct SettingView: View {
             }
             .alert("회원 탈퇴", isPresented: $showDelete) {
                 Button("탈퇴", role: .destructive) {
+                    Task {
+                        if await vm.withdraw(
+                            accessToken: AuthStore.shared.accessToken ?? "",
+                            refreshToken: AuthStore.shared.refreshToken ?? ""
+                        ) {
+                            AuthStore.shared.clearAll()
+                            isLoggedIn = false
+                        }
+                    }
                 }
                 Button("닫기", role: .cancel) { }
             } message: {
                 Text("탈퇴 시 모든 정보가 삭제됩니다.\n정말 탈퇴하시겠습니까?")
+            }
+            .alert("에러", isPresented: $vm.showErrorAlert) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text(vm.errorMessage)
             }
         }
     }
