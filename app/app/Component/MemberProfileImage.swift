@@ -1,10 +1,13 @@
 import SwiftUI
+import Kingfisher
 
 struct MemberProfileImage: View {
     
+    let images: [URL]
+    
     var body: some View {
         TabView {
-            ForEach(0..<10) { i in
+            if images.isEmpty {
                 Image(systemName: "person.fill")
                     .resizable()
                     .scaledToFit()
@@ -12,7 +15,21 @@ struct MemberProfileImage: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .foregroundColor(Color(.systemGray3))
                     .background(Color(.systemGray6))
-                    .tag(i)
+            } else {
+                ForEach(Array(images.enumerated()), id: \.offset) { i, url in
+                    KFImage(url)
+                        .resizable()
+                        .placeholder {
+                            ProgressView()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .background(Color(.systemGray6))
+                        }
+                        .aspectRatio(contentMode: .fill)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(.black)
+                        .clipped()
+                        .tag(i)
+                }
             }
         }
         .tabViewStyle(PageTabViewStyle())

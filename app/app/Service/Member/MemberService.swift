@@ -7,6 +7,16 @@ final class MemberService {
     let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
+    func getMe() async throws -> MemberGetMeResponse {
+        let url = "\(baseURL)/v1/members/me"
+
+        return try await session.request(
+            url,
+            method: .get
+        )
+        .decodingWithErrorHandling(MemberGetMeResponse.self)
+    }
+
     func withdraw(
         accessToken: String,
         refreshToken: String,
@@ -22,7 +32,7 @@ final class MemberService {
         )
         .validateWithErrorHandling()
     }
-
+    
     func getPresignedUrls(
         images: [MemberGetPresignedUrlRequest]
     ) async throws -> PresignedUrlsResponse {

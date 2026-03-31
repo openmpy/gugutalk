@@ -10,8 +10,12 @@ import com.pidulgi.server.member.dto.request.MemberGetPresignedUrlsRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateLocationRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
+import com.pidulgi.server.member.dto.response.MemberImageResponse
 import com.pidulgi.server.member.entity.Member
+import com.pidulgi.server.member.entity.type.ImageType
+import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -24,17 +28,31 @@ import java.util.*
 class MemberService(
 
     private val memberRepository: MemberRepository,
+    private val memberImageRepository: MemberImageRepository,
     private val s3Service: S3Service,
     private val redisTemplate: StringRedisTemplate,
 ) {
 
+    @Value("\${s3.endpoint}")
+    private lateinit var endpoint: String
+
     @Transactional(readOnly = true)
     fun getMe(memberId: Long): MemberGetMeResponse {
         val member = getMember(memberId)
+        val images = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
+            member.id,
+            ImageType.PUBLIC
+        ).map {
+            MemberImageResponse(
+                it.id,
+                it.sortOrder,
+                endpoint + it.key
+            )
+        }
 
         return MemberGetMeResponse(
             member.id,
-            emptyList(),
+            images,
             member.nickname,
             member.gender,
             LocalDate.now().year - member.birthYear,

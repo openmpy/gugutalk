@@ -13,7 +13,7 @@ struct MemberProfileView: View {
     var body: some View {
         VStack {
             ScrollView {
-                MemberProfileImage()
+//                MemberProfileImage()
 
                 MemberProfileInfo(
                     nickname: "닉네임",
