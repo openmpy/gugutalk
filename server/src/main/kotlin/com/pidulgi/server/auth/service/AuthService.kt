@@ -1,8 +1,10 @@
 package com.pidulgi.server.auth.service
 
 import com.pidulgi.server.auth.dto.request.ActivateRequest
+import com.pidulgi.server.auth.dto.request.LoginRequest
 import com.pidulgi.server.auth.dto.request.LogoutRequest
 import com.pidulgi.server.auth.dto.request.SignupRequest
+import com.pidulgi.server.auth.dto.response.LoginResponse
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.entity.PhoneVerification
 import com.pidulgi.server.auth.repository.PhoneVerificationRepository
@@ -106,8 +108,7 @@ class AuthService(
 
     @Transactional
     fun activate(memberId: Long, request: ActivateRequest) {
-        val member = memberRepository.findByIdOrNull(memberId)
-            ?: throw CustomException("존재하지 않는 회원입니다.")
+        val member = getMember(memberId)
 
         if (memberRepository.existsByNickname(request.nickname)) {
             throw CustomException("이미 가입된 닉네임입니다.")
@@ -132,19 +133,43 @@ class AuthService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun login(request: LoginRequest): LoginResponse {
+        val member = (memberRepository.findByPhoneNumber(request.phoneNumber)
+            ?: throw CustomException("다시 한번 확인해주시길 바랍니다."))
+
+        if (member.password != request.password) {
+            throw CustomException("다시 한번 확인해주시길 바랍니다.")
+        }
+
+        val accessToken = jwtProvider.generateAccessToken(member.id)
+        val refreshToken = jwtProvider.generateRefreshToken(member.id)
+        val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
+
+        redisTemplate.opsForValue().set(refreshTokenKey, member.id.toString())
+
+        return LoginResponse(
+            member.id,
+            accessToken,
+            refreshToken,
+        )
+    }
+
     @Transactional
     fun logout(memberId: Long, request: LogoutRequest) {
-        memberRepository.findByIdOrNull(memberId)
-            ?: throw CustomException("존재하지 않는 회원입니다.")
+        val member = getMember(memberId)
 
         val accessTokenBlacklist = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + request.accessToken
         val refreshToken = AUTH_REFRESH_TOKEN_KEY + request.refreshToken
 
         redisTemplate.opsForValue().set(
             accessTokenBlacklist,
-            memberId.toString(),
+            member.id.toString(),
             Duration.ofHours(ACCESS_TOKEN_EXPIRE_HOURS)
         )
         redisTemplate.delete(refreshToken)
     }
+
+    private fun getMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)
+        ?: throw CustomException("존재하지 않는 회원입니다."))
 }

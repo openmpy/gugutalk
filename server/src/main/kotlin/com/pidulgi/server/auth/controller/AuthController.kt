@@ -1,8 +1,10 @@
 package com.pidulgi.server.auth.controller
 
 import com.pidulgi.server.auth.dto.request.ActivateRequest
+import com.pidulgi.server.auth.dto.request.LoginRequest
 import com.pidulgi.server.auth.dto.request.LogoutRequest
 import com.pidulgi.server.auth.dto.request.SignupRequest
+import com.pidulgi.server.auth.dto.response.LoginResponse
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.service.AuthService
 import com.pidulgi.server.common.auth.Login
@@ -41,6 +43,14 @@ class AuthController(
     ): ResponseEntity<Unit> {
         authService.activate(memberId, request)
         return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/v1/auth/login")
+    fun login(
+        @RequestBody request: LoginRequest
+    ): ResponseEntity<LoginResponse> {
+        val response = authService.login(request)
+        return ResponseEntity.ok(response)
     }
 
     @DeleteMapping("/v1/auth/logout")

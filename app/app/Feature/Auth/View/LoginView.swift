@@ -1,10 +1,21 @@
 import SwiftUI
 
 struct LoginView: View {
-    
+
+    @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
+
+    @StateObject private var vm = LoginViewModel()
+
     @State private var phoneNumber: String = ""
     @State private var password: String = ""
-    
+
+    private var isPhoneNumberValid: Bool {
+        phoneNumber.starts(with: "010") && phoneNumber.count == 11
+    }
+    private var isSubmit: Bool {
+        isPhoneNumberValid && !password.isEmpty
+    }
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
@@ -13,7 +24,7 @@ struct LoginView: View {
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
-                    
+
                     TextField("휴대폰 번호", text: $phoneNumber)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
@@ -23,13 +34,13 @@ struct LoginView: View {
                         .disableAutocorrection(true)
                         .keyboardType(.numberPad)
                 }
-                
+
                 VStack(alignment: .leading, spacing: 12) {
                     Text("비밀번호")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
-                    
+
                     SecureField("비밀번호", text: $password)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
@@ -38,7 +49,7 @@ struct LoginView: View {
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
                 }
-                
+
                 NavigationLink {
                     SignupView()
                 } label: {
@@ -47,7 +58,7 @@ struct LoginView: View {
                         .foregroundStyle(.blue)
                 }
                 .frame(maxWidth: .infinity)
-                
+
                 Spacer()
             }
             .background(Color(.systemBackground))
@@ -56,20 +67,30 @@ struct LoginView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 Button {
-                    
+                    Task {
+                        if await vm.login(phoneNumber: phoneNumber, password: password) {
+                            isLoggedIn = true
+                        }
+                    }
                 } label: {
                     Text("로그인")
                         .font(.default.bold())
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical)
-                        .glassEffect(.regular.tint(Color(.blue)).interactive())
+                        .glassEffect(.regular.tint(isSubmit ? Color(.blue) : Color(.systemGray3)).interactive())
                 }
                 .padding()
+                .disabled(!isSubmit)
             }
             .padding()
             .navigationTitle("로그인")
             .navigationBarTitleDisplayMode(.inline)
+            .alert("에러", isPresented: $vm.showErrorAlert) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text(vm.errorMessage)
+            }
         }
     }
 }
