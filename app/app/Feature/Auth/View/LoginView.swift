@@ -81,7 +81,7 @@ struct LoginView: View {
                         .glassEffect(.regular.tint(isSubmit ? Color(.blue) : Color(.systemGray3)).interactive())
                 }
                 .padding()
-                .disabled(!isSubmit)
+                .disabled(!isSubmit || vm.isLoading)
             }
             .padding()
             .navigationTitle("로그인")
