@@ -1,17 +1,24 @@
 package com.pidulgi.server.social.service
 
+import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.social.dto.response.LikeCountResponse
+import com.pidulgi.server.social.dto.response.LikeResponse
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.LikeRepository
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class LikeService(
 
     private val likeRepository: LikeRepository,
 ) {
+
+    @Value("\${s3.endpoint}")
+    private lateinit var endpoint: String
 
     @Transactional
     fun like(likerId: Long, likedId: Long): LikeCountResponse {
@@ -38,5 +45,35 @@ class LikeService(
 
         likeRepository.delete(like)
         return LikeCountResponse(likeRepository.countByLikedId(likedId))
+    }
+
+    @Transactional(readOnly = true)
+    fun getLikedMembers(
+        likerId: Long,
+        cursorId: Long?,
+        cursorDate: LocalDateTime?,
+        size: Int = 20
+    ): CursorResponse<LikeResponse> {
+        val result = likeRepository.findLikesByCursor(likerId, cursorId, cursorDate, size + 1)
+            .map {
+                LikeResponse(
+                    likeId = it.likeId,
+                    memberId = it.memberId,
+                    nickname = it.nickname,
+                    gender = it.gender,
+                    birthYear = it.birthYear,
+                    profileUrl = it.profileKey?.let { "$endpoint$it" },
+                    createdAt = it.createdAt,
+                )
+            }
+        val hasNext = result.size > size
+        val items = if (hasNext) result.dropLast(1) else result
+
+        return CursorResponse(
+            payload = items,
+            nextId = if (hasNext) items.last().likeId else null,
+            nextDateAt = if (hasNext) items.last().createdAt else null,
+            hasNext = hasNext
+        )
     }
 }
