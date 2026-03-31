@@ -6,8 +6,8 @@ struct MyProfieView: View {
 
     var body: some View {
         VStack {
-            ScrollView {
-                if let member = vm.member {
+            if let member = vm.member {
+                ScrollView {
                     MemberProfileImage(images: member.images.compactMap { URL(string: $0.url) })
 
                     MemberProfileInfo(
@@ -19,9 +19,9 @@ struct MyProfieView: View {
                         likes: member.likes,
                         distance: nil
                     )
-                } else {
-                    Text("로딩")
                 }
+            } else {
+                ProgressView()
             }
         }
         .task {
@@ -40,6 +40,11 @@ struct MyProfieView: View {
                         .foregroundColor(.primary)
                 }
             }
+        }
+        .alert("에러", isPresented: $vm.showErrorAlert) {
+            Button("확인", role: .cancel) { }
+        } message: {
+            Text(vm.errorMessage)
         }
     }
 }
