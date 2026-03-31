@@ -1,8 +1,8 @@
 package com.pidulgi.server.social.service
 
 import com.pidulgi.server.common.dto.CursorResponse
+import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.exception.CustomException
-import com.pidulgi.server.social.dto.response.BlockResponse
 import com.pidulgi.server.social.entity.Block
 import com.pidulgi.server.social.repository.BlockRepository
 import org.springframework.beans.factory.annotation.Value
@@ -49,11 +49,11 @@ class BlockService(
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int = 20
-    ): CursorResponse<BlockResponse> {
+    ): CursorResponse<SettingResponse> {
         val result = blockRepository.findBlocksByCursor(blockerId, cursorId, cursorDate, size + 1)
             .map {
-                BlockResponse(
-                    blockId = it.blockId,
+                SettingResponse(
+                    id = it.blockId,
                     memberId = it.memberId,
                     nickname = it.nickname,
                     gender = it.gender,
@@ -67,7 +67,7 @@ class BlockService(
 
         return CursorResponse(
             payload = items,
-            nextId = if (hasNext) items.last().blockId else null,
+            nextId = if (hasNext) items.last().id else null,
             nextDateAt = if (hasNext) items.last().createdAt else null,
             hasNext = hasNext
         )

@@ -2,8 +2,8 @@ package com.pidulgi.server.social.controller
 
 import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.dto.CursorResponse
+import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.social.dto.response.LikeCountResponse
-import com.pidulgi.server.social.dto.response.LikeResponse
 import com.pidulgi.server.social.repository.dto.LikeItemResponse
 import com.pidulgi.server.social.service.LikeService
 import org.springframework.http.ResponseEntity
@@ -41,7 +41,7 @@ class LikeController(
         @RequestParam(required = false) cursorId: Long?,
         @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<CursorResponse<LikeResponse>> {
+    ): ResponseEntity<CursorResponse<SettingResponse>> {
         val response = likeService.getLikedMembers(likerId, cursorId, cursorDate, size)
         return ResponseEntity.ok(response)
     }

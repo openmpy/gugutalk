@@ -1,11 +1,11 @@
-package com.pidulgi.server.social.dto.response
+package com.pidulgi.server.common.dto
 
 import com.pidulgi.server.member.entity.type.Gender
 import java.time.LocalDateTime
 
-data class BlockResponse(
+data class SettingResponse(
 
-    val blockId: Long,
+    val id: Long,
     val memberId: Long,
     val nickname: String,
     val gender: Gender,

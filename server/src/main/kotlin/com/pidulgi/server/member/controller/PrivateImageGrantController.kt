@@ -2,7 +2,7 @@ package com.pidulgi.server.member.controller
 
 import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.dto.CursorResponse
-import com.pidulgi.server.member.dto.response.PrivateImageGrantResponse
+import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.member.service.PrivateImageGrantService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -39,7 +39,7 @@ class PrivateImageGrantController(
         @RequestParam(required = false) cursorId: Long?,
         @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<CursorResponse<PrivateImageGrantResponse>> {
+    ): ResponseEntity<CursorResponse<SettingResponse>> {
         val response = privateImageGrantService.getGrantedMembers(
             granterId, cursorId, cursorDate, size
         )

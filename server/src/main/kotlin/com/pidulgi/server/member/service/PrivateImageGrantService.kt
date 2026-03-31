@@ -2,7 +2,7 @@ package com.pidulgi.server.member.service
 
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
-import com.pidulgi.server.member.dto.response.PrivateImageGrantResponse
+import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.member.entity.PrivateImageGrant
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
 import org.springframework.beans.factory.annotation.Value
@@ -50,15 +50,15 @@ class PrivateImageGrantService(
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int = 20
-    ): CursorResponse<PrivateImageGrantResponse> {
+    ): CursorResponse<SettingResponse> {
         val result = privateImageGrantRepository.findGrantsByCursor(
             granterId,
             cursorId,
             cursorDate,
             size + 1
         ).map {
-            PrivateImageGrantResponse(
-                grantId = it.grantId,
+            SettingResponse(
+                id = it.grantId,
                 memberId = it.memberId,
                 nickname = it.nickname,
                 gender = it.gender,
@@ -72,7 +72,7 @@ class PrivateImageGrantService(
 
         return CursorResponse(
             payload = items,
-            nextId = if (hasNext) items.last().grantId else null,
+            nextId = if (hasNext) items.last().id else null,
             nextDateAt = if (hasNext) items.last().createdAt else null,
             hasNext = hasNext
         )

@@ -1,9 +1,9 @@
 package com.pidulgi.server.social.service
 
 import com.pidulgi.server.common.dto.CursorResponse
+import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.social.dto.response.LikeCountResponse
-import com.pidulgi.server.social.dto.response.LikeResponse
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.LikeRepository
 import org.springframework.beans.factory.annotation.Value
@@ -53,11 +53,11 @@ class LikeService(
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int = 20
-    ): CursorResponse<LikeResponse> {
+    ): CursorResponse<SettingResponse> {
         val result = likeRepository.findLikesByCursor(likerId, cursorId, cursorDate, size + 1)
             .map {
-                LikeResponse(
-                    likeId = it.likeId,
+                SettingResponse(
+                    id = it.likeId,
                     memberId = it.memberId,
                     nickname = it.nickname,
                     gender = it.gender,
@@ -71,7 +71,7 @@ class LikeService(
 
         return CursorResponse(
             payload = items,
-            nextId = if (hasNext) items.last().likeId else null,
+            nextId = if (hasNext) items.last().id else null,
             nextDateAt = if (hasNext) items.last().createdAt else null,
             hasNext = hasNext
         )
