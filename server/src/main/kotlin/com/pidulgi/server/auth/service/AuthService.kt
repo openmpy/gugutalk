@@ -11,6 +11,9 @@ import com.pidulgi.server.common.auth.JwtProvider
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.util.ClientIpExtractor
 import com.pidulgi.server.member.entity.Member
+import com.pidulgi.server.member.entity.MemberImage
+import com.pidulgi.server.member.entity.type.ImageType
+import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -30,6 +33,7 @@ private const val AUTH_VERIFICATION_CODE_MINUTES: Long = 5
 class AuthService(
 
     private val memberRepository: MemberRepository,
+    private val memberImageRepository: MemberImageRepository,
     private val phoneVerificationRepository: PhoneVerificationRepository,
     private val redisTemplate: StringRedisTemplate,
     private val jwtProvider: JwtProvider,
@@ -109,7 +113,17 @@ class AuthService(
             throw CustomException("이미 가입된 닉네임입니다.")
         }
 
-        val profileKey = request.images.firstOrNull()?.key
+        val memberImages = request.images.map {
+            MemberImage(
+                memberId = member.id,
+                key = it.key,
+                type = ImageType.PUBLIC,
+                sortOrder = it.index
+            )
+        }
+        memberImageRepository.saveAll(memberImages)
+
+        val profileKey = request.images.minByOrNull { it.index }?.key
         member.activate(
             profileKey,
             request.nickname,

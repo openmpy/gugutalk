@@ -3,15 +3,19 @@ import PhotosUI
 
 struct ActivateView: View {
 
+    @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
+
+    @StateObject private var vm = ActivateViewModel()
+
     @State private var images: [PhotosPickerItem] = []
     @State private var selectImages: [IdentifiableImage] = []
 
     @State private var nickname: String = ""
-    @State private var birthYear: String = ""
+    @State private var birthYear: Int? = nil
     @State private var bio: String = ""
 
     private var isSubmit: Bool {
-        !nickname.isEmpty && !birthYear.isEmpty
+        !nickname.isEmpty && birthYear != nil
     }
 
     var body: some View {
@@ -47,7 +51,7 @@ struct ActivateView: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
 
-                    TextField("2000", text: $birthYear)
+                    TextField("2000", value: $birthYear, format: .number.grouping(.never))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
                         .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
@@ -80,7 +84,16 @@ struct ActivateView: View {
         }
         .safeAreaInset(edge: .bottom) {
             Button {
-
+                Task {
+                    if await vm.activate(
+                        images: selectImages,
+                        nickname: nickname,
+                        birthYear: birthYear ?? 2000,
+                        bio: bio
+                    ) {
+                        isLoggedIn = true
+                    }
+                }
             } label: {
                 Text("들어가기")
                     .font(.default.bold())
@@ -96,6 +109,11 @@ struct ActivateView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .interactiveDismissDisabled(true)
+        .alert("에러", isPresented: $vm.showErrorAlert) {
+            Button("확인", role: .cancel) { }
+        } message: {
+            Text(vm.errorMessage)
+        }
     }
 }
 

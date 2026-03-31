@@ -1,22 +1,3 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/gugutalk
-    username: admin
-    password: 1234
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        format_sql: true
-        show_sql: true
-        highlight_sql: true
-    open-in-view: false
-  data:
-    redis:
-      host: localhost
-      password:
-
-jwt:
-  secret-key: 7JWI64WV7ZWY7IOI7Jqw
+  profiles:
+    active: local

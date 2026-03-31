@@ -2,14 +2,14 @@ import Foundation
 import Security
 
 final class AuthStore {
-    
+
     static let shared = AuthStore()
-    
+
     private let memberIdKey = "com.openmpy.app.member.id"
     private let uuidKey = "com.openmpy.app.member.uuid"
     private let accessTokenKey = "com.openmpy.app.token.access"
     private let refreshTokenKey = "com.openmpy.app.token.refresh"
-    
+
     private init() {}
     
     var memberId: Int64? {
@@ -25,7 +25,7 @@ final class AuthStore {
             }
         }
     }
-    
+
     var uuid: String? {
         get { readFromKeychain(key: uuidKey) }
         set {
@@ -36,7 +36,7 @@ final class AuthStore {
             }
         }
     }
-    
+
     var accessToken: String? {
         get { UserDefaults.standard.string(forKey: accessTokenKey) }
         set {
@@ -47,7 +47,7 @@ final class AuthStore {
             }
         }
     }
-    
+
     var refreshToken: String? {
         get { readFromKeychain(key: refreshTokenKey) }
         set {
@@ -58,14 +58,14 @@ final class AuthStore {
             }
         }
     }
-    
+
     func save(memberId: Int64, uuid: String, accessToken: String, refreshToken: String) {
         self.memberId = memberId
         self.uuid = uuid
         self.accessToken = accessToken
         self.refreshToken = refreshToken
     }
-    
+
     func clearAll() {
         memberId = nil
         accessToken = nil
@@ -74,11 +74,11 @@ final class AuthStore {
 }
 
 private extension AuthStore {
-    
+
     @discardableResult
     func saveToKeychain(key: String, value: String) -> Bool {
         guard let data = value.data(using: .utf8) else { return false }
-        
+
         if readFromKeychain(key: key) != nil {
             let query: [CFString: Any] = [
                 kSecClass: kSecClassGenericPassword,
@@ -87,7 +87,7 @@ private extension AuthStore {
             let attributes: [CFString: Any] = [kSecValueData: data]
             return SecItemUpdate(query as CFDictionary, attributes as CFDictionary) == errSecSuccess
         }
-        
+
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key,
@@ -96,7 +96,7 @@ private extension AuthStore {
         ]
         return SecItemAdd(query as CFDictionary, nil) == errSecSuccess
     }
-    
+
     func readFromKeychain(key: String) -> String? {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
@@ -111,7 +111,7 @@ private extension AuthStore {
         else { return nil }
         return value
     }
-    
+
     @discardableResult
     func deleteFromKeychain(key: String) -> Bool {
         let query: [CFString: Any] = [
