@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		9D9F1E262F7B029900A9C891 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E252F7B029900A9C891 /* Alamofire */; };
 		9D9F1E782F7B9A3F00A9C891 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E772F7B9A3F00A9C891 /* Kingfisher */; };
+		9D9F1E7F2F7BA17100A9C891 /* Zoomable in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E7E2F7BA17100A9C891 /* Zoomable */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 			files = (
 				9D9F1E782F7B9A3F00A9C891 /* Kingfisher in Frameworks */,
 				9D9F1E262F7B029900A9C891 /* Alamofire in Frameworks */,
+				9D9F1E7F2F7BA17100A9C891 /* Zoomable in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +76,7 @@
 			packageProductDependencies = (
 				9D9F1E252F7B029900A9C891 /* Alamofire */,
 				9D9F1E772F7B9A3F00A9C891 /* Kingfisher */,
+				9D9F1E7E2F7BA17100A9C891 /* Zoomable */,
 			);
 			productName = app;
 			productReference = 9D9F1DBC2F79C1A600A9C891 /* app.app */;
@@ -106,6 +109,7 @@
 			packageReferences = (
 				9D9F1E242F7B029900A9C891 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				9D9F1E762F7B9A3F00A9C891 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				9D9F1E7D2F7BA17100A9C891 /* XCRemoteSwiftPackageReference "Zoomable" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9D9F1DBD2F79C1A600A9C891 /* Products */;
@@ -382,6 +386,14 @@
 				minimumVersion = 8.8.0;
 			};
 		};
+		9D9F1E7D2F7BA17100A9C891 /* XCRemoteSwiftPackageReference "Zoomable" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ryohey/Zoomable.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -394,6 +406,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9D9F1E762F7B9A3F00A9C891 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		9D9F1E7E2F7BA17100A9C891 /* Zoomable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D9F1E7D2F7BA17100A9C891 /* XCRemoteSwiftPackageReference "Zoomable" */;
+			productName = Zoomable;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -20,7 +20,6 @@ final class MyProfileViewModel: ObservableObject {
 
         do {
             member = try await memberService.getMe()
-            print(member?.images)
         } catch {
             showErrorAlert = true
             errorMessage = error.localizedDescription
