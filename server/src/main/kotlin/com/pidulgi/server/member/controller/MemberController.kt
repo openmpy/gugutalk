@@ -1,12 +1,9 @@
 package com.pidulgi.server.member.controller
 
 import com.pidulgi.server.common.auth.Login
-import com.pidulgi.server.common.s3.PresignedUrlsResponse
-import com.pidulgi.server.member.dto.request.MemberGetPresignedUrlsRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateLocationRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
-import com.pidulgi.server.member.service.MemberImageService
 import com.pidulgi.server.member.service.MemberService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -16,7 +13,6 @@ import org.springframework.web.bind.annotation.*
 class MemberController(
 
     private val memberService: MemberService,
-    private val memberImageService: MemberImageService,
 ) {
 
     @GetMapping("/v1/members/me")
@@ -51,14 +47,5 @@ class MemberController(
     ): ResponseEntity<Unit> {
         memberService.updateLocation(memberId, request)
         return ResponseEntity.ok().build()
-    }
-
-    @PostMapping("/v1/members/images/presigned")
-    fun getPresignedUrls(
-        @Login memberId: Long,
-        @RequestBody request: MemberGetPresignedUrlsRequest
-    ): ResponseEntity<PresignedUrlsResponse> {
-        val response = memberImageService.getPresignedUrls(memberId, request)
-        return ResponseEntity.ok(response)
     }
 }
