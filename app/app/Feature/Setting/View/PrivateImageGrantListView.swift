@@ -1,8 +1,11 @@
 import SwiftUI
+import Toasts
 
 struct PrivateImageGrantListView: View {
 
     @StateObject private var vm = PrivateImageGrantListViewModel()
+
+    @Environment(\.presentToast) var presentToast
 
     var body: some View {
         VStack {
@@ -22,7 +25,13 @@ struct PrivateImageGrantListView: View {
                             .onAppear {
                                 if it.id == vm.members.last?.id {
                                     Task {
-                                        await vm.loadMoreGrantedMember()
+                                        let result = await vm.loadMoreGrantedMember()
+                                        if case .failure(let error) = result {
+                                            presentToast(ToastValue(
+                                                icon: Image(systemName: "xmark.circle.fill"),
+                                                message: error.localizedDescription
+                                            ))
+                                        }
                                     }
                                 }
                             }
@@ -32,7 +41,13 @@ struct PrivateImageGrantListView: View {
             }
         }
         .task {
-            await vm.getGrantedMember()
+            let result = await vm.getGrantedMember()
+            if case .failure(let error) = result {
+                presentToast(ToastValue(
+                    icon: Image(systemName: "xmark.circle.fill"),
+                    message: error.localizedDescription
+                ))
+            }
         }
         .navigationTitle("비밀 사진 목록")
         .navigationBarTitleDisplayMode(.inline)

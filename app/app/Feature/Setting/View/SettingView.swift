@@ -1,12 +1,14 @@
 import SwiftUI
+import Toasts
 
 struct SettingView: View {
-
-    @Environment(\.colorScheme) var colorScheme
 
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
 
     @StateObject private var vm = SettingViewModel()
+
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.presentToast) var presentToast
 
     @State private var showMenu: Bool = false
     @State private var showDelete: Bool = false
@@ -87,9 +89,18 @@ struct SettingView: View {
                     .confirmationDialog("메뉴", isPresented: $showMenu) {
                         Button("로그아웃", role: .confirm) {
                             Task {
-                                await vm.logout(refreshToken: AuthStore.shared.refreshToken ?? "")
-                                AuthStore.shared.clearAll()
-                                isLoggedIn = false
+                                let result = await vm.logout(refreshToken: AuthStore.shared.refreshToken ?? "")
+                                switch result {
+                                case .success:
+                                    AuthStore.shared.clearAll()
+                                    isLoggedIn = false
+                                case .failure(let error):
+                                    let toast = ToastValue(
+                                        icon: Image(systemName: "xmark.circle.fill"),
+                                        message: error.localizedDescription
+                                    )
+                                    presentToast(toast)
+                                }
                             }
                         }
                         Button("탈퇴", role: .destructive) {
@@ -102,23 +113,26 @@ struct SettingView: View {
             .alert("회원 탈퇴", isPresented: $showDelete) {
                 Button("탈퇴", role: .destructive) {
                     Task {
-                        if await vm.withdraw(
+                        let result = await vm.withdraw(
                             accessToken: AuthStore.shared.accessToken ?? "",
                             refreshToken: AuthStore.shared.refreshToken ?? ""
-                        ) {
+                        )
+                        switch result {
+                        case .success:
                             AuthStore.shared.clearAll()
                             isLoggedIn = false
+                        case .failure(let error):
+                            let toast = ToastValue(
+                                icon: Image(systemName: "xmark.circle.fill"),
+                                message: error.localizedDescription
+                            )
+                            presentToast(toast)
                         }
                     }
                 }
                 Button("닫기", role: .cancel) { }
             } message: {
                 Text("탈퇴 시 모든 정보가 삭제됩니다.\n정말 탈퇴하시겠습니까?")
-            }
-            .alert("에러", isPresented: $vm.showErrorAlert) {
-                Button("확인", role: .cancel) { }
-            } message: {
-                Text(vm.errorMessage)
             }
         }
     }

@@ -7,36 +7,33 @@ final class SettingViewModel: ObservableObject {
     private let authService = AuthService.shared
     private let memberService = MemberService.shared
 
-    @Published var showErrorAlert: Bool = false
-    @Published var errorMessage: String = ""
     @Published var isLoading: Bool = false
 
-    func logout(refreshToken: String) async {
-        guard !isLoading else { return }
+    func logout(refreshToken: String) async -> Result<Void, Error> {
+        guard !isLoading else { return .failure(CancellationError()) }
 
         isLoading = true
         defer { isLoading = false }
 
         do {
             try await authService.logout(refreshToken: refreshToken)
+            return .success(())
         } catch {
-            errorMessage = error.localizedDescription
+            return .failure(error)
         }
     }
 
-    func withdraw(accessToken: String, refreshToken: String) async -> Bool {
-        guard !isLoading else { return false }
+    func withdraw(accessToken: String, refreshToken: String) async -> Result<Void, Error> {
+        guard !isLoading else { return .failure(CancellationError()) }
 
         isLoading = true
         defer { isLoading = false }
 
         do {
             try await memberService.withdraw(accessToken: accessToken, refreshToken: refreshToken)
-            return true
+            return .success(())
         } catch {
-            showErrorAlert = true
-            errorMessage = error.localizedDescription
-            return false
+            return .failure(error)
         }
     }
 }

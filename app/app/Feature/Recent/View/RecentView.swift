@@ -1,8 +1,11 @@
 import SwiftUI
+import Toasts
 
 struct RecentView: View {
 
     @StateObject private var vm = RecentViewModel()
+
+    @Environment(\.presentToast) var presentToast
 
     @State private var selectGender: String = "ALL"
     @State private var showComment: Bool = false
@@ -15,10 +18,8 @@ struct RecentView: View {
 
                 if vm.members.isEmpty {
                     Spacer()
-
                     Text("내역이 비어있습니다.")
                         .foregroundColor(.primary)
-
                     Spacer()
                 } else {
                     ScrollView {
@@ -41,7 +42,13 @@ struct RecentView: View {
                                 .onAppear {
                                     if it.id == vm.members.last?.id {
                                         Task {
-                                            await vm.loadMoreGrantedMember(gender: selectGender.uppercased())
+                                            let result = await vm.loadMoreGrantedMember(gender: selectGender.uppercased())
+                                            if case .failure(let error) = result {
+                                                presentToast(ToastValue(
+                                                    icon: Image(systemName: "xmark.circle.fill"),
+                                                    message: error.localizedDescription
+                                                ))
+                                            }
                                         }
                                     }
                                 }
@@ -50,18 +57,43 @@ struct RecentView: View {
                     }
                     .refreshable {
                         Task {
-                            await vm.bump()
-                            await vm.getRecentMembers(gender: selectGender.uppercased())
+                            let bumpResult = await vm.bump()
+                            if case .failure(let error) = bumpResult {
+                                presentToast(ToastValue(
+                                    icon: Image(systemName: "xmark.circle.fill"),
+                                    message: error.localizedDescription
+                                ))
+                            }
+
+                            let result = await vm.getRecentMembers(gender: selectGender.uppercased())
+                            if case .failure(let error) = result {
+                                presentToast(ToastValue(
+                                    icon: Image(systemName: "xmark.circle.fill"),
+                                    message: error.localizedDescription
+                                ))
+                            }
                         }
                     }
                 }
             }
             .task {
-                await vm.getRecentMembers(gender: selectGender.uppercased())
+                let result = await vm.getRecentMembers(gender: selectGender.uppercased())
+                if case .failure(let error) = result {
+                    presentToast(ToastValue(
+                        icon: Image(systemName: "xmark.circle.fill"),
+                        message: error.localizedDescription
+                    ))
+                }
             }
             .onChange(of: selectGender) { _, newValue in
                 Task {
-                    await vm.getRecentMembers(gender: newValue.uppercased())
+                    let result = await vm.getRecentMembers(gender: newValue.uppercased())
+                    if case .failure(let error) = result {
+                        presentToast(ToastValue(
+                            icon: Image(systemName: "xmark.circle.fill"),
+                            message: error.localizedDescription
+                        ))
+                    }
                 }
             }
             .navigationTitle("최근")
@@ -89,11 +121,8 @@ struct RecentView: View {
             }
             .alert("코멘트", isPresented: $showComment) {
                 TextField("내용 입력", text: $comment)
-
                 Button("작성", role: .confirm) {
-                    if comment.isEmpty {
-                        return
-                    }
+                    if comment.isEmpty { return }
                 }
                 Button("취소", role: .cancel) { }
             }

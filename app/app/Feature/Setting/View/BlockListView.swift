@@ -1,8 +1,11 @@
 import SwiftUI
+import Toasts
 
 struct BlockListView: View {
 
     @StateObject private var vm = BlockListViewModel()
+
+    @Environment(\.presentToast) var presentToast
 
     var body: some View {
         VStack {
@@ -22,7 +25,13 @@ struct BlockListView: View {
                             .onAppear {
                                 if it.id == vm.members.last?.id {
                                     Task {
-                                        await vm.loadMoreBlockedMember()
+                                        let result = await vm.loadMoreBlockedMember()
+                                        if case .failure(let error) = result {
+                                            presentToast(ToastValue(
+                                                icon: Image(systemName: "xmark.circle.fill"),
+                                                message: error.localizedDescription
+                                            ))
+                                        }
                                     }
                                 }
                             }
@@ -32,16 +41,17 @@ struct BlockListView: View {
             }
         }
         .task {
-            await vm.getBlockedMember()
+            let result = await vm.getBlockedMember()
+            if case .failure(let error) = result {
+                presentToast(ToastValue(
+                    icon: Image(systemName: "xmark.circle.fill"),
+                    message: error.localizedDescription
+                ))
+            }
         }
         .navigationTitle("차단 목록")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
-        .alert("에러", isPresented: $vm.showErrorAlert) {
-            Button("확인", role: .cancel) { }
-        } message: {
-            Text(vm.errorMessage)
-        }
     }
 }
 

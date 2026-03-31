@@ -10,6 +10,7 @@
 		9D9F1E262F7B029900A9C891 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E252F7B029900A9C891 /* Alamofire */; };
 		9D9F1E782F7B9A3F00A9C891 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E772F7B9A3F00A9C891 /* Kingfisher */; };
 		9D9F1E7F2F7BA17100A9C891 /* Zoomable in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E7E2F7BA17100A9C891 /* Zoomable */; };
+		9D9F1EA32F7C340900A9C891 /* Toasts in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1EA22F7C340900A9C891 /* Toasts */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D9F1EA32F7C340900A9C891 /* Toasts in Frameworks */,
 				9D9F1E782F7B9A3F00A9C891 /* Kingfisher in Frameworks */,
 				9D9F1E262F7B029900A9C891 /* Alamofire in Frameworks */,
 				9D9F1E7F2F7BA17100A9C891 /* Zoomable in Frameworks */,
@@ -77,6 +79,7 @@
 				9D9F1E252F7B029900A9C891 /* Alamofire */,
 				9D9F1E772F7B9A3F00A9C891 /* Kingfisher */,
 				9D9F1E7E2F7BA17100A9C891 /* Zoomable */,
+				9D9F1EA22F7C340900A9C891 /* Toasts */,
 			);
 			productName = app;
 			productReference = 9D9F1DBC2F79C1A600A9C891 /* app.app */;
@@ -110,6 +113,7 @@
 				9D9F1E242F7B029900A9C891 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				9D9F1E762F7B9A3F00A9C891 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				9D9F1E7D2F7BA17100A9C891 /* XCRemoteSwiftPackageReference "Zoomable" */,
+				9D9F1EA12F7C340900A9C891 /* XCRemoteSwiftPackageReference "swiftui-toasts" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9D9F1DBD2F79C1A600A9C891 /* Products */;
@@ -394,6 +398,14 @@
 				kind = branch;
 			};
 		};
+		9D9F1EA12F7C340900A9C891 /* XCRemoteSwiftPackageReference "swiftui-toasts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sunghyun-k/swiftui-toasts";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -411,6 +423,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9D9F1E7D2F7BA17100A9C891 /* XCRemoteSwiftPackageReference "Zoomable" */;
 			productName = Zoomable;
+		};
+		9D9F1EA22F7C340900A9C891 /* Toasts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D9F1EA12F7C340900A9C891 /* XCRemoteSwiftPackageReference "swiftui-toasts" */;
+			productName = Toasts;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

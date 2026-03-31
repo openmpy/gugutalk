@@ -6,23 +6,19 @@ final class SignupViewModel: ObservableObject {
 
     private let authService = AuthService.shared
 
-    @Published var showErrorAlert: Bool = false
-    @Published var errorMessage: String = ""
     @Published var isLoading: Bool = false
 
-    func sendCodeVerificationCode(phoneNumber: String) async -> Bool {
-        guard !isLoading else { return false }
+    func sendCodeVerificationCode(phoneNumber: String) async -> Result<Void, Error> {
+        guard !isLoading else { return .failure(CancellationError()) }
 
         isLoading = true
         defer { isLoading = false }
-
+        
         do {
             try await authService.sendCodeVerificationCode(phoneNumber: phoneNumber)
-            return true
+            return .success(())
         } catch {
-            showErrorAlert = true
-            errorMessage = error.localizedDescription
-            return false
+            return .failure(error)
         }
     }
 
@@ -31,8 +27,8 @@ final class SignupViewModel: ObservableObject {
         verificationCode: String,
         password: String,
         gender: String
-    ) async -> Bool {
-        guard !isLoading else { return false }
+    ) async -> Result<Void, Error> {
+        guard !isLoading else { return .failure(CancellationError()) }
 
         isLoading = true
         defer { isLoading = false }
@@ -51,11 +47,9 @@ final class SignupViewModel: ObservableObject {
             AuthStore.shared.uuid = uuid
             AuthStore.shared.accessToken = response.accessToken
             AuthStore.shared.refreshToken = response.refreshToken
-            return true
+            return .success(())
         } catch {
-            showErrorAlert = true
-            errorMessage = error.localizedDescription
-            return false
+            return .failure(error)
         }
     }
 }

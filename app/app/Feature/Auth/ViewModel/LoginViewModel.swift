@@ -6,15 +6,13 @@ final class LoginViewModel: ObservableObject {
 
     private let authService = AuthService.shared
 
-    @Published var showErrorAlert: Bool = false
-    @Published var errorMessage: String = ""
     @Published var isLoading: Bool = false
 
     func login(
         phoneNumber: String,
         password: String
-    ) async -> Bool {
-        guard !isLoading else { return false }
+    ) async -> Result<Void, Error> {
+        guard !isLoading else { return .failure(CancellationError()) }
 
         isLoading = true
         defer { isLoading = false }
@@ -28,11 +26,9 @@ final class LoginViewModel: ObservableObject {
             AuthStore.shared.memberId = response.memberId
             AuthStore.shared.accessToken = response.accessToken
             AuthStore.shared.refreshToken = response.refreshToken
-            return true
+            return .success(())
         } catch {
-            showErrorAlert = true
-            errorMessage = error.localizedDescription
-            return false
+            return .failure(error)
         }
     }
 }

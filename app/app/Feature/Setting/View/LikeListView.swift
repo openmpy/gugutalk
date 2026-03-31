@@ -1,8 +1,11 @@
 import SwiftUI
+import Toasts
 
 struct LikeListView: View {
 
     @StateObject private var vm = LikeListViewModel()
+    
+    @Environment(\.presentToast) var presentToast
 
     var body: some View {
         VStack {
@@ -22,7 +25,13 @@ struct LikeListView: View {
                             .onAppear {
                                 if it.id == vm.members.last?.id {
                                     Task {
-                                        await vm.loadMoreLikedMember()
+                                        let result = await vm.loadMoreLikedMember()
+                                        if case .failure(let error) = result {
+                                            presentToast(ToastValue(
+                                                icon: Image(systemName: "xmark.circle.fill"),
+                                                message: error.localizedDescription
+                                            ))
+                                        }
                                     }
                                 }
                             }
@@ -32,16 +41,17 @@ struct LikeListView: View {
             }
         }
         .task {
-            await vm.getLikedMember()
+            let result = await vm.getLikedMember()
+            if case .failure(let error) = result {
+                presentToast(ToastValue(
+                    icon: Image(systemName: "xmark.circle.fill"),
+                    message: error.localizedDescription
+                ))
+            }
         }
         .navigationTitle("좋아요 목록")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
-        .alert("에러", isPresented: $vm.showErrorAlert) {
-            Button("확인", role: .cancel) { }
-        } message: {
-            Text(vm.errorMessage)
-        }
     }
 }
 

@@ -1,11 +1,14 @@
 import SwiftUI
 import PhotosUI
+import Toasts
 
 struct ActivateView: View {
 
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
 
     @StateObject private var vm = ActivateViewModel()
+    
+    @Environment(\.presentToast) var presentToast
 
     @State private var images: [PhotosPickerItem] = []
     @State private var selectImages: [IdentifiableImage] = []
@@ -85,13 +88,20 @@ struct ActivateView: View {
         .safeAreaInset(edge: .bottom) {
             Button {
                 Task {
-                    if await vm.activate(
+                    let result = await vm.activate(
                         images: selectImages,
                         nickname: nickname,
                         birthYear: birthYear ?? 2000,
                         bio: bio
-                    ) {
+                    )
+                    switch result {
+                    case .success:
                         isLoggedIn = true
+                    case .failure(let error):
+                        presentToast(ToastValue(
+                            icon: Image(systemName: "xmark.circle.fill"),
+                            message: error.localizedDescription
+                        ))
                     }
                 }
             } label: {
@@ -109,11 +119,6 @@ struct ActivateView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .interactiveDismissDisabled(true)
-        .alert("에러", isPresented: $vm.showErrorAlert) {
-            Button("확인", role: .cancel) { }
-        } message: {
-            Text(vm.errorMessage)
-        }
     }
 }
 

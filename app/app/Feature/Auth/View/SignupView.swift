@@ -1,32 +1,30 @@
 import SwiftUI
+import Toasts
 
 struct SignupView: View {
-
+    
     @StateObject private var vm = SignupViewModel()
-
+    
+    @Environment(\.presentToast) var presentToast
+    
     @State private var phoneNumber: String = ""
     @State private var verificationCode: String = ""
     @State private var sendVerificationCode = false
     @State private var password: String = ""
     @State private var password2: String = ""
     @State private var selectGender: String = "MALE"
-    @State private var showAlert: Bool = false
-    @State private var alertMessage: String = ""
     @State private var goActivate: Bool = false
     @State private var timeRemaining: Int = 0
     @State private var timer: Timer?
-
+    
     private var isPhoneNumberValid: Bool {
         phoneNumber.starts(with: "010") && phoneNumber.count == 11
-    }
-    private var isPasswordValid: Bool {
-        password == password2
     }
     private var isSubmit: Bool {
         isPhoneNumberValid && !verificationCode.isEmpty &&
         !password.isEmpty && !password2.isEmpty && sendVerificationCode
     }
-
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -35,7 +33,7 @@ struct SignupView: View {
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
-
+                    
                     HStack {
                         TextField("휴대폰 번호", text: $phoneNumber)
                             .padding(.horizontal, 16)
@@ -45,17 +43,26 @@ struct SignupView: View {
                             .textInputAutocapitalization(.never)
                             .disableAutocorrection(true)
                             .keyboardType(.numberPad)
-
+                        
                         Button {
                             if !isPhoneNumberValid {
-                                showAlert = true
-                                alertMessage = "올바른 휴대폰 번호를 입력해주세요."
+                                presentToast(ToastValue(
+                                    icon: Image(systemName: "exclamationmark.circle.fill"),
+                                    message: "올바른 휴대폰 번호를 입력해주세요."
+                                ))
                                 return
                             }
-
+                            
                             Task {
-                                if await vm.sendCodeVerificationCode(phoneNumber: phoneNumber) {
+                                let result = await vm.sendCodeVerificationCode(phoneNumber: phoneNumber)
+                                switch result {
+                                case .success:
                                     startTimer()
+                                case .failure(let error):
+                                    presentToast(ToastValue(
+                                        icon: Image(systemName: "xmark.circle.fill"),
+                                        message: error.localizedDescription
+                                    ))
                                 }
                             }
                         } label: {
@@ -70,7 +77,7 @@ struct SignupView: View {
                         }
                         .disabled(!isPhoneNumberValid || sendVerificationCode)
                     }
-
+                    
                     TextField("인증 번호", text: $verificationCode)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
@@ -80,13 +87,13 @@ struct SignupView: View {
                         .disableAutocorrection(true)
                         .keyboardType(.numberPad)
                 }
-
+                
                 VStack(alignment: .leading, spacing: 12) {
                     Text("비밀번호")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
-
+                    
                     SecureField("비밀번호", text: $password)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
@@ -95,7 +102,7 @@ struct SignupView: View {
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
                         .textContentType(.oneTimeCode)
-
+                    
                     SecureField("비밀번호 확인", text: $password2)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
@@ -105,13 +112,13 @@ struct SignupView: View {
                         .disableAutocorrection(true)
                         .textContentType(.oneTimeCode)
                 }
-
+                
                 VStack(alignment: .leading, spacing: 12) {
                     Text("성별")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
-
+                    
                     HStack {
                         Button {
                             selectGender = "MALE"
@@ -126,7 +133,7 @@ struct SignupView: View {
                                     in: RoundedRectangle(cornerRadius: 20)
                                 )
                         }
-
+                        
                         Button {
                             selectGender = "FEMALE"
                         } label: {
@@ -151,19 +158,28 @@ struct SignupView: View {
         .safeAreaInset(edge: .bottom) {
             Button {
                 if password != password2 {
-                    showAlert = true
-                    alertMessage = "비밀번호가 일치하지 않습니다."
+                    presentToast(ToastValue(
+                        icon: Image(systemName: "exclamationmark.circle.fill"),
+                        message: "비밀번호가 일치하지 않습니다."
+                    ))
                     return
                 }
-
+                
                 Task {
-                    if await vm.signup(
+                    let result = await vm.signup(
                         phoneNumber: phoneNumber,
                         verificationCode: verificationCode,
                         password: password,
                         gender: selectGender
-                    ) {
+                    )
+                    switch result {
+                    case .success:
                         goActivate = true
+                    case .failure(let error):
+                        presentToast(ToastValue(
+                            icon: Image(systemName: "xmark.circle.fill"),
+                            message: error.localizedDescription
+                        ))
                     }
                 }
             } label: {
@@ -186,22 +202,12 @@ struct SignupView: View {
         .navigationDestination(isPresented: $goActivate) {
             ActivateView()
         }
-        .alert("알림", isPresented: $showAlert) {
-            Button("확인", role: .cancel) { }
-        } message: {
-            Text(alertMessage)
-        }
-        .alert("에러", isPresented: $vm.showErrorAlert) {
-            Button("확인", role: .cancel) { }
-        } message: {
-            Text(vm.errorMessage)
-        }
     }
-
+    
     private func startTimer() {
         sendVerificationCode = true
         timeRemaining = 300
-
+        
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             if timeRemaining > 0 {

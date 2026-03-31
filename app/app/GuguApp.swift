@@ -1,4 +1,5 @@
 import SwiftUI
+import Toasts
 
 @main
 struct GuguApp: App {
@@ -9,8 +10,10 @@ struct GuguApp: App {
         WindowGroup {
             if isLoggedIn == true {
                 ContentView()
+                    .installToast(position: .top)
             } else {
                 LoginView()
+                    .installToast(position: .top)
             }
         }
     }

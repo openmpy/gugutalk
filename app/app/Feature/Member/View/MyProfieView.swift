@@ -1,8 +1,11 @@
 import SwiftUI
+import Toasts
 
 struct MyProfieView: View {
 
     @StateObject private var vm = MyProfileViewModel()
+
+    @Environment(\.presentToast) var presentToast
 
     var body: some View {
         VStack {
@@ -25,7 +28,13 @@ struct MyProfieView: View {
             }
         }
         .task {
-            await vm.getMe()
+            let result = await vm.getMe()
+            if case .failure(let error) = result {
+                presentToast(ToastValue(
+                    icon: Image(systemName: "xmark.circle.fill"),
+                    message: error.localizedDescription
+                ))
+            }
         }
         .navigationTitle("내 프로필")
         .navigationBarTitleDisplayMode(.inline)
@@ -40,11 +49,6 @@ struct MyProfieView: View {
                         .foregroundColor(.primary)
                 }
             }
-        }
-        .alert("에러", isPresented: $vm.showErrorAlert) {
-            Button("확인", role: .cancel) { }
-        } message: {
-            Text(vm.errorMessage)
         }
     }
 }
