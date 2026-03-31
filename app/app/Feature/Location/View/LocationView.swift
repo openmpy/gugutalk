@@ -16,6 +16,7 @@ struct LocationView: View {
                                 MemberProfileView()
                             } label: {
                                 MemberRow(
+                                    profileUrl: nil,
                                     nickname: "닉네임",
                                     updatedAt: "2026-03-30T12:00:00.0000",
                                     content: "코멘트",

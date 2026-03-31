@@ -32,4 +32,14 @@ final class MemberService {
         )
         .validateWithErrorHandling()
     }
+
+    func bump() async throws {
+        let url = "\(baseURL)/v1/members/me/bump"
+
+        try await session.request(
+            url,
+            method: .put
+        )
+        .validateWithErrorHandling()
+    }
 }

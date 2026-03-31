@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.*
 
-const val ACCESS_TOKEN_EXPIRE_HOURS: Long = 1
+const val ACCESS_TOKEN_EXPIRE_HOURS: Long = 24
 
 @Component
 class JwtProvider(

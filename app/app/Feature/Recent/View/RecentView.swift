@@ -2,6 +2,8 @@ import SwiftUI
 
 struct RecentView: View {
 
+    @StateObject private var vm = RecentViewModel()
+
     @State private var selectGender: String = "ALL"
     @State private var showComment: Bool = false
     @State private var comment: String = ""
@@ -11,27 +13,55 @@ struct RecentView: View {
             VStack {
                 GenderSelector(selectGender: $selectGender)
 
-                ScrollView {
-                    LazyVStack {
-                        ForEach(0..<10) { _ in
-                            NavigationLink {
-                                MemberProfileView()
-                            } label: {
-                                MemberRow(
-                                    nickname: "닉네임",
-                                    updatedAt: "2026-03-30T12:00:00.0000",
-                                    content: "코멘트",
-                                    gender: "MALE",
-                                    age: 20,
-                                    likes: 100,
-                                    distance: 12.34
-                                )
+                if vm.members.isEmpty {
+                    Spacer()
+
+                    Text("내역이 비어있습니다.")
+                        .foregroundColor(.primary)
+
+                    Spacer()
+                } else {
+                    ScrollView {
+                        LazyVStack {
+                            ForEach(vm.members) { it in
+                                NavigationLink {
+                                    MemberProfileView()
+                                } label: {
+                                    MemberRow(
+                                        profileUrl: it.profileUrl,
+                                        nickname: it.nickname,
+                                        updatedAt: it.updatedAt,
+                                        content: it.comment ?? "",
+                                        gender: it.gender,
+                                        age: it.age,
+                                        likes: it.likes,
+                                        distance: it.distance
+                                    )
+                                }
+                                .onAppear {
+                                    if it.id == vm.members.last?.id {
+                                        Task {
+                                            await vm.loadMoreGrantedMember(gender: selectGender.uppercased())
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
+                    .refreshable {
+                        Task {
+                            await vm.bump()
+                            await vm.getRecentMembers(gender: selectGender.uppercased())
+                        }
+                    }
                 }
-                .refreshable {
-                    
+            }
+            .task {
+                await vm.getRecentMembers(gender: selectGender.uppercased())
+            }
+            .onChange(of: selectGender) { _, newValue in
+                Task {
+                    await vm.getRecentMembers(gender: newValue.uppercased())
                 }
             }
             .navigationTitle("최근")
