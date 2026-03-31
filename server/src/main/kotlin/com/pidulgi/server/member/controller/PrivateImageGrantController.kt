@@ -1,9 +1,12 @@
 package com.pidulgi.server.member.controller
 
 import com.pidulgi.server.common.auth.Login
+import com.pidulgi.server.common.dto.CursorResponse
+import com.pidulgi.server.member.dto.response.PrivateImageGrantResponse
 import com.pidulgi.server.member.service.PrivateImageGrantService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
 
 @RequestMapping("/api")
 @RestController
@@ -13,7 +16,7 @@ class PrivateImageGrantController(
 ) {
 
     @PostMapping("/v1/members/{granteeId}/private-images/grant")
-    fun open(
+    fun grant(
         @Login granterId: Long,
         @PathVariable granteeId: Long
     ): ResponseEntity<Unit> {
@@ -22,11 +25,24 @@ class PrivateImageGrantController(
     }
 
     @DeleteMapping("/v1/members/{granteeId}/private-images/grant")
-    fun close(
+    fun revoke(
         @Login granterId: Long,
         @PathVariable granteeId: Long
     ): ResponseEntity<Unit> {
         privateImageGrantService.close(granterId, granteeId)
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/v1/members/private-image-grants")
+    fun getGrantedMembers(
+        @Login granterId: Long,
+        @RequestParam(required = false) cursorId: Long?,
+        @RequestParam(required = false) cursorDate: LocalDateTime?,
+        @RequestParam(defaultValue = "20") size: Int,
+    ): ResponseEntity<CursorResponse<PrivateImageGrantResponse>> {
+        val response = privateImageGrantService.getGrantedMembers(
+            granterId, cursorId, cursorDate, size
+        )
+        return ResponseEntity.ok(response)
     }
 }

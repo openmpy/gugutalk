@@ -1,8 +1,10 @@
 package com.pidulgi.server.common.data
 
 import com.pidulgi.server.member.entity.Member
+import com.pidulgi.server.member.entity.PrivateImageGrant
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.member.repository.PrivateImageGrantRepository
 import com.pidulgi.server.social.entity.Block
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.BlockRepository
@@ -19,6 +21,7 @@ class DummyDataInit {
     fun init(
         memberRepository: MemberRepository,
         likeRepository: LikeRepository,
+        privateImageGrantRepository: PrivateImageGrantRepository,
         blockRepository: BlockRepository,
     ): CommandLineRunner {
         return CommandLineRunner {
@@ -40,7 +43,7 @@ class DummyDataInit {
 
             // 좋아요
             if (likeRepository.count() == 0L) {
-                val likes = (2 until 100).map { i ->
+                val likes = (2 until 50).map { i ->
                     Like(
                         likerId = 1,
                         likedId = i.toLong()
@@ -49,6 +52,19 @@ class DummyDataInit {
 
                 likeRepository.saveAll(likes)
                 println("좋아요 데이터가 생성되었습니다. ${likeRepository.count()}")
+            }
+
+            // 비밀 사진
+            if (privateImageGrantRepository.count() == 0L) {
+                val grants = (2 until 75).map { i ->
+                    PrivateImageGrant(
+                        granterId = 1,
+                        granteeId = i.toLong()
+                    )
+                }
+
+                privateImageGrantRepository.saveAll(grants)
+                println("비밀 사진 권한 데이터가 생성되었습니다. ${privateImageGrantRepository.count()}")
             }
 
             // 차단
