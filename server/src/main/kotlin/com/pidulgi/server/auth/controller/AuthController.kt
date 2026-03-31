@@ -2,7 +2,6 @@ package com.pidulgi.server.auth.controller
 
 import com.pidulgi.server.auth.dto.request.ActivateRequest
 import com.pidulgi.server.auth.dto.request.LoginRequest
-import com.pidulgi.server.auth.dto.request.LogoutRequest
 import com.pidulgi.server.auth.dto.request.SignupRequest
 import com.pidulgi.server.auth.dto.response.LoginResponse
 import com.pidulgi.server.auth.dto.response.SignupResponse
@@ -55,10 +54,10 @@ class AuthController(
 
     @DeleteMapping("/v1/auth/logout")
     fun logout(
-        @Login memberId: Long,
-        @RequestBody request: LogoutRequest
+        servletRequest: HttpServletRequest,
+        @RequestParam(value = "refreshToken", required = true) refreshToken: String
     ): ResponseEntity<Unit> {
-        authService.logout(memberId, request)
+        authService.logout(servletRequest, refreshToken)
         return ResponseEntity.ok().build()
     }
 }

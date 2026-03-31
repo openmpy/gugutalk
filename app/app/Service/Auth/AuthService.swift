@@ -85,4 +85,16 @@ final class AuthService {
         )
         .decodingWithErrorHandling(LoginResponse.self)
     }
+
+    func logout(
+        refreshToken: String
+    ) async throws {
+        let url = "\(baseURL)/v1/auth/logout?refreshToken=\(refreshToken)"
+
+        try await session.request(
+            url,
+            method: .delete
+        )
+        .validateWithErrorHandling()
+    }
 }

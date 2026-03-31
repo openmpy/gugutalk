@@ -2,13 +2,13 @@ package com.pidulgi.server.auth.service
 
 import com.pidulgi.server.auth.dto.request.ActivateRequest
 import com.pidulgi.server.auth.dto.request.LoginRequest
-import com.pidulgi.server.auth.dto.request.LogoutRequest
 import com.pidulgi.server.auth.dto.request.SignupRequest
 import com.pidulgi.server.auth.dto.response.LoginResponse
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.entity.PhoneVerification
 import com.pidulgi.server.auth.repository.PhoneVerificationRepository
 import com.pidulgi.server.common.auth.ACCESS_TOKEN_EXPIRE_HOURS
+import com.pidulgi.server.common.auth.AuthenticationExtractor
 import com.pidulgi.server.common.auth.JwtProvider
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.util.ClientIpExtractor
@@ -20,8 +20,10 @@ import com.pidulgi.server.member.repository.MemberRepository
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 import java.time.Duration
 import java.util.*
 
@@ -156,18 +158,19 @@ class AuthService(
     }
 
     @Transactional
-    fun logout(memberId: Long, request: LogoutRequest) {
-        val member = getMember(memberId)
+    fun logout(servletRequest: HttpServletRequest, refreshToken: String) {
+        val accessToken = AuthenticationExtractor.extract(servletRequest)
+            ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
-        val accessTokenBlacklist = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + request.accessToken
-        val refreshToken = AUTH_REFRESH_TOKEN_KEY + request.refreshToken
+        val accessTokenBlacklist = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + accessToken
+        val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
 
         redisTemplate.opsForValue().set(
             accessTokenBlacklist,
-            member.id.toString(),
+            "1",
             Duration.ofHours(ACCESS_TOKEN_EXPIRE_HOURS)
         )
-        redisTemplate.delete(refreshToken)
+        redisTemplate.delete(refreshTokenKey)
     }
 
     private fun getMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)

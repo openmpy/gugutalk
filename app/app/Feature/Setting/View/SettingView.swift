@@ -4,6 +4,10 @@ struct SettingView: View {
 
     @Environment(\.colorScheme) var colorScheme
 
+    @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
+
+    @StateObject private var vm = SettingViewModel()
+
     @State private var showMenu: Bool = false
     @State private var showDelete: Bool = false
 
@@ -82,6 +86,11 @@ struct SettingView: View {
                     }
                     .confirmationDialog("메뉴", isPresented: $showMenu) {
                         Button("로그아웃", role: .confirm) {
+                            Task {
+                                await vm.logout(refreshToken: AuthStore.shared.refreshToken ?? "")
+                                AuthStore.shared.clearAll()
+                                isLoggedIn = false
+                            }
                         }
                         Button("탈퇴", role: .destructive) {
                             showDelete = true
