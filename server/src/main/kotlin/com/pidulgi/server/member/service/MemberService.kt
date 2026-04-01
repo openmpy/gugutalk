@@ -69,7 +69,7 @@ class MemberService(
             MemberImageResponse(
                 it.id,
                 it.sortOrder,
-                "$endpoint${it.key}"
+                s3Service.getPresignedUrl(it.key)
             )
         }
 

@@ -41,7 +41,7 @@ class S3Service(
             .key(key)
             .build()
         val presignRequest = GetObjectPresignRequest.builder()
-            .signatureDuration(Duration.ofMinutes(10))
+            .signatureDuration(Duration.ofMinutes(60))
             .getObjectRequest(getObjectRequest)
             .build()
         return s3Presigner.presignGetObject(presignRequest).url().toString()
