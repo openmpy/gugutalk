@@ -82,6 +82,7 @@ class MemberService(
             memberId, targetId
         )
         val likes = likeRepository.countByLikedId(targetId)
+        val distance = memberRepository.getDistanceBetween(memberId, targetId)
 
         return MemberGetResponse(
             memberId = member.id,
@@ -91,6 +92,7 @@ class MemberService(
             age = LocalDate.now().year - member.birthYear,
             bio = member.bio,
             likes = likes,
+            distance = distance,
             updatedAt = member.updatedAt,
             isLiked = isLiked,
             isBlocked = isBlocked,

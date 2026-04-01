@@ -6,7 +6,7 @@ struct MemberGetResponse: Codable {
     let gender: String
     let age: Int
     let bio: String?
-    let likes: Int64
+    var likes: Int64
     let distance: Double?
     let updatedAt: String
     let isLiked: Bool

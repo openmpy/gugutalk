@@ -38,11 +38,13 @@ final class MemberProfileViewModel: ObservableObject {
         isLiked.toggle()
 
         do {
+            let response: LikeCountResponse
             if isLiked {
-                try await socialService.like(memberId: memberId)
+                response = try await socialService.like(memberId: memberId)
             } else {
-                try await socialService.unlike(memberId: memberId)
+                response = try await socialService.unlike(memberId: memberId)
             }
+            member?.likes = response.likes
             return .success(())
         } catch {
             isLiked.toggle()

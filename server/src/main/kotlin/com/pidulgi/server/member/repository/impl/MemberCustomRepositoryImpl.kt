@@ -144,6 +144,24 @@ class MemberCustomRepositoryImpl(
         return (query.resultList as List<Array<Any?>>).map(::toMemberItemResponse)
     }
 
+    override fun getDistanceBetween(fromId: Long, toId: Long): Double? {
+        val sql = """
+            SELECT ST_Distance(a.location, b.location) / 1000.0
+            FROM member a, member b
+            WHERE a.id = :fromId AND b.id = :toId
+              AND a.location IS NOT NULL AND b.location IS NOT NULL
+        """.trimIndent()
+
+        return try {
+            (entityManager.createNativeQuery(sql)
+                .setParameter("fromId", fromId)
+                .setParameter("toId", toId)
+                .singleResult as? Number)?.toDouble()
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     private fun toMemberItemResponse(row: Array<Any?>) = MemberItemResponse(
         memberId = (row[0] as Number).toLong(),
         nickname = row[1] as String,

@@ -26,4 +26,6 @@ interface MemberCustomRepository {
         cursorId: Long?,
         size: Int
     ): List<MemberItemResponse>
+
+    fun getDistanceBetween(fromId: Long, toId: Long): Double?
 }

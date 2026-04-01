@@ -53,7 +53,7 @@ struct MemberProfileView: View {
                             }
                         }
                     } label: {
-                        Image(systemName: vm.isLiked ? "heart.fill" : "heart")
+                        Image(systemName: "heart.fill")
                             .font(.title)
                             .frame(width: 60, height: 60)
                             .foregroundColor(vm.isLiked ? .red : .gray)
@@ -73,17 +73,8 @@ struct MemberProfileView: View {
                     }
 
                     Button {
-                        Task {
-                            let result = await vm.togglePrivateImageGrant()
-                            if case .failure(let error) = result {
-                                presentToast(ToastValue(
-                                    icon: Image(systemName: "xmark.circle.fill"),
-                                    message: error.localizedDescription
-                                ))
-                            }
-                        }
                     } label: {
-                        Image(systemName: vm.isPrivateImageGranted ? "photo.fill" : "photo")
+                        Image(systemName: "photo.fill")
                             .font(.title)
                             .frame(width: 60, height: 60)
                             .foregroundColor(vm.isPrivateImageGranted ? .green : .gray)
@@ -126,6 +117,17 @@ struct MemberProfileView: View {
                         .foregroundColor(.primary)
                 }
                 .confirmationDialog("메뉴", isPresented: $showMenu) {
+                    Button(vm.isPrivateImageGranted ? "비밀 사진 닫기" : "비밀 사진 열기", role: .confirm) {
+                        Task {
+                            let result = await vm.togglePrivateImageGrant()
+                            if case .failure(let error) = result {
+                                presentToast(ToastValue(
+                                    icon: Image(systemName: "xmark.circle.fill"),
+                                    message: error.localizedDescription
+                                ))
+                            }
+                        }
+                    }
                     Button("신고", role: .destructive) {
                         goReport = true
                     }

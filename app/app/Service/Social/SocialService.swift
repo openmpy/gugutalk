@@ -7,22 +7,22 @@ final class SocialService {
     let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
     
-    func like(memberId: Int64) async throws {
+    func like(memberId: Int64) async throws -> LikeCountResponse {
         let url = "\(baseURL)/v1/social/likes/\(memberId)"
         
-        try await session.request(
+        return try await session.request(
             url,
             method: .post
-        ).validateWithErrorHandling()
+        ).decodingWithErrorHandling(LikeCountResponse.self)
     }
     
-    func unlike(memberId: Int64) async throws {
+    func unlike(memberId: Int64) async throws -> LikeCountResponse {
         let url = "\(baseURL)/v1/social/likes/\(memberId)"
         
-        try await session.request(
+        return try await session.request(
             url,
             method: .delete
-        ).validateWithErrorHandling()
+        ).decodingWithErrorHandling(LikeCountResponse.self)
     }
     
     func block(memberId: Int64) async throws {
