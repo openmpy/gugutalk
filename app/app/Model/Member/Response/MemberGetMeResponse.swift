@@ -1,7 +1,8 @@
 struct MemberGetMeResponse: Codable {
 
     let memberId: Int64
-    let images: [MemberImageResponse]
+    let publicImages: [MemberImageResponse]
+    let privateImages: [MemberImageResponse]
     let nickname: String
     let gender: String
     let age: Int

@@ -11,7 +11,7 @@ struct MyProfieView: View {
         VStack {
             if let member = vm.member {
                 ScrollView {
-                    MemberProfileImage(images: member.images.compactMap { URL(string: $0.url) })
+                    MemberProfileImage(images: member.publicImages.compactMap { URL(string: $0.url) })
 
                     MemberProfileInfo(
                         nickname: member.nickname,

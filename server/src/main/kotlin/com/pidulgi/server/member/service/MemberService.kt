@@ -49,20 +49,32 @@ class MemberService(
     @Transactional(readOnly = true)
     fun getMe(memberId: Long): MemberGetMeResponse {
         val member = getMember(memberId)
-        val images = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
-            member.id,
-            ImageType.PUBLIC
-        ).map {
+        val images = memberImageRepository.findAllByMemberIdOrderByTypeAscSortOrderAsc(
+            member.id
+        )
+
+        val (publicImages, privateImages) = images.partition {
+            it.type == ImageType.PUBLIC
+        }
+        val publicImagesResponse = publicImages.map {
             MemberImageResponse(
                 it.id,
                 it.sortOrder,
-                endpoint + it.key
+                "$endpoint${it.key}"
+            )
+        }
+        val privateImagesResponse = privateImages.map {
+            MemberImageResponse(
+                it.id,
+                it.sortOrder,
+                "$endpoint${it.key}"
             )
         }
 
         return MemberGetMeResponse(
             member.id,
-            images,
+            publicImagesResponse,
+            privateImagesResponse,
             member.nickname,
             member.gender,
             LocalDate.now().year - member.birthYear,

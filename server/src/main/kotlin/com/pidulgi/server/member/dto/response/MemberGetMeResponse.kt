@@ -5,7 +5,8 @@ import com.pidulgi.server.member.entity.type.Gender
 data class MemberGetMeResponse(
 
     val memberId: Long,
-    val images: List<MemberImageResponse> = emptyList(),
+    val publicImages: List<MemberImageResponse> = emptyList(),
+    val privateImages: List<MemberImageResponse> = emptyList(),
     val nickname: String,
     val gender: Gender,
     val age: Int,

@@ -11,5 +11,7 @@ interface MemberImageRepository : JpaRepository<MemberImage, Long> {
         type: ImageType
     ): List<MemberImage>
 
+    fun findAllByMemberIdOrderByTypeAscSortOrderAsc(memberId: Long): List<MemberImage>
+
     fun deleteAllByIdIn(ids: List<Long>)
 }
