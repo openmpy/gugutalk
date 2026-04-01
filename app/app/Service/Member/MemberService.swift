@@ -69,6 +69,18 @@ final class MemberService {
         .validateWithErrorHandling()
     }
 
+    func updateProfile(request: MemberUpdateProfileRequest) async throws {
+        let url = "\(baseURL)/v1/members/me/profile"
+
+        try await session.request(
+            url,
+            method: .put,
+            parameters: request,
+            encoder: JSONParameterEncoder.default
+        )
+        .validateWithErrorHandling()
+    }
+
     func search(
         keyword: String,
         cursorId: Int64?,

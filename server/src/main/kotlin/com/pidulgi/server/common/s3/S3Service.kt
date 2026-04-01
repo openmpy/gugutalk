@@ -3,6 +3,8 @@ package com.pidulgi.server.common.s3
 import com.pidulgi.server.common.s3.PresignedUrlsResponse.PresignedUrlResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
 import java.time.Duration
@@ -10,6 +12,7 @@ import java.time.Duration
 @Service
 class S3Service(
 
+    private val s3Client: S3Client,
     private val s3Presigner: S3Presigner,
 ) {
 
@@ -28,5 +31,24 @@ class S3Service(
 
         val url = s3Presigner.presignPutObject(presignRequest).url().toString()
         return PresignedUrlResponse(url, key)
+    }
+
+    fun delete(key: String) {
+        try {
+            val request = DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build()
+
+            s3Client.deleteObject(request)
+        } catch (e: Exception) {
+            throw RuntimeException("S3 삭제 실패: key = $key", e)
+        }
+    }
+
+    fun deleteAll(keys: List<String>) {
+        keys.forEach {
+            delete(it)
+        }
     }
 }

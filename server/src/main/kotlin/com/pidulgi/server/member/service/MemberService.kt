@@ -5,6 +5,7 @@ import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
 import com.pidulgi.server.common.auth.ACCESS_TOKEN_EXPIRE_HOURS
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.common.s3.S3Service
 import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateCommentRequest
@@ -41,6 +42,7 @@ class MemberService(
     private val blockRepository: BlockRepository,
     private val privateImageGrantRepository: PrivateImageGrantRepository,
     private val redisTemplate: StringRedisTemplate,
+    private val s3Service: S3Service,
 ) {
 
     @Value("\${s3.endpoint}")
@@ -233,18 +235,21 @@ class MemberService(
         val keepIds = requestImages.mapNotNull { it.imageId }.toSet()
 
         // 삭제
-        val deleteIds = images
-            .filter { it.id !in keepIds }
-            .map { it.id }
+        val deleteTargets = images.filter { it.id !in keepIds }
+        val deleteIds = deleteTargets.map { it.id }
+        val deleteKeys = deleteTargets.map { it.key }
 
         if (deleteIds.isNotEmpty()) {
             memberImageRepository.deleteAllByIdIn(deleteIds)
+            s3Service.deleteAll(deleteKeys)
         }
 
         // 순서 변경
-        requestImages.filter { it.imageId != null }.forEach {
-            existing[it.imageId]?.sortOrder = it.sortOrder
-        }
+        requestImages
+            .filter { it.imageId != null }
+            .forEach {
+                existing[it.imageId]?.sortOrder = it.sortOrder
+            }
 
         // 신규 추가
         val newImages = requestImages
@@ -258,9 +263,10 @@ class MemberService(
                 )
             }
 
-        if (newImages.isNotEmpty()) {
+        val savedNewImages = if (newImages.isNotEmpty()) {
             memberImageRepository.saveAll(newImages)
-        }
-        return (images + newImages).associateBy { it.id }
+        } else emptyList()
+
+        return (images + savedNewImages).associateBy { it.id }
     }
 }
