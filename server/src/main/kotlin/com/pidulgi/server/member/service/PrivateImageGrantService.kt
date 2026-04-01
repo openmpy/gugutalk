@@ -22,7 +22,7 @@ class PrivateImageGrantService(
 
     @Transactional
     fun open(granterId: Long, granteeId: Long) {
-        if (granteeId != granterId) {
+        if (granteeId == granterId) {
             throw CustomException("자기 자신에게 공개할 수 없습니다.")
         }
         if (privateImageGrantRepository.existsByGranterIdAndGranteeId(granterId, granteeId)) {

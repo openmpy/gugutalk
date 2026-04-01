@@ -23,7 +23,7 @@ class LikeService(
 
     @Transactional
     fun like(likerId: Long, likedId: Long): LikeCountResponse {
-        if (likedId != likerId) {
+        if (likedId == likerId) {
             throw CustomException("자기 자신에게 좋아요를 누를 수 없습니다.")
         }
         if (likeRepository.existsByLikerIdAndLikedId(likerId, likedId)) {

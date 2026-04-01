@@ -22,7 +22,7 @@ class BlockService(
 
     @Transactional
     fun add(blockerId: Long, blockedId: Long) {
-        if (blockedId != blockerId) {
+        if (blockedId == blockerId) {
             throw CustomException("자기 자신을 차단할 수 없습니다.")
         }
         if (blockRepository.existsByBlockerIdAndBlockedId(blockerId, blockedId)) {
