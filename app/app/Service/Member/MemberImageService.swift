@@ -21,4 +21,16 @@ final class MemberImageService {
         )
         .decodingWithErrorHandling(PresignedUrlsResponse.self)
     }
+
+    func getPrivateImages(
+        granterId: Int64
+    ) async throws -> MemberGetPrivateImagesResponse {
+        let url = "\(baseURL)/v1/members/private-images/\(granterId)"
+
+        return try await session.request(
+            url,
+            method: .get,
+        )
+        .decodingWithErrorHandling(MemberGetPrivateImagesResponse.self)
+    }
 }

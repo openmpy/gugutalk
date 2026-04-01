@@ -11,6 +11,7 @@ struct MemberProfileView: View {
     @State private var showMessage: Bool = false
     @State private var showBlock: Bool = false
     @State private var goReport: Bool = false
+    @State private var goPrivateImage: Bool = false
     @State private var message: String = ""
 
     @Namespace var namespace
@@ -18,10 +19,7 @@ struct MemberProfileView: View {
 
     var body: some View {
         VStack {
-            if vm.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let member = vm.member {
+            if let member = vm.member {
                 ScrollView {
                     MemberProfileImage(
                         images: member.images.compactMap { URL(string: $0.url) }
@@ -73,6 +71,18 @@ struct MemberProfileView: View {
                     }
 
                     Button {
+                        Task {
+                            let result = await vm.getPrivateImages(granterId: memberId)
+                            switch result {
+                            case .success():
+                                goPrivateImage = true
+                            case .failure(let error):
+                                presentToast(ToastValue(
+                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                                    message: error.localizedDescription
+                                ))
+                            }
+                        }
                     } label: {
                         Image(systemName: "photo.fill")
                             .font(.title)
@@ -81,6 +91,7 @@ struct MemberProfileView: View {
                             .glassEffect(.regular.interactive())
                             .glassEffectUnion(id: 1, namespace: namespace)
                     }
+                    .disabled(!vm.isPrivateImageGrantedByTarget)
 
                     Button {
                         showBlock = true
@@ -137,6 +148,11 @@ struct MemberProfileView: View {
         }
         .navigationDestination(isPresented: $goReport) {
             ReportView(memberId: memberId, nickname: vm.member?.nickname ?? "")
+        }
+        .navigationDestination(isPresented: $goPrivateImage) {
+            PrivateImageFullCoverTabView(
+                images: vm.privateImages.map { URL(string: $0.url)! }
+            )
         }
         .alert("쪽지", isPresented: $showMessage) {
             TextField("내용 입력", text: $message)

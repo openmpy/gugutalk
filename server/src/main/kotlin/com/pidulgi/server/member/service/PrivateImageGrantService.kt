@@ -1,8 +1,8 @@
 package com.pidulgi.server.member.service
 
 import com.pidulgi.server.common.dto.CursorResponse
-import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.dto.SettingResponse
+import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.entity.PrivateImageGrant
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
 import org.springframework.beans.factory.annotation.Value

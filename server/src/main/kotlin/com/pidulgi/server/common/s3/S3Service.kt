@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
 import java.time.Duration
 
@@ -31,6 +33,18 @@ class S3Service(
 
         val url = s3Presigner.presignPutObject(presignRequest).url().toString()
         return PresignedUrlResponse(url, key)
+    }
+
+    fun getPresignedUrl(key: String): String {
+        val getObjectRequest = GetObjectRequest.builder()
+            .bucket(bucket)
+            .key(key)
+            .build()
+        val presignRequest = GetObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofMinutes(10))
+            .getObjectRequest(getObjectRequest)
+            .build()
+        return s3Presigner.presignGetObject(presignRequest).url().toString()
     }
 
     fun delete(key: String) {
