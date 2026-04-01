@@ -58,7 +58,7 @@ struct MemberSearchView: View {
         .searchable(
             text: $keyword,
             placement: .navigationBarDrawer(displayMode: .always),
-            prompt: "닉네임 입력"
+            prompt: "닉네임 입력 (2자 이상)"
         )
         .onChange(of: keyword) { _, newValue in
             if newValue.isEmpty {
@@ -66,13 +66,7 @@ struct MemberSearchView: View {
             }
         }
         .onSubmit(of: .search) {
-            guard keyword.count >= 2 else {
-                presentToast(ToastValue(
-                    icon: Image(systemName: "exclamationmark.circle.fill").foregroundColor(.blue),
-                    message: "닉네임을 2자 이상 입력해주세요."
-                ))
-                return
-            }
+            guard keyword.count >= 2 else { return }
 
             Task {
                 let result = await vm.search(keyword: keyword)
