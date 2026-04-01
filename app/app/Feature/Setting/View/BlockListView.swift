@@ -28,7 +28,7 @@ struct BlockListView: View {
                                         let result = await vm.loadMoreBlockedMember()
                                         if case .failure(let error) = result {
                                             presentToast(ToastValue(
-                                                icon: Image(systemName: "xmark.circle.fill"),
+                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                                 message: error.localizedDescription
                                             ))
                                         }
@@ -44,7 +44,7 @@ struct BlockListView: View {
             let result = await vm.getBlockedMember()
             if case .failure(let error) = result {
                 presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill"),
+                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                     message: error.localizedDescription
                 ))
             }

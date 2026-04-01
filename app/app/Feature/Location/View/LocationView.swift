@@ -65,7 +65,7 @@ struct LocationView: View {
                                                 let result = await vm.loadMoreLocationMembers(gender: selectGender.uppercased())
                                                 if case .failure(let error) = result {
                                                     presentToast(ToastValue(
-                                                        icon: Image(systemName: "xmark.circle.fill"),
+                                                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                                         message: error.localizedDescription
                                                     ))
                                                 }
@@ -83,7 +83,7 @@ struct LocationView: View {
                             )
                             if case .failure(let error) = bumpResult {
                                     presentToast(ToastValue(
-                                        icon: Image(systemName: "xmark.circle.fill"),
+                                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                         message: error.localizedDescription
                                     ))
                                 }
@@ -93,7 +93,7 @@ struct LocationView: View {
                                 let result = await vm.getLocationMembers(gender: selectGender.uppercased())
                                 if case .failure(let error) = result {
                                     presentToast(ToastValue(
-                                        icon: Image(systemName: "xmark.circle.fill"),
+                                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                         message: error.localizedDescription
                                     ))
                                 }
@@ -109,7 +109,7 @@ struct LocationView: View {
                     let result = await vm.getLocationMembers(gender: selectGender.uppercased())
                     if case .failure(let error) = result {
                         presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill"),
+                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                             message: error.localizedDescription
                         ))
                     }
@@ -122,7 +122,7 @@ struct LocationView: View {
                     let result = await vm.getLocationMembers(gender: newValue.uppercased())
                     if case .failure(let error) = result {
                         presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill"),
+                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                             message: error.localizedDescription
                         ))
                     }

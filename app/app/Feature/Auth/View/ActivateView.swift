@@ -99,7 +99,7 @@ struct ActivateView: View {
                         isLoggedIn = true
                     case .failure(let error):
                         presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill"),
+                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                             message: error.localizedDescription
                         ))
                     }

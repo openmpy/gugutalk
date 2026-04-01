@@ -31,7 +31,7 @@ struct MyProfieView: View {
             let result = await vm.getMe()
             if case .failure(let error) = result {
                 presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill"),
+                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                     message: error.localizedDescription
                 ))
             }

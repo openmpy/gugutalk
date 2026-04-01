@@ -28,7 +28,7 @@ struct LikeListView: View {
                                         let result = await vm.loadMoreLikedMember()
                                         if case .failure(let error) = result {
                                             presentToast(ToastValue(
-                                                icon: Image(systemName: "xmark.circle.fill"),
+                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                                 message: error.localizedDescription
                                             ))
                                         }
@@ -44,7 +44,7 @@ struct LikeListView: View {
             let result = await vm.getLikedMember()
             if case .failure(let error) = result {
                 presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill"),
+                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                     message: error.localizedDescription
                 ))
             }

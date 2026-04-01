@@ -46,7 +46,7 @@ struct RecentView: View {
                                             let result = await vm.loadMoreGrantedMember(gender: selectGender.uppercased())
                                             if case .failure(let error) = result {
                                                 presentToast(ToastValue(
-                                                    icon: Image(systemName: "xmark.circle.fill"),
+                                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                                     message: error.localizedDescription
                                                 ))
                                             }
@@ -64,7 +64,7 @@ struct RecentView: View {
                             )
                             if case .failure(let error) = bumpResult {
                                 presentToast(ToastValue(
-                                    icon: Image(systemName: "xmark.circle.fill"),
+                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                     message: error.localizedDescription
                                 ))
                             }
@@ -74,7 +74,7 @@ struct RecentView: View {
                             let result = await vm.getRecentMembers(gender: selectGender.uppercased())
                             if case .failure(let error) = result {
                                 presentToast(ToastValue(
-                                    icon: Image(systemName: "xmark.circle.fill"),
+                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                     message: error.localizedDescription
                                 ))
                             }
@@ -84,11 +84,11 @@ struct RecentView: View {
             }
             .task {
                 try? await locationManager.fetchLocation()
-                
+
                 let result = await vm.getRecentMembers(gender: selectGender.uppercased())
                 if case .failure(let error) = result {
                     presentToast(ToastValue(
-                        icon: Image(systemName: "xmark.circle.fill"),
+                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                         message: error.localizedDescription
                     ))
                 }
@@ -98,7 +98,7 @@ struct RecentView: View {
                     let result = await vm.getRecentMembers(gender: newValue.uppercased())
                     if case .failure(let error) = result {
                         presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill"),
+                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                             message: error.localizedDescription
                         ))
                     }
@@ -138,13 +138,13 @@ struct RecentView: View {
                         switch result {
                         case .success:
                             presentToast(ToastValue(
-                                icon: Image(systemName: "checkmark.circle.fill"),
+                                icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
                                 message: "코멘트를 작성하셨습니다."
                             ))
                             comment = ""
                         case .failure(let error):
                             presentToast(ToastValue(
-                                icon: Image(systemName: "xmark.circle.fill"),
+                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                 message: error.localizedDescription
                             ))
                         }

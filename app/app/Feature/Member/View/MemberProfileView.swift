@@ -47,7 +47,7 @@ struct MemberProfileView: View {
                             let result = await vm.toggleLike()
                             if case .failure(let error) = result {
                                 presentToast(ToastValue(
-                                    icon: Image(systemName: "xmark.circle.fill"),
+                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                     message: error.localizedDescription
                                 ))
                             }
@@ -99,7 +99,7 @@ struct MemberProfileView: View {
             let result = await vm.getMember(memberId: memberId)
             if case .failure(let error) = result {
                 presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill"),
+                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                     message: error.localizedDescription
                 ))
             }
@@ -122,7 +122,7 @@ struct MemberProfileView: View {
                             let result = await vm.togglePrivateImageGrant()
                             if case .failure(let error) = result {
                                 presentToast(ToastValue(
-                                    icon: Image(systemName: "xmark.circle.fill"),
+                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                     message: error.localizedDescription
                                 ))
                             }
@@ -152,7 +152,7 @@ struct MemberProfileView: View {
                     let result = await vm.toggleBlock()
                     if case .failure(let error) = result {
                         presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill"),
+                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                             message: error.localizedDescription
                         ))
                     }

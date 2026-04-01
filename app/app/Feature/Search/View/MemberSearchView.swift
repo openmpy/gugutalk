@@ -40,7 +40,7 @@ struct MemberSearchView: View {
                                         let result = await vm.loadMore(keyword: keyword)
                                         if case .failure(let error) = result {
                                             presentToast(ToastValue(
-                                                icon: Image(systemName: "xmark.circle.fill"),
+                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                                                 message: error.localizedDescription
                                             ))
                                         }
@@ -68,7 +68,7 @@ struct MemberSearchView: View {
         .onSubmit(of: .search) {
             guard keyword.count >= 2 else {
                 presentToast(ToastValue(
-                    icon: Image(systemName: "exclamationmark.circle.fill"),
+                    icon: Image(systemName: "exclamationmark.circle.fill").foregroundColor(.blue),
                     message: "닉네임을 2자 이상 입력해주세요."
                 ))
                 return
@@ -78,7 +78,7 @@ struct MemberSearchView: View {
                 let result = await vm.search(keyword: keyword)
                 if case .failure(let error) = result {
                     presentToast(ToastValue(
-                        icon: Image(systemName: "xmark.circle.fill"),
+                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                         message: error.localizedDescription
                     ))
                 }
