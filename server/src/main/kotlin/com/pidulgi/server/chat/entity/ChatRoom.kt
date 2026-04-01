@@ -13,11 +13,14 @@ class ChatRoom(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "last_message_id")
+    var lastMessageId: Long? = null,
 
     @Column(name = "last_message_at")
     val lastMessageAt: LocalDateTime? = null,
+
+    @Column(name = "created_at", nullable = false)
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "deleted_at")
     val deletedAt: LocalDateTime? = null,

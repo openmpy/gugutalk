@@ -12,8 +12,8 @@ class Message(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @Column(name = "room_id", nullable = false)
-    val roomId: Long,
+    @Column(name = "chat_room_id", nullable = false)
+    val chatRoomId: Long,
 
     @Column(name = "sender_id", nullable = false)
     val senderId: Long,
