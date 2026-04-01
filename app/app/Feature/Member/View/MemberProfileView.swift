@@ -7,6 +7,8 @@ struct MemberProfileView: View {
 
     @StateObject private var vm = MemberProfileViewModel()
 
+    @Environment(\.presentToast) var presentToast
+
     @State private var showMenu: Bool = false
     @State private var showMessage: Bool = false
     @State private var showBlock: Bool = false
@@ -15,7 +17,6 @@ struct MemberProfileView: View {
     @State private var message: String = ""
 
     @Namespace var namespace
-    @Environment(\.presentToast) var presentToast
 
     var body: some View {
         VStack {
@@ -106,6 +107,7 @@ struct MemberProfileView: View {
                 }
             }
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .task {
             let result = await vm.getMember(memberId: memberId)
             if case .failure(let error) = result {
