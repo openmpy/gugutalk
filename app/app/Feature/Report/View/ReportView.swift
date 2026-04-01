@@ -1,7 +1,16 @@
 import SwiftUI
 import PhotosUI
+import Toasts
 
 struct ReportView: View {
+
+    let memberId: Int64
+    let nickname: String
+
+    @StateObject private var vm = ReportViewModel()
+
+    @Environment(\.presentToast) var presentToast
+    @Environment(\.dismiss) var dismiss
 
     @State private var selectType: ReportType = .abuse
     @State private var images: [PhotosPickerItem] = []
@@ -77,7 +86,27 @@ struct ReportView: View {
         }
         .safeAreaInset(edge: .bottom) {
             Button {
-
+                Task {
+                    let result = await vm.create(
+                        reportedId: memberId,
+                        images: selectImages,
+                        type: selectType.rawValue.uppercased(),
+                        reason: reason
+                    )
+                    switch result {
+                    case .success:
+                        presentToast(ToastValue(
+                            icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
+                            message: "신고가 접수되었습니다."
+                        ))
+                        dismiss()
+                    case .failure(let error):
+                        presentToast(ToastValue(
+                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                            message: error.localizedDescription
+                        ))
+                    }
+                }
             } label: {
                 Text("접수하기")
                     .font(.default.bold())
@@ -86,13 +115,14 @@ struct ReportView: View {
                     .padding(.vertical)
                     .glassEffect(.regular.tint(Color(.red)).interactive())
             }
+            .disabled(vm.isLoading)
             .padding()
         }
-        .navigationTitle("신고")
+        .navigationTitle("신고 (\(nickname))")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 #Preview {
-    ReportView()
+    ReportView(memberId: 1, nickname: "홍길동")
 }

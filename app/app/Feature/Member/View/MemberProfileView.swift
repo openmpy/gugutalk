@@ -136,7 +136,7 @@ struct MemberProfileView: View {
             }
         }
         .navigationDestination(isPresented: $goReport) {
-            ReportView()
+            ReportView(memberId: memberId, nickname: vm.member?.nickname ?? "")
         }
         .alert("쪽지", isPresented: $showMessage) {
             TextField("내용 입력", text: $message)

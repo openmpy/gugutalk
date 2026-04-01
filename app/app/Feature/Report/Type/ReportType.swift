@@ -1,14 +1,14 @@
-enum ReportType: CaseIterable, Identifiable {
-    
+enum ReportType: String, CaseIterable, Identifiable {
+
     case abuse
     case spam
     case minor
     case sexual
     case fake
     case etc
-    
+
     var id: Self { self }
-    
+
     var title: String {
         switch self {
         case .abuse: return "욕설 / 비방"
