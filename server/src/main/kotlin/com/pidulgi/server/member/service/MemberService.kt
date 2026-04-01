@@ -78,6 +78,7 @@ class MemberService(
             member.nickname,
             member.gender,
             LocalDate.now().year - member.birthYear,
+            member.birthYear,
             member.bio,
             0
         )

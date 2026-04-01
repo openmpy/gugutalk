@@ -6,6 +6,7 @@ struct MemberGetMeResponse: Codable {
     let nickname: String
     let gender: String
     let age: Int
+    let birthYear: Int
     let bio: String?
     let likes: Int
 }

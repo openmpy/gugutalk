@@ -46,10 +46,9 @@ struct ImagePicker: View {
                                 do {
                                     if let data = try await item.loadTransferable(type: Data.self),
                                        let uiImage = UIImage(data: data) {
-                                        let identifiable = IdentifiableImage(image: uiImage)
-                                        if !selectImages.contains(where: { $0.id == identifiable.id }),
-                                           selectImages.count < maxImages {
-                                            selectImages.append(identifiable)
+                                        
+                                        if selectImages.count < maxImages {
+                                            selectImages.append(IdentifiableImage(image: uiImage))
                                         }
                                     }
                                 } catch {
