@@ -2,7 +2,8 @@ package com.pidulgi.server.member.dto.request
 
 data class MemberUpdateProfileRequest(
 
-    val images: List<ProfileImageUpdate> = emptyList(),
+    val publicImages: List<ProfileImageUpdate> = emptyList(),
+    val privateImages: List<ProfileImageUpdate> = emptyList(),
     val nickname: String,
     val birthYear: Int,
     val bio: String? = null,

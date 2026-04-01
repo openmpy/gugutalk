@@ -9,6 +9,7 @@ import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateCommentRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateProfileRequest
+import com.pidulgi.server.member.dto.request.MemberUpdateProfileRequest.ProfileImageUpdate
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.dto.response.MemberGetResponse
@@ -144,44 +145,14 @@ class MemberService(
             throw CustomException("이미 사용 중인 닉네임입니다.")
         }
 
-        val existingImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
-            member.id, ImageType.PUBLIC
-        )
-        val existingImageMap = existingImages.associateBy { it.id }
+        val publicImages = updateImages(member.id, request.publicImages, ImageType.PUBLIC)
+        updateImages(member.id, request.privateImages, ImageType.PRIVATE)
 
-        val keepImageIds = request.images.mapNotNull { it.imageId }.toSet()
+        val firstImage = request.publicImages.minByOrNull { it.sortOrder }
 
-        val toDeleteIds = existingImages
-            .filter { it.id !in keepImageIds }
-            .map { it.id }
-        if (toDeleteIds.isNotEmpty()) {
-            memberImageRepository.deleteAllByIdIn(toDeleteIds)
-        }
-
-        request.images.filter { it.imageId != null }.forEach { update ->
-            existingImageMap[update.imageId]?.let { image ->
-                image.sortOrder = update.sortOrder
-            }
-        }
-
-        val newImages = request.images
-            .filter { it.imageId == null && it.key != null }
-            .map {
-                MemberImage(
-                    memberId = member.id,
-                    key = it.key!!,
-                    type = ImageType.PUBLIC,
-                    sortOrder = it.sortOrder
-                )
-            }
-        if (newImages.isNotEmpty()) {
-            memberImageRepository.saveAll(newImages)
-        }
-
-        val firstImage = request.images.minByOrNull { it.sortOrder }
         val profileKey = when {
             firstImage == null -> null
-            firstImage.imageId != null -> existingImageMap[firstImage.imageId]?.key
+            firstImage.imageId != null -> publicImages[firstImage.imageId]?.key
             else -> firstImage.key
         }
 
@@ -237,4 +208,46 @@ class MemberService(
 
     private fun getMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)
         ?: throw CustomException("존재하지 않는 회원입니다."))
+
+    private fun updateImages(
+        memberId: Long,
+        requestImages: List<ProfileImageUpdate>,
+        type: ImageType
+    ): Map<Long, MemberImage> {
+        val images = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(memberId, type)
+
+        val existing = images.associateBy { it.id }
+        val keepIds = requestImages.mapNotNull { it.imageId }.toSet()
+
+        // 삭제
+        val deleteIds = images
+            .filter { it.id !in keepIds }
+            .map { it.id }
+
+        if (deleteIds.isNotEmpty()) {
+            memberImageRepository.deleteAllByIdIn(deleteIds)
+        }
+
+        // 순서 변경
+        requestImages.filter { it.imageId != null }.forEach {
+            existing[it.imageId]?.sortOrder = it.sortOrder
+        }
+
+        // 신규 추가
+        val newImages = requestImages
+            .filter { it.imageId == null && it.key != null }
+            .map {
+                MemberImage(
+                    memberId = memberId,
+                    key = it.key!!,
+                    type = type,
+                    sortOrder = it.sortOrder
+                )
+            }
+
+        if (newImages.isNotEmpty()) {
+            memberImageRepository.saveAll(newImages)
+        }
+        return (images + newImages).associateBy { it.id }
+    }
 }
