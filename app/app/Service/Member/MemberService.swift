@@ -45,4 +45,27 @@ final class MemberService {
         )
         .validateWithErrorHandling()
     }
+
+    func search(
+        keyword: String,
+        cursorId: Int64?,
+        size: Int = 20
+    ) async throws -> CursorResponse<MemberDiscoveryResponse> {
+        let url = "\(baseURL)/v1/members/search"
+
+        var params: Parameters = [
+            "keyword": keyword,
+            "size": size
+        ]
+        if let cursorId {
+            params["cursorId"] = cursorId
+        }
+
+        return try await session.request(
+            url,
+            method: .get,
+            parameters: params
+        )
+        .decodingWithErrorHandling(CursorResponse<MemberDiscoveryResponse>.self)
+    }
 }

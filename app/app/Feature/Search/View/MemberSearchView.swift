@@ -1,29 +1,58 @@
 import SwiftUI
+import Toasts
 
 struct MemberSearchView: View {
+
+    @StateObject private var vm = MemberSearchViewModel()
+
+    @Environment(\.presentToast) var presentToast
 
     @State private var keyword: String = ""
 
     var body: some View {
         VStack {
-            ScrollView {
-                LazyVStack {
-                    ForEach(0..<10) { _ in
-                        MemberRow(
-                            profileUrl: nil,
-                            nickname: "닉네임",
-                            updatedAt: "2026-03-30T12:00:00.0000",
-                            content: "코멘트",
-                            gender: "MALE",
-                            age: 20,
-                            likes: 100,
-                            distance: 12.34
-                        )
+            if vm.members.isEmpty && !keyword.isEmpty && !vm.isLoading {
+                Spacer()
+                Text("검색 결과가 없습니다.")
+                    .foregroundColor(.secondary)
+                Spacer()
+            } else {
+                ScrollView {
+                    LazyVStack {
+                        ForEach(vm.members) { member in
+                            NavigationLink {
+                                MemberProfileView()
+                            } label: {
+                                MemberRow(
+                                    profileUrl: member.profileUrl,
+                                    nickname: member.nickname,
+                                    updatedAt: member.updatedAt,
+                                    content: member.comment ?? "",
+                                    gender: member.gender,
+                                    age: member.age,
+                                    likes: member.likes,
+                                    distance: member.distance
+                                )
+                            }
+                            .onAppear {
+                                if member.id == vm.members.last?.id {
+                                    Task {
+                                        let result = await vm.loadMore(keyword: keyword)
+                                        if case .failure(let error) = result {
+                                            presentToast(ToastValue(
+                                                icon: Image(systemName: "xmark.circle.fill"),
+                                                message: error.localizedDescription
+                                            ))
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-            }
-            .onTapGesture {
-                hideKeyboard()
+                .onTapGesture {
+                    hideKeyboard()
+                }
             }
         }
         .searchable(
@@ -31,6 +60,25 @@ struct MemberSearchView: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "닉네임 입력"
         )
+        .onSubmit(of: .search) {
+            guard keyword.count >= 2 else {
+                presentToast(ToastValue(
+                    icon: Image(systemName: "exclamationmark.circle.fill"),
+                    message: "닉네임을 2자 이상 입력해주세요."
+                ))
+                return
+            }
+            
+            Task {
+                let result = await vm.search(keyword: keyword)
+                if case .failure(let error) = result {
+                    presentToast(ToastValue(
+                        icon: Image(systemName: "xmark.circle.fill"),
+                        message: error.localizedDescription
+                    ))
+                }
+            }
+        }
         .navigationTitle("회원 검색")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
