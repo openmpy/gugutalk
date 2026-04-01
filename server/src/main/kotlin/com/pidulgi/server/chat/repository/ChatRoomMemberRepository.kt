@@ -3,4 +3,7 @@ package com.pidulgi.server.chat.repository
 import com.pidulgi.server.chat.entity.ChatRoomMember
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface ChatRoomMemberRepository : JpaRepository<ChatRoomMember, Long>
+interface ChatRoomMemberRepository : JpaRepository<ChatRoomMember, Long> {
+
+    fun findByMemberId(memberId: Long): ChatRoomMember?
+}
