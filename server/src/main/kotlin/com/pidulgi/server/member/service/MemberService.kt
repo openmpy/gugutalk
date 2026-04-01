@@ -9,11 +9,15 @@ import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
+import com.pidulgi.server.member.dto.response.MemberGetResponse
 import com.pidulgi.server.member.dto.response.MemberImageResponse
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.member.repository.PrivateImageGrantRepository
+import com.pidulgi.server.social.repository.BlockRepository
+import com.pidulgi.server.social.repository.LikeRepository
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.springframework.beans.factory.annotation.Value
@@ -29,6 +33,9 @@ class MemberService(
 
     private val memberRepository: MemberRepository,
     private val memberImageRepository: MemberImageRepository,
+    private val likeRepository: LikeRepository,
+    private val blockRepository: BlockRepository,
+    private val privateImageGrantRepository: PrivateImageGrantRepository,
     private val redisTemplate: StringRedisTemplate,
 ) {
 
@@ -57,6 +64,37 @@ class MemberService(
             LocalDate.now().year - member.birthYear,
             member.bio,
             0
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getMember(memberId: Long, targetId: Long): MemberGetResponse {
+        val member = (memberRepository.findByIdOrNull(targetId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+
+        val images = memberImageRepository
+            .findByMemberIdAndTypeOrderBySortOrder(member.id, ImageType.PUBLIC)
+            .map { MemberImageResponse(it.id, it.sortOrder, endpoint + it.key) }
+
+        val isLiked = likeRepository.existsByLikerIdAndLikedId(memberId, targetId)
+        val isBlocked = blockRepository.existsByBlockerIdAndBlockedId(memberId, targetId)
+        val isPrivateImageGranted = privateImageGrantRepository.existsByGranterIdAndGranteeId(
+            memberId, targetId
+        )
+        val likes = likeRepository.countByLikedId(targetId)
+
+        return MemberGetResponse(
+            memberId = member.id,
+            images = images,
+            nickname = member.nickname,
+            gender = member.gender,
+            age = LocalDate.now().year - member.birthYear,
+            bio = member.bio,
+            likes = likes,
+            updatedAt = member.updatedAt,
+            isLiked = isLiked,
+            isBlocked = isBlocked,
+            isPrivateImageGranted = isPrivateImageGranted,
         )
     }
 

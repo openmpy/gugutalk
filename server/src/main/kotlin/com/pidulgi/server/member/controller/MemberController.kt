@@ -6,6 +6,7 @@ import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
+import com.pidulgi.server.member.dto.response.MemberGetResponse
 import com.pidulgi.server.member.service.MemberService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -16,6 +17,15 @@ class MemberController(
 
     private val memberService: MemberService,
 ) {
+
+    @GetMapping("/v1/members/{targetId}")
+    fun getMember(
+        @Login memberId: Long,
+        @PathVariable targetId: Long,
+    ): ResponseEntity<MemberGetResponse> {
+        val response = memberService.getMember(memberId, targetId)
+        return ResponseEntity.ok(response)
+    }
 
     @GetMapping("/v1/members/me")
     fun getMe(
