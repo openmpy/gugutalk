@@ -12,4 +12,5 @@ struct MemberGetResponse: Codable {
     let isLiked: Bool
     let isBlocked: Bool
     let isPrivateImageGranted: Bool
+    let isPrivateImageGrantedByTarget: Bool
 }

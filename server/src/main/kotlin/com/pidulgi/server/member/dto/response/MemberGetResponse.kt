@@ -17,4 +17,5 @@ data class MemberGetResponse(
     val isLiked: Boolean,
     val isBlocked: Boolean,
     val isPrivateImageGranted: Boolean,
+    val isPrivateImageGrantedByTarget: Boolean,
 )

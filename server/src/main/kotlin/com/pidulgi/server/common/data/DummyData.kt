@@ -65,7 +65,7 @@ class DummyDataInit {
                     }
                     Member(
                         uuid = UUID.randomUUID().toString(),
-                        phoneNumber = "010000%04d".format(i),
+                        phoneNumber = "0100000%04d".format(i),
                         password = "1234",
                         nickname = "닉네임$i",
                         gender = if (i % 2 == 0) Gender.MALE else Gender.FEMALE,

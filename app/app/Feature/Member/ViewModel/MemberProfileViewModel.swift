@@ -13,6 +13,7 @@ final class MemberProfileViewModel: ObservableObject {
     @Published var isLiked: Bool = false
     @Published var isBlocked: Bool = false
     @Published var isPrivateImageGranted: Bool = false
+    @Published var isPrivateImageGrantedByTarget: Bool = false
 
     func getMember(memberId: Int64) async -> Result<Void, Error> {
         guard !isLoading else { return .failure(CancellationError()) }
@@ -26,6 +27,7 @@ final class MemberProfileViewModel: ObservableObject {
             isLiked = response.isLiked
             isBlocked = response.isBlocked
             isPrivateImageGranted = response.isPrivateImageGranted
+            isPrivateImageGrantedByTarget = response.isPrivateImageGrantedByTarget
             return .success(())
         } catch {
             return .failure(error)

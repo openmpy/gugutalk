@@ -81,6 +81,9 @@ class MemberService(
         val isPrivateImageGranted = privateImageGrantRepository.existsByGranterIdAndGranteeId(
             memberId, targetId
         )
+        val isPrivateImageGrantedByTarget = privateImageGrantRepository.existsByGranterIdAndGranteeId(
+            targetId, memberId
+        )
         val likes = likeRepository.countByLikedId(targetId)
         val distance = memberRepository.getDistanceBetween(memberId, targetId)
 
@@ -97,6 +100,7 @@ class MemberService(
             isLiked = isLiked,
             isBlocked = isBlocked,
             isPrivateImageGranted = isPrivateImageGranted,
+            isPrivateImageGrantedByTarget = isPrivateImageGrantedByTarget,
         )
     }
 

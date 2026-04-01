@@ -77,7 +77,7 @@ struct MemberProfileView: View {
                         Image(systemName: "photo.fill")
                             .font(.title)
                             .frame(width: 60, height: 60)
-                            .foregroundColor(vm.isPrivateImageGranted ? .green : .gray)
+                            .foregroundColor(vm.isPrivateImageGrantedByTarget ? .green : .gray)
                             .glassEffect(.regular.interactive())
                             .glassEffectUnion(id: 1, namespace: namespace)
                     }
