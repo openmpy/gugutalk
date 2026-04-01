@@ -33,12 +33,15 @@ final class MemberService {
         .validateWithErrorHandling()
     }
 
-    func bump() async throws {
+    func bump(latitude: Double?, longitude: Double?) async throws {
         let url = "\(baseURL)/v1/members/me/bump"
+        let body = MemberBumpRequest(latitude: latitude, longitude: longitude)
 
         try await session.request(
             url,
-            method: .put
+            method: .put,
+            parameters: body,
+            encoder: JSONParameterEncoder.default
         )
         .validateWithErrorHandling()
     }

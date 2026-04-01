@@ -2,44 +2,43 @@ import SwiftUI
 import Combine
 
 @MainActor
-final class RecentViewModel: ObservableObject {
+final class LocationViewModel: ObservableObject {
 
-    private let recentService = RecentService.shared
+    private let locationService = LocationService.shared
     private let memberService = MemberService.shared
 
     @Published var isLoading: Bool = false
     @Published var hasNext: Bool = true
     @Published var members: [MemberDiscoveryResponse] = []
 
-    private var cursorId: Int64?
-    private var cursorDateAt: String?
+    private var page: Int = 0
+    private let size: Int = 20
 
-    func getRecentMembers(gender: String) async -> Result<Void, Error> {
+    func getLocationMembers(gender: String) async -> Result<Void, Error> {
+        page = 0
         hasNext = true
 
         guard !isLoading else { return .success(()) }
-        guard hasNext else { return .success(()) }
 
         isLoading = true
         defer { isLoading = false }
-
+        
         do {
-            let response = try await recentService.getRecentMembers(
+            let response = try await locationService.getLocationMembers(
                 gender: gender,
-                cursorId: nil,
-                cursorDateAt: nil
+                page: 0,
+                size: size
             )
             members = response.payload
-            cursorId = response.nextId
-            cursorDateAt = response.nextDateAt
             hasNext = response.hasNext
+            page = 1
             return .success(())
         } catch {
             return .failure(error)
         }
     }
-
-    func loadMoreGrantedMember(gender: String) async -> Result<Void, Error> {
+    
+    func loadMoreLocationMembers(gender: String) async -> Result<Void, Error> {
         guard !isLoading else { return .success(()) }
         guard hasNext else { return .success(()) }
 
@@ -47,15 +46,14 @@ final class RecentViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let response = try await recentService.getRecentMembers(
+            let response = try await locationService.getLocationMembers(
                 gender: gender,
-                cursorId: cursorId,
-                cursorDateAt: cursorDateAt
+                page: page,
+                size: size
             )
             members.append(contentsOf: response.payload)
-            cursorId = response.nextId
-            cursorDateAt = response.nextDateAt
             hasNext = response.hasNext
+            page += 1
             return .success(())
         } catch {
             return .failure(error)

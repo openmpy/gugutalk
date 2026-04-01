@@ -4,6 +4,7 @@ import Toasts
 struct RecentView: View {
 
     @StateObject private var vm = RecentViewModel()
+    @StateObject private var locationManager = LocationManager()
 
     @Environment(\.presentToast) var presentToast
 
@@ -57,13 +58,18 @@ struct RecentView: View {
                     }
                     .refreshable {
                         Task {
-                            let bumpResult = await vm.bump()
+                            let bumpResult = await vm.bump(
+                                latitude: locationManager.latitude,
+                                longitude: locationManager.longitude
+                            )
                             if case .failure(let error) = bumpResult {
                                 presentToast(ToastValue(
                                     icon: Image(systemName: "xmark.circle.fill"),
                                     message: error.localizedDescription
                                 ))
                             }
+
+                            try? await locationManager.fetchLocation()
 
                             let result = await vm.getRecentMembers(gender: selectGender.uppercased())
                             if case .failure(let error) = result {
@@ -77,6 +83,8 @@ struct RecentView: View {
                 }
             }
             .task {
+                try? await locationManager.fetchLocation()
+                
                 let result = await vm.getRecentMembers(gender: selectGender.uppercased())
                 if case .failure(let error) = result {
                     presentToast(ToastValue(

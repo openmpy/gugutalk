@@ -12,4 +12,11 @@ interface MemberCustomRepository {
         cursorDate: LocalDateTime?,
         size: Int
     ): List<MemberItemResponse>
+
+    fun findLocationMembersByPage(
+        memberId: Long,
+        gender: String,
+        page: Int,
+        size: Int
+    ): List<MemberItemResponse>
 }

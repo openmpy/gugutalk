@@ -5,7 +5,6 @@ import com.pidulgi.server.member.repository.MemberCustomRepository
 import com.pidulgi.server.member.repository.dto.MemberItemResponse
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Repository
@@ -53,6 +52,37 @@ class MemberCustomRepositoryImpl(
                 setParameter("cursorDate", cursorDate)
                 setParameter("cursorId", cursorId)
             }
+        }
+        @Suppress("UNCHECKED_CAST")
+        return (query.resultList as List<Array<Any?>>).map(::toMemberItemResponse)
+    }
+
+    override fun findLocationMembersByPage(
+        memberId: Long,
+        gender: String,
+        page: Int,
+        size: Int
+    ): List<MemberItemResponse> {
+        val sql = """
+            SELECT m.id, m.nickname, m.gender, m.birth_year, m.bio, m.comment, m.profile_key, m.updated_at,
+                   ST_Distance(m.location, req.location) / 1000.0 AS distance,
+                   (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
+            FROM member m
+            CROSS JOIN (SELECT location FROM member WHERE id = :requesterId) req
+            WHERE m.deleted_at IS NULL
+              AND m.id != :requesterId
+              AND m.location IS NOT NULL
+              AND req.location IS NOT NULL
+              AND m.updated_at >= NOW() - INTERVAL '24 hours'
+              AND (:gender = 'ALL' OR m.gender = :gender)
+            ORDER BY ST_Distance(m.location, req.location), m.id
+            LIMIT :size OFFSET :offset
+        """.trimIndent()
+        val query = entityManager.createNativeQuery(sql).apply {
+            setParameter("requesterId", memberId)
+            setParameter("gender", gender)
+            setParameter("size", size)
+            setParameter("offset", page * size)
         }
         @Suppress("UNCHECKED_CAST")
         return (query.resultList as List<Array<Any?>>).map(::toMemberItemResponse)

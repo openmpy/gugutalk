@@ -4,7 +4,7 @@ import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
 import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
 import com.pidulgi.server.common.auth.ACCESS_TOKEN_EXPIRE_HOURS
 import com.pidulgi.server.common.exception.CustomException
-import com.pidulgi.server.member.dto.request.MemberUpdateLocationRequest
+import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.dto.response.MemberImageResponse
@@ -76,21 +76,14 @@ class MemberService(
     }
 
     @Transactional
-    fun bump(memberId: Long) {
-        val member = getMember(memberId)
-        member.bump()
-    }
-
-    @Transactional
-    fun updateLocation(memberId: Long, request: MemberUpdateLocationRequest) {
+    fun bump(memberId: Long, request: MemberBumpRequest) {
         val member = getMember(memberId)
         val point = request.longitude?.let { longitude ->
             request.latitude?.let { latitude ->
                 GeometryFactory().createPoint(Coordinate(longitude, latitude))
             }
         }
-
-        member.updateLocation(point)
+        member.bump(point)
     }
 
     private fun getMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)

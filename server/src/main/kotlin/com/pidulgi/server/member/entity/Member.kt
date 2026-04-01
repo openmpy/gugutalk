@@ -67,7 +67,8 @@ class Member(
         this.deletedAt = LocalDateTime.now()
     }
 
-    fun bump() {
+    fun bump(location: Point?) {
+        this.location = location
         this.updatedAt = LocalDateTime.now()
     }
 
