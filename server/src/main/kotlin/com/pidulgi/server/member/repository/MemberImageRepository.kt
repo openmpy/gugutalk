@@ -10,4 +10,6 @@ interface MemberImageRepository : JpaRepository<MemberImage, Long> {
         memberId: Long,
         type: ImageType
     ): List<MemberImage>
+
+    fun deleteAllByIdIn(ids: List<Long>)
 }

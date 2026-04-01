@@ -8,11 +8,13 @@ import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateCommentRequest
+import com.pidulgi.server.member.dto.request.MemberUpdateProfileRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.dto.response.MemberGetResponse
 import com.pidulgi.server.member.dto.response.MemberImageResponse
 import com.pidulgi.server.member.entity.Member
+import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
@@ -132,6 +134,58 @@ class MemberService(
             }
         }
         member.bump(point)
+    }
+
+    @Transactional
+    fun updateProfile(memberId: Long, request: MemberUpdateProfileRequest) {
+        val member = getMember(memberId)
+
+        if (member.nickname != request.nickname && memberRepository.existsByNickname(request.nickname)) {
+            throw CustomException("이미 사용 중인 닉네임입니다.")
+        }
+
+        val existingImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
+            member.id, ImageType.PUBLIC
+        )
+        val existingImageMap = existingImages.associateBy { it.id }
+
+        val keepImageIds = request.images.mapNotNull { it.imageId }.toSet()
+
+        val toDeleteIds = existingImages
+            .filter { it.id !in keepImageIds }
+            .map { it.id }
+        if (toDeleteIds.isNotEmpty()) {
+            memberImageRepository.deleteAllByIdIn(toDeleteIds)
+        }
+
+        request.images.filter { it.imageId != null }.forEach { update ->
+            existingImageMap[update.imageId]?.let { image ->
+                image.sortOrder = update.sortOrder
+            }
+        }
+
+        val newImages = request.images
+            .filter { it.imageId == null && it.key != null }
+            .map {
+                MemberImage(
+                    memberId = member.id,
+                    key = it.key!!,
+                    type = ImageType.PUBLIC,
+                    sortOrder = it.sortOrder
+                )
+            }
+        if (newImages.isNotEmpty()) {
+            memberImageRepository.saveAll(newImages)
+        }
+
+        val firstImage = request.images.minByOrNull { it.sortOrder }
+        val profileKey = when {
+            firstImage == null -> null
+            firstImage.imageId != null -> existingImageMap[firstImage.imageId]?.key
+            else -> firstImage.key
+        }
+
+        member.updateProfile(profileKey, request.nickname, request.birthYear, request.bio)
     }
 
     @Transactional

@@ -81,4 +81,12 @@ class Member(
         this.comment = comment
         this.updatedAt = LocalDateTime.now()
     }
+
+    fun updateProfile(profileKey: String?, nickname: String, birthYear: Int, bio: String?) {
+        this.profileKey = profileKey
+        this.nickname = nickname
+        this.birthYear = birthYear
+        this.bio = bio
+        this.updatedAt = LocalDateTime.now()
+    }
 }

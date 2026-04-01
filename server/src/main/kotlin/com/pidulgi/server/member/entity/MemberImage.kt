@@ -23,7 +23,7 @@ class MemberImage(
     val type: ImageType,
 
     @Column(name = "sort_order", nullable = false)
-    val sortOrder: Int,
+    var sortOrder: Int,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
