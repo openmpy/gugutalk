@@ -5,6 +5,7 @@ import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
 import com.pidulgi.server.common.auth.ACCESS_TOKEN_EXPIRE_HOURS
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
@@ -13,7 +14,6 @@ import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
-import com.pidulgi.server.member.repository.dto.MemberItemResponse
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.springframework.beans.factory.annotation.Value
@@ -90,16 +90,33 @@ class MemberService(
 
     @Transactional(readOnly = true)
     fun searchByNickname(
-        requesterId: Long,
+        memberId: Long,
         keyword: String,
         cursorId: Long?,
         size: Int
-    ): CursorResponse<MemberItemResponse> {
+    ): CursorResponse<MemberDiscoveryResponse> {
         if (keyword.length < 2) {
             throw CustomException("검색어는 2자 이상이어야 합니다.")
         }
 
-        val result = memberRepository.searchByNickname(requesterId, keyword, cursorId, size + 1)
+        val result = memberRepository.searchByNickname(
+            memberId,
+            keyword,
+            cursorId,
+            size + 1
+        ).map {
+            MemberDiscoveryResponse(
+                memberId = it.memberId,
+                profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
+                nickname = it.nickname,
+                gender = it.gender,
+                age = LocalDate.now().year - it.birthYear,
+                comment = it.comment,
+                distance = it.distance,
+                likes = it.likes,
+                updatedAt = it.updatedAt,
+            )
+        }
 
         val hasNext = result.size > size
         val items = if (hasNext) result.dropLast(1) else result
