@@ -129,10 +129,30 @@ struct RecentView: View {
             }
             .alert("코멘트", isPresented: $showComment) {
                 TextField("내용 입력", text: $comment)
-                Button("작성", role: .confirm) {
+
+                Button("작성") {
                     if comment.isEmpty { return }
+
+                    Task {
+                        let result = await vm.updateComment(comment: comment)
+                        switch result {
+                        case .success:
+                            presentToast(ToastValue(
+                                icon: Image(systemName: "checkmark.circle.fill"),
+                                message: "코멘트를 작성하셨습니다."
+                            ))
+                            comment = ""
+                        case .failure(let error):
+                            presentToast(ToastValue(
+                                icon: Image(systemName: "xmark.circle.fill"),
+                                message: error.localizedDescription
+                            ))
+                        }
+                    }
                 }
-                Button("취소", role: .cancel) { }
+                Button("취소", role: .cancel) {
+                    comment = ""
+                }
             }
         }
     }

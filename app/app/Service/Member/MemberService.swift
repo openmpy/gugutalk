@@ -56,6 +56,19 @@ final class MemberService {
         .validateWithErrorHandling()
     }
 
+    func updateComment(comment: String) async throws {
+        let url = "\(baseURL)/v1/members/me/comment"
+        let body: [String: String] = ["comment": comment]
+
+        try await session.request(
+            url,
+            method: .put,
+            parameters: body,
+            encoder: JSONParameterEncoder.default
+        )
+        .validateWithErrorHandling()
+    }
+
     func search(
         keyword: String,
         cursorId: Int64?,

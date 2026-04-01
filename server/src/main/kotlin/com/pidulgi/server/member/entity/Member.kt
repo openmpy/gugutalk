@@ -41,7 +41,7 @@ class Member(
     var bio: String? = null,
 
     @Column(name = "comment", nullable = true)
-    val comment: String? = "반갑습니다.",
+    var comment: String? = "반갑습니다.",
 
     @Column(columnDefinition = "geography(Point,4326)")
     var location: Point? = null,
@@ -74,6 +74,11 @@ class Member(
 
     fun updateLocation(location: Point?) {
         this.location = location
+        this.updatedAt = LocalDateTime.now()
+    }
+
+    fun updateComment(comment: String) {
+        this.comment = comment
         this.updatedAt = LocalDateTime.now()
     }
 }

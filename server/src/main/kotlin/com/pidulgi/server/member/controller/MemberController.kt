@@ -4,6 +4,7 @@ import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
+import com.pidulgi.server.member.dto.request.MemberUpdateCommentRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.dto.response.MemberGetResponse
@@ -41,6 +42,15 @@ class MemberController(
         @RequestBody request: MemberWithdrawRequest
     ): ResponseEntity<Unit> {
         memberService.withdraw(memberId, request)
+        return ResponseEntity.ok().build()
+    }
+
+    @PutMapping("/v1/members/me/comment")
+    fun updateComment(
+        @Login memberId: Long,
+        @RequestBody request: MemberUpdateCommentRequest,
+    ): ResponseEntity<Unit> {
+        memberService.updateComment(memberId, request)
         return ResponseEntity.ok().build()
     }
 

@@ -7,6 +7,7 @@ import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
+import com.pidulgi.server.member.dto.request.MemberUpdateCommentRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.dto.response.MemberGetResponse
@@ -81,9 +82,10 @@ class MemberService(
         val isPrivateImageGranted = privateImageGrantRepository.existsByGranterIdAndGranteeId(
             memberId, targetId
         )
-        val isPrivateImageGrantedByTarget = privateImageGrantRepository.existsByGranterIdAndGranteeId(
-            targetId, memberId
-        )
+        val isPrivateImageGrantedByTarget =
+            privateImageGrantRepository.existsByGranterIdAndGranteeId(
+                targetId, memberId
+            )
         val likes = likeRepository.countByLikedId(targetId)
         val distance = memberRepository.getDistanceBetween(memberId, targetId)
 
@@ -130,6 +132,12 @@ class MemberService(
             }
         }
         member.bump(point)
+    }
+
+    @Transactional
+    fun updateComment(memberId: Long, request: MemberUpdateCommentRequest) {
+        val member = getMember(memberId)
+        member.updateComment(request.comment)
     }
 
     @Transactional(readOnly = true)

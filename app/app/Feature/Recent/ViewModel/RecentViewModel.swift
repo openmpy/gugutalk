@@ -62,6 +62,15 @@ final class RecentViewModel: ObservableObject {
         }
     }
 
+    func updateComment(comment: String) async -> Result<Void, Error> {
+        do {
+            try await memberService.updateComment(comment: comment)
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
+    }
+
     func bump(latitude: Double?, longitude: Double?) async -> Result<Void, Error> {
         guard !isLoading else { return .failure(CancellationError()) }
 
