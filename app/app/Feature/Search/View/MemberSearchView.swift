@@ -21,7 +21,7 @@ struct MemberSearchView: View {
                     LazyVStack {
                         ForEach(vm.members) { member in
                             NavigationLink {
-                                MemberProfileView()
+                                MemberProfileView(memberId: member.memberId)
                             } label: {
                                 MemberRow(
                                     profileUrl: member.profileUrl,

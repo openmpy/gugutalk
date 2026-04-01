@@ -2,6 +2,8 @@ import SwiftUI
 
 struct MessageView: View {
 
+    let memberId: Int64
+
     @State private var message: String = ""
 
     var body: some View {
@@ -77,7 +79,7 @@ struct MessageView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
-                    MemberProfileView()
+                    MemberProfileView(memberId: memberId)
                 } label: {
                     Image(systemName: "person.fill")
                         .font(.footnote)
@@ -92,6 +94,6 @@ struct MessageView: View {
 
 #Preview {
     NavigationStack {
-        MessageView()
+        MessageView(memberId: 0)
     }
 }

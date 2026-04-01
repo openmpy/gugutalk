@@ -13,7 +13,7 @@ struct ChatView: View {
                     LazyVStack {
                         ForEach(0..<10) { _ in
                             NavigationLink {
-                                MessageView()
+                                MessageView(memberId: 0)
                             } label: {
                                 ChatRow(
                                     nickname: "닉네임",

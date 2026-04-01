@@ -7,6 +7,24 @@ final class PrivateImageGrantService {
     let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
+    func grant(memberId: Int64) async throws {
+        let url = "\(baseURL)/v1/members/\(memberId)/private-images/grant"
+
+        try await session.request(
+            url,
+            method: .post
+        ).validateWithErrorHandling()
+    }
+
+    func revoke(memberId: Int64) async throws {
+        let url = "\(baseURL)/v1/members/\(memberId)/private-images/grant"
+
+        try await session.request(
+            url,
+            method: .delete
+        ).validateWithErrorHandling()
+    }
+
     func getGrantedMember(
         cursorId: Int64?,
         cursorDateAt: String?,
@@ -21,7 +39,7 @@ final class PrivateImageGrantService {
             params["cursorId"] = cursorId
             params["cursorDate"] = cursorDateAt
         }
-        
+
         return try await session.request(
             url,
             method: .get,

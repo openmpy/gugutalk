@@ -27,7 +27,7 @@ struct RecentView: View {
                         LazyVStack {
                             ForEach(vm.members) { it in
                                 NavigationLink {
-                                    MemberProfileView()
+                                    MemberProfileView(memberId: it.memberId)
                                 } label: {
                                     MemberRow(
                                         profileUrl: it.profileUrl,

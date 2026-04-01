@@ -7,6 +7,16 @@ final class MemberService {
     let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
+    func getMember(memberId: Int64) async throws -> MemberGetResponse {
+        let url = "\(baseURL)/v1/members/\(memberId)"
+
+        return try await session.request(
+            url,
+            method: .get
+        )
+        .decodingWithErrorHandling(MemberGetResponse.self)
+    }
+
     func getMe() async throws -> MemberGetMeResponse {
         let url = "\(baseURL)/v1/members/me"
 
