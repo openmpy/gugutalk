@@ -72,11 +72,6 @@ class Member(
         this.updatedAt = LocalDateTime.now()
     }
 
-    fun updateLocation(location: Point?) {
-        this.location = location
-        this.updatedAt = LocalDateTime.now()
-    }
-
     fun updateComment(comment: String) {
         this.comment = comment
         this.updatedAt = LocalDateTime.now()

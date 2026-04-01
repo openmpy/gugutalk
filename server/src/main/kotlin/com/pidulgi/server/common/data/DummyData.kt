@@ -54,7 +54,7 @@ class DummyDataInit {
         return CommandLineRunner {
             // 회원
             if (memberRepository.count() == 0L) {
-                val members = (1 until 100).map { i ->
+                val members = (1 until 1000).map { i ->
                     val location = locations[(i - 1) % locations.size].let { (lng, lat) ->
                         val offsetLng = lng + (i / locations.size) * 0.002
                         val offsetLat = lat + (i / locations.size) * 0.001
@@ -72,15 +72,14 @@ class DummyDataInit {
                         birthYear = 1993 + (i % 12),
                         bio = "자기소개$i",
                         comment = "코멘트$i",
-                    ).also { it.updateLocation(location) }
+                    ).also { it.bump(location) }
                 }
                 memberRepository.saveAll(members)
-                println("회원 데이터가 생성되었습니다. ${memberRepository.count()}")
             }
 
             // 좋아요
             if (likeRepository.count() == 0L) {
-                val likes = (2 until 50).map { i ->
+                val likes = (2 until 1000).map { i ->
                     Like(
                         likerId = 1,
                         likedId = i.toLong()
@@ -88,12 +87,11 @@ class DummyDataInit {
                 }
 
                 likeRepository.saveAll(likes)
-                println("좋아요 데이터가 생성되었습니다. ${likeRepository.count()}")
             }
 
             // 비밀 사진
             if (privateImageGrantRepository.count() == 0L) {
-                val grants = (2 until 75).map { i ->
+                val grants = (2 until 1000).map { i ->
                     PrivateImageGrant(
                         granterId = 1,
                         granteeId = i.toLong()
@@ -101,12 +99,11 @@ class DummyDataInit {
                 }
 
                 privateImageGrantRepository.saveAll(grants)
-                println("비밀 사진 권한 데이터가 생성되었습니다. ${privateImageGrantRepository.count()}")
             }
 
             // 차단
             if (blockRepository.count() == 0L) {
-                val blocks = (2 until 100).map { i ->
+                val blocks = (2 until 1000).map { i ->
                     Block(
                         blockerId = 1,
                         blockedId = i.toLong()
@@ -114,8 +111,12 @@ class DummyDataInit {
                 }
 
                 blockRepository.saveAll(blocks)
-                println("차단 데이터가 생성되었습니다. ${blockRepository.count()}")
             }
+
+            println("회원 데이터가 생성되었습니다. ${memberRepository.count()}")
+            println("좋아요 데이터가 생성되었습니다. ${likeRepository.count()}")
+            println("비밀 사진 권한 데이터가 생성되었습니다. ${privateImageGrantRepository.count()}")
+            println("차단 데이터가 생성되었습니다. ${blockRepository.count()}")
         }
     }
 }

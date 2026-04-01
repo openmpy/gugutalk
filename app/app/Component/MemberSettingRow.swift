@@ -1,7 +1,9 @@
 import SwiftUI
+import Kingfisher
 
 struct MemberSettingRow: View {
 
+    let profileUrl: String?
     let nickname: String
     let createdAt: String
     let gender: String
@@ -10,11 +12,25 @@ struct MemberSettingRow: View {
 
     var body: some View {
         HStack(spacing: 15) {
-            Image(systemName: "person.fill")
-                .font(.title)
-                .frame(width: 65, height: 65)
-                .foregroundColor(Color(.systemGray3))
-                .background(Color(.systemGray6), in: Circle())
+            if let profileUrl = profileUrl {
+                KFImage(URL(string: profileUrl))
+                    .resizable()
+                    .placeholder {
+                        ProgressView()
+                            .frame(width: 65, height: 65)
+                            .background(Color(.systemGray6), in: Circle())
+                    }
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 65, height: 65)
+                    .background(Color(.systemGray6), in: Circle())
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: "person.fill")
+                    .font(.title)
+                    .frame(width: 65, height: 65)
+                    .foregroundColor(Color(.systemGray3))
+                    .background(Color(.systemGray6), in: Circle())
+            }
 
             VStack(alignment: .leading) {
                 Text(nickname)

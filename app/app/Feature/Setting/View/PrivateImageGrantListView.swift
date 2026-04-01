@@ -17,6 +17,7 @@ struct PrivateImageGrantListView: View {
                     LazyVStack {
                         ForEach(vm.members) { it in
                             MemberSettingRow(
+                                profileUrl: it.profileUrl,
                                 nickname: it.nickname,
                                 createdAt: it.createdAt,
                                 gender: it.gender,
