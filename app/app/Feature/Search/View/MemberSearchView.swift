@@ -60,6 +60,11 @@ struct MemberSearchView: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "닉네임 입력"
         )
+        .onChange(of: keyword) { _, newValue in
+            if newValue.isEmpty {
+                vm.members = []
+            }
+        }
         .onSubmit(of: .search) {
             guard keyword.count >= 2 else {
                 presentToast(ToastValue(
@@ -68,7 +73,7 @@ struct MemberSearchView: View {
                 ))
                 return
             }
-            
+
             Task {
                 let result = await vm.search(keyword: keyword)
                 if case .failure(let error) = result {
