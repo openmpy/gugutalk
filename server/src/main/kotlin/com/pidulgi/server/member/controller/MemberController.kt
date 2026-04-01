@@ -1,9 +1,11 @@
 package com.pidulgi.server.member.controller
 
 import com.pidulgi.server.common.auth.Login
+import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
+import com.pidulgi.server.member.repository.dto.MemberItemResponse
 import com.pidulgi.server.member.service.MemberService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -39,5 +41,16 @@ class MemberController(
     ): ResponseEntity<Unit> {
         memberService.bump(memberId, request)
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/v1/members/search")
+    fun searchMembers(
+        @Login memberId: Long,
+        @RequestParam keyword: String,
+        @RequestParam(required = false) cursorId: Long?,
+        @RequestParam(defaultValue = "20") size: Int,
+    ): ResponseEntity<CursorResponse<MemberItemResponse>> {
+        val response = memberService.searchByNickname(memberId, keyword, cursorId, size)
+        return ResponseEntity.ok(response)
     }
 }

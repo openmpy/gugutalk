@@ -28,21 +28,28 @@ class MemberCustomRepositoryImpl(
             )
             """.trimIndent()
         } else ""
+
         val sql = """
             SELECT m.id, m.nickname, m.gender, m.birth_year, m.bio, m.comment, m.profile_key, m.updated_at,
-                   CASE WHEN m.location IS NOT NULL AND req.location IS NOT NULL
-                        THEN ST_Distance(m.location, req.location) / 1000.0
-                   END AS distance,
-                   (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
+                CASE WHEN m.location IS NOT NULL AND req.location IS NOT NULL
+                    THEN ST_Distance(m.location, req.location) / 1000.0
+                END AS distance,
+                (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
             FROM member m
             CROSS JOIN (SELECT location FROM member WHERE id = :requesterId) req
             WHERE m.deleted_at IS NULL
-              AND m.id != :requesterId
-              AND (:gender = 'ALL' OR m.gender = :gender)
-              $cursorCondition
+                AND m.id != :requesterId
+                AND (:gender = 'ALL' OR m.gender = :gender)
+                AND m.id NOT IN (
+                    SELECT blocked_id FROM blocks WHERE blocker_id = :requesterId
+                    UNION
+                    SELECT blocker_id FROM blocks WHERE blocked_id = :requesterId
+                )
+                $cursorCondition
             ORDER BY m.updated_at DESC, m.id DESC
             LIMIT :size
         """.trimIndent()
+
         val query = entityManager.createNativeQuery(sql).apply {
             setParameter("requesterId", memberId)
             setParameter("gender", gender)
@@ -65,25 +72,74 @@ class MemberCustomRepositoryImpl(
     ): List<MemberItemResponse> {
         val sql = """
             SELECT m.id, m.nickname, m.gender, m.birth_year, m.bio, m.comment, m.profile_key, m.updated_at,
-                   ST_Distance(m.location, req.location) / 1000.0 AS distance,
-                   (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
+                ST_Distance(m.location, req.location) / 1000.0 AS distance,
+                (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
             FROM member m
             CROSS JOIN (SELECT location FROM member WHERE id = :requesterId) req
             WHERE m.deleted_at IS NULL
-              AND m.id != :requesterId
-              AND m.location IS NOT NULL
-              AND req.location IS NOT NULL
-              AND m.updated_at >= NOW() - INTERVAL '24 hours'
-              AND (:gender = 'ALL' OR m.gender = :gender)
+                AND m.id != :requesterId
+                AND m.location IS NOT NULL
+                AND req.location IS NOT NULL
+                AND m.updated_at >= NOW() - INTERVAL '24 hours'
+                AND (:gender = 'ALL' OR m.gender = :gender)
+                AND m.id NOT IN (
+                    SELECT blocked_id FROM blocks WHERE blocker_id = :requesterId
+                    UNION
+                    SELECT blocker_id FROM blocks WHERE blocked_id = :requesterId
+                )
             ORDER BY ST_Distance(m.location, req.location), m.id
             LIMIT :size OFFSET :offset
         """.trimIndent()
+
         val query = entityManager.createNativeQuery(sql).apply {
             setParameter("requesterId", memberId)
             setParameter("gender", gender)
             setParameter("size", size)
             setParameter("offset", page * size)
         }
+        @Suppress("UNCHECKED_CAST")
+        return (query.resultList as List<Array<Any?>>).map(::toMemberItemResponse)
+    }
+
+    override fun searchByNickname(
+        memberId: Long,
+        keyword: String,
+        cursorId: Long?,
+        size: Int
+    ): List<MemberItemResponse> {
+        val cursorCondition = if (cursorId != null) "AND m.id < :cursorId" else ""
+
+        val sql = """
+            SELECT m.id, m.nickname, m.gender, m.birth_year, m.bio, m.comment, m.profile_key, m.updated_at,
+                CASE WHEN m.location IS NOT NULL AND req.location IS NOT NULL
+                    THEN ST_Distance(m.location, req.location) / 1000.0
+                END AS distance,
+                (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
+            FROM member m
+            CROSS JOIN (SELECT location FROM member WHERE id = :requesterId) req
+            WHERE m.deleted_at IS NULL
+                AND m.id != :requesterId
+                AND m.nickname ILIKE '%' || :keyword || '%'
+                AND m.id NOT IN (
+                    SELECT blocked_id FROM blocks WHERE blocker_id = :requesterId
+                    UNION
+                    SELECT blocker_id FROM blocks WHERE blocked_id = :requesterId
+                )
+                $cursorCondition
+            ORDER BY m.id DESC
+            LIMIT :size
+        """.trimIndent()
+
+        val query = entityManager.createNativeQuery(sql).apply {
+            setParameter("requesterId", memberId)
+            setParameter("keyword", keyword)
+            setParameter("size", size)
+
+            if (cursorId != null) {
+                setParameter("cursorId", cursorId)
+            }
+        }
+
         @Suppress("UNCHECKED_CAST")
         return (query.resultList as List<Array<Any?>>).map(::toMemberItemResponse)
     }

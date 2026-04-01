@@ -19,4 +19,11 @@ interface MemberCustomRepository {
         page: Int,
         size: Int
     ): List<MemberItemResponse>
+
+    fun searchByNickname(
+        memberId: Long,
+        keyword: String,
+        cursorId: Long?,
+        size: Int
+    ): List<MemberItemResponse>
 }
