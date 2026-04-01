@@ -6,6 +6,7 @@ struct MemberSettingRow: View {
     let createdAt: String
     let gender: String
     let age: Int
+    let onDelete: () -> Void
 
     var body: some View {
         HStack(spacing: 15) {
@@ -38,7 +39,7 @@ struct MemberSettingRow: View {
             Spacer()
 
             Button {
-
+                onDelete()
             } label: {
                 Image(systemName: "trash.fill")
                     .font(.default)

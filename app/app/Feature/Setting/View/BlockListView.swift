@@ -20,7 +20,18 @@ struct BlockListView: View {
                                 nickname: it.nickname,
                                 createdAt: it.createdAt,
                                 gender: it.gender,
-                                age: it.age
+                                age: it.age,
+                                onDelete: {
+                                    Task {
+                                        let result = await vm.remove(memberId: it.memberId)
+                                        if case .failure(let error) = result {
+                                            presentToast(ToastValue(
+                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                                                message: error.localizedDescription
+                                            ))
+                                        }
+                                    }
+                                }
                             )
                             .onAppear {
                                 if it.id == vm.members.last?.id {

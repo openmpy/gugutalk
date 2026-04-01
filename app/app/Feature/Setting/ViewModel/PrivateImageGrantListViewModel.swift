@@ -60,4 +60,14 @@ final class PrivateImageGrantListViewModel: ObservableObject {
             return .failure(error)
         }
     }
+
+    func revolke(memberId: Int64) async -> Result<Void, Error> {
+        do {
+            try await privateImageGrantService.revoke(memberId: memberId)
+            members.removeAll { $0.memberId == memberId }
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
+    }
 }

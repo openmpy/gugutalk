@@ -58,4 +58,14 @@ final class LikeListViewModel: ObservableObject {
             return .failure(error)
         }
     }
+
+    func unlike(memberId: Int64) async -> Result<Void, Error> {
+        do {
+            _ = try await socialService.unlike(memberId: memberId)
+            members.removeAll { $0.memberId == memberId }
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
+    }
 }
