@@ -1,5 +1,6 @@
 package com.pidulgi.server.chat.entity
 
+import com.pidulgi.server.common.exception.CustomException
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
 import java.time.LocalDateTime
@@ -25,10 +26,10 @@ class ChatRoom(
     var lastMessage: String? = null,
 
     @Column(name = "member1_last_read_message_id")
-    val member1LastReadMessageId: Long? = null,
+    var member1LastReadMessageId: Long? = null,
 
     @Column(name = "member2_last_read_message_id")
-    val member2LastReadMessageId: Long? = null,
+    var member2LastReadMessageId: Long? = null,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -68,5 +69,13 @@ class ChatRoom(
 
         this.lastMessage = preview
         this.lastMessageAt = lastMessageAt
+    }
+
+    fun read(memberId: Long, lastMessageId: Long) {
+        when (memberId) {
+            member1Id -> this.member1LastReadMessageId = lastMessageId
+            member2Id -> this.member2LastReadMessageId = lastMessageId
+            else -> throw CustomException("접근할 수 없는 채팅방입니다.")
+        }
     }
 }

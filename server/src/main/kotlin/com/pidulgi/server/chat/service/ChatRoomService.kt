@@ -7,6 +7,7 @@ import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
 import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.repository.ChatRoomRepository
+import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
@@ -21,6 +22,7 @@ import java.time.LocalDateTime
 class ChatRoomService(
 
     private val chatRoomRepository: ChatRoomRepository,
+    private val messageRepository: MessageRepository,
     private val memberRepository: MemberRepository,
     private val messagingTemplate: SimpMessagingTemplate,
 ) {
@@ -86,6 +88,7 @@ class ChatRoomService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun gets(
         memberId: Long,
         cursorId: Long?,
@@ -119,6 +122,17 @@ class ChatRoomService(
             nextDateAt = last?.sortAt,
             hasNext = hasNext
         )
+    }
+
+    @Transactional
+    fun markAsRead(memberId: Long, chatRoomId: Long) {
+        val chatRoom = chatRoomRepository.findByIdOrNull(chatRoomId)
+            ?: throw CustomException("존재하지 않는 채팅방입니다.")
+
+        val lastMessageId = messageRepository.findLastMessageId(chatRoomId)
+            ?: return
+
+        chatRoom.read(memberId, lastMessageId)
     }
 
     private fun findChatRoom(memberA: Long, memberB: Long): ChatRoom? {

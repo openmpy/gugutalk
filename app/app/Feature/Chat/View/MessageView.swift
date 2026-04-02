@@ -88,6 +88,14 @@ struct MessageView: View {
                     message: error.localizedDescription
                 ))
             }
+
+            let markResult = await vm.markAsRead(chatRoomId: chatRoomId)
+            if case .failure(let error) = markResult {
+                presentToast(ToastValue(
+                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                    message: error.localizedDescription
+                ))
+            }
         }
         .safeAreaInset(edge: .top) {
             GlassEffectContainer(spacing: 5) {

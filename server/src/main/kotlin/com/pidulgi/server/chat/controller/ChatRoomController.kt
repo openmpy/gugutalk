@@ -44,4 +44,13 @@ class ChatRoomController(
         val response = chatRoomService.gets(memberId, cursorId, cursorDate, size)
         return ResponseEntity.ok(response)
     }
+
+    @PutMapping("/v1/chat-rooms/{chatRoomId}")
+    fun markAsRead(
+        @Login memberId: Long,
+        @PathVariable chatRoomId: Long,
+    ): ResponseEntity<Unit> {
+        chatRoomService.markAsRead(memberId, chatRoomId)
+        return ResponseEntity.ok().build()
+    }
 }

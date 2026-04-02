@@ -75,7 +75,7 @@ final class ChatViewModel: ObservableObject {
             return .failure(error)
         }
     }
-
+    
     // MARK: - 이벤트
 
     func subscribe() {

@@ -102,6 +102,22 @@ final class MessageViewModel: ObservableObject {
         }
     }
 
+    func markAsRead(chatRoomId: Int64) async -> Result<Void, Error> {
+        guard !isLoading else { return .success(()) }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await chatRoomService.markAsRead(chatRoomId: chatRoomId)
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    // MARK: - 이벤트
+    
     func subscribe(chatRoomId: Int64) {
         stomp.publisher(for: "/topic/chat-rooms/\(chatRoomId)")
             .receive(on: DispatchQueue.main)

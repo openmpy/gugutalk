@@ -53,4 +53,16 @@ final class ChatRoomService {
         )
         .decodingWithErrorHandling(CursorResponse<ChatRoomGetResponse>.self)
     }
+
+    func markAsRead(
+        chatRoomId: Int64
+    ) async throws {
+        let url = "\(baseURL)/v1/chat-rooms/\(chatRoomId)"
+
+        return try await session.request(
+            url,
+            method: .put
+        )
+        .validateWithErrorHandling()
+    }
 }
