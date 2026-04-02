@@ -4,14 +4,18 @@ import com.pidulgi.server.chat.dto.event.ChatEvent
 import com.pidulgi.server.chat.dto.event.ChatRoomDeleteEvent
 import com.pidulgi.server.chat.dto.event.type.ChatEventType.DELETE_CHAT_ROOM
 import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
+import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
 import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.repository.ChatRoomRepository
+import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class ChatRoomService(
@@ -20,6 +24,9 @@ class ChatRoomService(
     private val memberRepository: MemberRepository,
     private val messagingTemplate: SimpMessagingTemplate,
 ) {
+
+    @Value("\${s3.endpoint}")
+    private lateinit var endpoint: String
 
     @Transactional
     fun create(
@@ -76,6 +83,40 @@ class ChatRoomService(
             targetId.toString(),
             "/queue/chat-rooms",
             chatRoomEvent
+        )
+    }
+
+    fun gets(
+        memberId: Long,
+        cursorId: Long?,
+        cursorDate: LocalDateTime?,
+        size: Int
+    ): CursorResponse<ChatRoomGetResponse> {
+        val result = chatRoomRepository.findChatRoomsByCursor(
+            memberId,
+            cursorId,
+            cursorDate,
+            size + 1
+        ).map {
+            ChatRoomGetResponse(
+                chatRoomId = it.chatRoomId,
+                nickname = it.nickname,
+                profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
+                lastMessage = it.lastMessage,
+                lastMessageAt = it.lastMessageAt,
+                sortAt = it.sortAt,
+            )
+        }
+
+        val hasNext = result.size > size
+        val items = if (hasNext) result.dropLast(1) else result
+        val last = items.lastOrNull()
+
+        return CursorResponse(
+            payload = items,
+            nextId = last?.chatRoomId,
+            nextDateAt = last?.sortAt,
+            hasNext = hasNext
         )
     }
 
