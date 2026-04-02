@@ -8,6 +8,7 @@ import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,6 +25,9 @@ class MessageService(
 
     @Transactional
     fun send(senderId: Long, chatRoomId: Long, request: MessageSendRequest) {
+        val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
+            ?: throw CustomException("존재하지 않는 채팅방입니다."))
+
         val members = chatRoomMemberRepository.findAllByChatRoomId(chatRoomId)
         members.firstOrNull { it.memberId == senderId }
             ?: throw IllegalStateException("채팅방에 접근할 수 없습니다.")
@@ -36,7 +40,8 @@ class MessageService(
             type = request.type,
         )
         messageRepository.save(message)
-        chatRoomRepository.updateLastMessage(chatRoomId, message.id, message.createdAt)
+
+        chatRoom.updateLastMessage(message.id, message.createdAt)
 
         val response = MessageGetResponse(
             messageId = message.id,
