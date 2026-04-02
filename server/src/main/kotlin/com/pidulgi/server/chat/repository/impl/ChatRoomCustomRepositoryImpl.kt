@@ -38,7 +38,11 @@ class ChatRoomCustomRepositoryImpl(
                 m.profile_key,
                 cr.last_message,
                 cr.last_message_at,
-                COALESCE(cr.last_message_at, cr.created_at) AS sort_at
+                COALESCE(cr.last_message_at, cr.created_at) AS sort_at,
+                CASE 
+                    WHEN cr.member1_id = :memberId THEN cr.member1_unread_count
+                    ELSE cr.member2_unread_count
+                END AS unread_count
             FROM chat_room cr
             JOIN member m 
                 ON m.id = CASE 
@@ -74,5 +78,6 @@ class ChatRoomCustomRepositoryImpl(
         lastMessage = row[4] as String?,
         lastMessageAt = row[5] as LocalDateTime?,
         sortAt = row[6] as LocalDateTime,
+        unreadCount = (row[7] as Number).toInt(),
     )
 }

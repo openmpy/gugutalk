@@ -11,4 +11,5 @@ data class ChatRoomItemResponse(
     val lastMessage: String?,
     val lastMessageAt: LocalDateTime?,
     val sortAt: LocalDateTime,
+    val unreadCount: Int,
 )

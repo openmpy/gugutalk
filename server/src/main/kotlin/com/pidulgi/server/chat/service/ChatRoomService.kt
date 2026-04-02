@@ -109,6 +109,7 @@ class ChatRoomService(
                 lastMessage = it.lastMessage,
                 lastMessageAt = it.lastMessageAt,
                 sortAt = it.sortAt,
+                unreadCount = it.unreadCount,
             )
         }
 

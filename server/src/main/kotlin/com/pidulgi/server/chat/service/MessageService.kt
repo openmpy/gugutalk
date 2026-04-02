@@ -59,6 +59,10 @@ class MessageService(
         messageRepository.save(message)
 
         chatRoom.update(message.content, message.createdAt)
+        chatRoomRepository.increaseUnreadCount(chatRoomId, targetId)
+        val updatedUnreadCount = if (targetId == chatRoom.member1Id) {
+            chatRoom.member1UnreadCount + 1
+        } else chatRoom.member2UnreadCount + 1
 
         // 방 구독 전체 전송
         val event = ChatEvent(
@@ -87,6 +91,7 @@ class MessageService(
                 chatRoom.lastMessage,
                 message.type,
                 chatRoom.lastMessageAt,
+                updatedUnreadCount,
             )
         )
         messagingTemplate.convertAndSendToUser(

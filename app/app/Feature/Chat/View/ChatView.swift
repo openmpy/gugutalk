@@ -34,7 +34,7 @@ struct ChatView: View {
                                         nickname: it.nickname,
                                         updatedAt: it.sortAt,
                                         content: it.lastMessage ?? "",
-                                        unreads: 0
+                                        unreads: it.unreadCount
                                     )
                                 }
                                 .onAppear {

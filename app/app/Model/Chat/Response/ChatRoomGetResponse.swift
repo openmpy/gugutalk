@@ -7,6 +7,7 @@ struct ChatRoomGetResponse: Codable, Identifiable {
     let lastMessage: String?
     let lastMessageAt: String?
     let sortAt: String
+    let unreadCount: Int
 
     var id: Int64 { chatRoomId }
 }

@@ -7,4 +7,5 @@ struct ChatRoomSendEvent: Codable {
     let lastMessage: String?
     let type: String
     let lastMessageAt: String?
+    let unreadCount: Int
 }

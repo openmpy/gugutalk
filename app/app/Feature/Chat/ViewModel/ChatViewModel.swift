@@ -118,7 +118,8 @@ final class ChatViewModel: ObservableObject {
             profileUrl: event.profileUrl,
             lastMessage: event.lastMessage,
             lastMessageAt: event.lastMessageAt,
-            sortAt: event.lastMessageAt ?? ""
+            sortAt: event.lastMessageAt ?? "",
+            unreadCount: event.unreadCount
         )
 
         if let index = chatRooms.firstIndex(where: { $0.chatRoomId == event.chatRoomId }) {

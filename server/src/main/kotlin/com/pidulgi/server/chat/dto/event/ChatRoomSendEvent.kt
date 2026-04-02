@@ -12,4 +12,5 @@ data class ChatRoomSendEvent(
     val lastMessage: String?,
     val type: MessageType,
     val lastMessageAt: LocalDateTime?,
+    val unreadCount: Int,
 )

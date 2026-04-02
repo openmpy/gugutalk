@@ -31,6 +31,12 @@ class ChatRoom(
     @Column(name = "member2_last_read_message_id")
     var member2LastReadMessageId: Long? = null,
 
+    @Column(name = "member1_unread_count")
+    var member1UnreadCount: Int = 0,
+
+    @Column(name = "member2_unread_count")
+    var member2UnreadCount: Int = 0,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
@@ -71,10 +77,22 @@ class ChatRoom(
         this.lastMessageAt = lastMessageAt
     }
 
-    fun read(memberId: Long, lastMessageId: Long) {
+    fun read(memberId: Long, lastMessageId: Long?) {
         when (memberId) {
-            member1Id -> this.member1LastReadMessageId = lastMessageId
-            member2Id -> this.member2LastReadMessageId = lastMessageId
+            member1Id -> {
+                if (lastMessageId != null) {
+                    this.member1LastReadMessageId = lastMessageId
+                }
+                this.member1UnreadCount = 0
+            }
+
+            member2Id -> {
+                if (lastMessageId != null) {
+                    this.member2LastReadMessageId = lastMessageId
+                }
+                this.member2UnreadCount = 0
+            }
+
             else -> throw CustomException("접근할 수 없는 채팅방입니다.")
         }
     }
