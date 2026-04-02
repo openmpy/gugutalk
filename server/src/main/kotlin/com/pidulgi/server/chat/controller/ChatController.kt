@@ -52,7 +52,7 @@ class ChatController(
     @GetMapping("/v1/chat-rooms/{chatRoomId}/member")
     fun getTarget(
         @Login memberId: Long,
-        @PathVariable("chatRoomId") chatRoomId: Long,
+        @PathVariable chatRoomId: Long,
     ): ResponseEntity<ChatRoomGetTargetResponse> {
         val response = chatRoomService.getTarget(memberId, chatRoomId)
         return ResponseEntity.ok(response)
@@ -61,7 +61,7 @@ class ChatController(
     @GetMapping("/v1/chat-rooms/{chatRoomId}/messages")
     fun getMessages(
         @Login memberId: Long,
-        @PathVariable("chatRoomId") chatRoomId: Long,
+        @PathVariable chatRoomId: Long,
         @RequestParam(required = false) cursorId: Long?,
         @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
