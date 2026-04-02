@@ -2,18 +2,18 @@ import SwiftUI
 import Combine
 
 @MainActor
-final class ChatViewModel: ObservableObject {
+final class MessageViewModel: ObservableObject {
 
-    private let chatRoomService = ChatRoomService.shared
+    private let messageService = MessageService.shared
 
     @Published var isLoading: Bool = false
     @Published var hasNext: Bool = true
-    @Published var chatRooms: [ChatRoomGetResponse] = []
+    @Published var messages: [MessageGetResponse] = []
 
     private var cursorId: Int64?
     private var cursorDateAt: String?
 
-    func gets() async -> Result<Void, Error> {
+    func gets(chatRoomId: Int64) async -> Result<Void, Error> {
         hasNext = true
 
         guard !isLoading else { return .success(()) }
@@ -23,11 +23,12 @@ final class ChatViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let response = try await chatRoomService.gets(
+            let response = try await messageService.gets(
+                chatRoomId: chatRoomId,
                 cursorId: nil,
                 cursorDateAt: nil
             )
-            chatRooms = response.payload
+            messages = response.payload
             cursorId = response.nextId
             cursorDateAt = response.nextDateAt
             hasNext = response.hasNext
@@ -37,7 +38,7 @@ final class ChatViewModel: ObservableObject {
         }
     }
 
-    func loadMoreChatRoom() async -> Result<Void, Error> {
+    func loadMoreMessage(chatRoomId: Int64) async -> Result<Void, Error> {
         guard !isLoading else { return .success(()) }
         guard hasNext else { return .success(()) }
 
@@ -45,11 +46,12 @@ final class ChatViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let response = try await chatRoomService.gets(
+            let response = try await messageService.gets(
+                chatRoomId: chatRoomId,
                 cursorId: cursorId,
                 cursorDateAt: cursorDateAt
             )
-            chatRooms.append(contentsOf: response.payload)
+            messages.append(contentsOf: response.payload)
             cursorId = response.nextId
             cursorDateAt = response.nextDateAt
             hasNext = response.hasNext

@@ -1,28 +1,50 @@
 import SwiftUI
+import Toasts
 
 struct MessageView: View {
 
     let chatRoomId: Int64
     let memberId: Int64
 
+    @StateObject private var vm = MessageViewModel()
+
+    @Environment(\.presentToast) var presentToast
+
     @State private var message: String = ""
 
     var body: some View {
         VStack {
-            ScrollView {
-                LazyVStack {
-                    ForEach(0..<10) { i in
-                        MessageBubble(
-                            isMe: i % 2 == 0,
-                            content: "안녕하세요",
-                            createdAt: "2026-03-30T12:00:00.0000"
-                        )
+            if vm.messages.isEmpty {
+                Spacer()
+                Text("내역이 비어있습니다.")
+                    .foregroundColor(.primary)
+                    .rotationEffect(.degrees(180))
+                Spacer()
+            } else {
+                ScrollView {
+                    LazyVStack {
+                        ForEach(vm.messages) { it in
+                            MessageBubble(
+                                isMe: it.senderId != memberId,
+                                content: it.content,
+                                createdAt: it.createdAt
+                            )
+                        }
                     }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
+                .onTapGesture {
+                    hideKeyboard()
+                }
             }
-            .onTapGesture {
-                hideKeyboard()
+        }
+        .task {
+            let result = await vm.gets(chatRoomId: chatRoomId)
+            if case .failure(let error) = result {
+                presentToast(ToastValue(
+                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                    message: error.localizedDescription
+                ))
             }
         }
         .safeAreaInset(edge: .top) {
