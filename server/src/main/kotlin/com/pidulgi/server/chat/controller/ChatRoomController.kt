@@ -37,11 +37,12 @@ class ChatRoomController(
     @GetMapping("/v1/chat-rooms")
     fun gets(
         @Login memberId: Long,
+        @RequestParam(value = "status", defaultValue = "ALL") status: String,
         @RequestParam(required = false) cursorId: Long?,
         @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<ChatRoomGetResponse>> {
-        val response = chatRoomService.gets(memberId, cursorId, cursorDate, size)
+        val response = chatRoomService.gets(memberId, status, cursorId, cursorDate, size)
         return ResponseEntity.ok(response)
     }
 

@@ -15,7 +15,7 @@ final class ChatViewModel: ObservableObject {
     private var cursorDateAt: String?
     private var cancellables = Set<AnyCancellable>()
 
-    func gets() async -> Result<Void, Error> {
+    func gets(status: String) async -> Result<Void, Error> {
         hasNext = true
 
         guard !isLoading else { return .success(()) }
@@ -26,6 +26,7 @@ final class ChatViewModel: ObservableObject {
 
         do {
             let response = try await chatRoomService.gets(
+                status: status,
                 cursorId: nil,
                 cursorDateAt: nil
             )
@@ -39,7 +40,7 @@ final class ChatViewModel: ObservableObject {
         }
     }
 
-    func loadMore() async -> Result<Void, Error> {
+    func loadMore(status: String) async -> Result<Void, Error> {
         guard !isLoading else { return .success(()) }
         guard hasNext else { return .success(()) }
 
@@ -48,6 +49,7 @@ final class ChatViewModel: ObservableObject {
 
         do {
             let response = try await chatRoomService.gets(
+                status: status,
                 cursorId: cursorId,
                 cursorDateAt: cursorDateAt
             )

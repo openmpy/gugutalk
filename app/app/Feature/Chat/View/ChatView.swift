@@ -40,7 +40,7 @@ struct ChatView: View {
                                 .onAppear {
                                     if it.id == vm.chatRooms.last?.id {
                                         Task {
-                                            let result = await vm.loadMore()
+                                            let result = await vm.loadMore(status: selectStatus)
                                             if case .failure(let error) = result {
                                                 presentToast(ToastValue(
                                                     icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
@@ -76,6 +76,11 @@ struct ChatView: View {
                     }
                 }
             }
+            .onChange(of: selectStatus) { _, newStatus in
+                Task {
+                    await vm.gets(status: newStatus)
+                }
+            }
             .onAppear {
                 vm.subscribe()
             }
@@ -83,7 +88,7 @@ struct ChatView: View {
                 vm.unsubscribe()
             }
             .task {
-                let result = await vm.gets()
+                let result = await vm.gets(status: selectStatus)
                 if case .failure(let error) = result {
                     presentToast(ToastValue(
                         icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),

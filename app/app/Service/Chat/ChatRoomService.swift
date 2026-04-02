@@ -32,6 +32,7 @@ final class ChatRoomService {
     }
 
     func gets(
+        status: String = "ALL",
         cursorId: Int64?,
         cursorDateAt: String?,
         size: Int = 20
@@ -39,6 +40,7 @@ final class ChatRoomService {
         let url = "\(baseURL)/v1/chat-rooms"
 
         var params: Parameters = [
+            "status": status,
             "size": size
         ]
         if cursorId != nil && cursorDateAt != nil {

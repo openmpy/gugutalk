@@ -19,8 +19,6 @@ class ChatRoomSocketController(
     ) {
         val memberId = principal.name.toLong()
         chatRoomSessionManager.enter(memberId, chatRoomId)
-
-        println("[입장] 회원 번호 $memberId")
     }
 
     @MessageMapping("/chat-rooms/leave")
@@ -29,7 +27,5 @@ class ChatRoomSocketController(
     ) {
         val memberId = principal.name.toLong()
         chatRoomSessionManager.leave(memberId)
-
-        println("[퇴장] 회원 번호 $memberId")
     }
 }

@@ -7,6 +7,7 @@ interface ChatRoomCustomRepository {
 
     fun findChatRoomsByCursor(
         memberId: Long,
+        status: String,
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int

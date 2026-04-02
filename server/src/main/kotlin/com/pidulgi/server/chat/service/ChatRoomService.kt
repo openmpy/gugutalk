@@ -91,15 +91,18 @@ class ChatRoomService(
     @Transactional(readOnly = true)
     fun gets(
         memberId: Long,
+        status: String,
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int
     ): CursorResponse<ChatRoomGetResponse> {
+
         val result = chatRoomRepository.findChatRoomsByCursor(
-            memberId,
-            cursorId,
-            cursorDate,
-            size + 1
+            memberId = memberId,
+            status = status,
+            cursorId = cursorId,
+            cursorDate = cursorDate,
+            size = size + 1
         ).map {
             ChatRoomGetResponse(
                 chatRoomId = it.chatRoomId,

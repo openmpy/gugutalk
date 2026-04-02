@@ -8,12 +8,12 @@ import java.time.LocalDateTime
 
 @Repository
 class ChatRoomCustomRepositoryImpl(
-
     private val entityManager: EntityManager,
 ) : ChatRoomCustomRepository {
 
     override fun findChatRoomsByCursor(
         memberId: Long,
+        status: String,
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int
@@ -26,6 +26,16 @@ class ChatRoomCustomRepositoryImpl(
                     COALESCE(cr.last_message_at, cr.created_at) = :cursorDate
                     AND cr.id < :cursorId
                 )
+            )
+            """.trimIndent()
+        } else ""
+
+        val unreadCondition = if (status == "UNREAD") {
+            """
+            AND (
+                (cr.member1_id = :memberId AND cr.member1_unread_count > 0)
+                OR
+                (cr.member2_id = :memberId AND cr.member2_unread_count > 0)
             )
             """.trimIndent()
         } else ""
@@ -51,6 +61,7 @@ class ChatRoomCustomRepositoryImpl(
                 END
             WHERE cr.deleted_at IS NULL
                 AND (cr.member1_id = :memberId OR cr.member2_id = :memberId)
+                $unreadCondition
                 $cursorCondition
             ORDER BY sort_at DESC, cr.id DESC
             LIMIT :size
@@ -70,14 +81,15 @@ class ChatRoomCustomRepositoryImpl(
         return (query.resultList as List<Array<Any?>>).map(::toChatRoomItemResponse)
     }
 
-    private fun toChatRoomItemResponse(row: Array<Any?>) = ChatRoomItemResponse(
-        chatRoomId = (row[0] as Number).toLong(),
-        targetId = (row[1] as Number).toLong(),
-        nickname = row[2] as String,
-        profileKey = row[3] as String?,
-        lastMessage = row[4] as String?,
-        lastMessageAt = row[5] as LocalDateTime?,
-        sortAt = row[6] as LocalDateTime,
-        unreadCount = (row[7] as Number).toInt(),
-    )
+    private fun toChatRoomItemResponse(row: Array<Any?>) =
+        ChatRoomItemResponse(
+            chatRoomId = (row[0] as Number).toLong(),
+            targetId = (row[1] as Number).toLong(),
+            nickname = row[2] as String,
+            profileKey = row[3] as String?,
+            lastMessage = row[4] as String?,
+            lastMessageAt = row[5] as LocalDateTime?,
+            sortAt = row[6] as LocalDateTime,
+            unreadCount = (row[7] as Number).toInt(),
+        )
 }
