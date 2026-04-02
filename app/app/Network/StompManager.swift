@@ -21,20 +21,14 @@ class StompManager: NSObject, ObservableObject, SwiftStompDelegate {
         stomp.connect()
     }
 
-    func reconnect(accessToken: String) {
-        stomp.disconnect()
-        connect(accessToken: accessToken)
-    }
-
     func onConnect(swiftStomp : SwiftStomp, connectType : StompConnectType) {
         if connectType == .toStomp {
-            print("스톰프 연결")
+            subscribe(to: "/user/queue/chat-rooms")
         }
     }
 
     func onDisconnect(swiftStomp : SwiftStomp, disconnectType : StompDisconnectType) {
         if disconnectType == .fromStomp {
-            print("스톰프 연결 해제")
         }
     }
 
@@ -47,6 +41,9 @@ class StompManager: NSObject, ObservableObject, SwiftStompDelegate {
     ) {
         guard let body = message as? String else { return }
         publishers[destination]?.send(body)
+
+        print("🔥 message received:", message)
+        print("🔥 destination:", destination)
     }
 
     func onReceipt(swiftStomp : SwiftStomp, receiptId : String) {
@@ -80,6 +77,7 @@ class StompManager: NSObject, ObservableObject, SwiftStompDelegate {
         if publishers[destination] == nil {
             publishers[destination] = PassthroughSubject<String, Never>()
         }
+
         stomp.subscribe(to: destination, headers: headers)
     }
 

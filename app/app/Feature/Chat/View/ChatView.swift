@@ -75,6 +75,12 @@ struct ChatView: View {
                     }
                 }
             }
+            .onAppear {
+                vm.subscribe()
+            }
+            .onDisappear {
+                vm.unsubscribe()
+            }
             .task {
                 let result = await vm.gets()
                 if case .failure(let error) = result {
