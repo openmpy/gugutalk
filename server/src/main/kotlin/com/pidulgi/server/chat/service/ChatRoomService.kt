@@ -3,8 +3,10 @@ package com.pidulgi.server.chat.service
 import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomGetTargetResponse
+import com.pidulgi.server.chat.dto.response.MessageGetResponse
 import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.entity.ChatRoomMember
+import com.pidulgi.server.chat.entity.type.MessageType
 import com.pidulgi.server.chat.repository.ChatRoomMemberRepository
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.common.dto.CursorResponse
@@ -12,6 +14,7 @@ import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -22,6 +25,7 @@ class ChatRoomService(
     private val chatRoomRepository: ChatRoomRepository,
     private val chatRoomMemberRepository: ChatRoomMemberRepository,
     private val memberRepository: MemberRepository,
+    private val messageTemplate: SimpMessagingTemplate,
 ) {
 
     @Value("\${s3.endpoint}")
@@ -56,6 +60,32 @@ class ChatRoomService(
         chatRoomMemberRepository.saveAll(listOf(sender, receiver))
 
         return ChatRoomCreateResponse(chatRoom.id)
+    }
+
+    @Transactional
+    fun deleteDirectRoom(memberId: Long, chatRoomId: Long) {
+        val members = chatRoomMemberRepository.findAllByChatRoomId(chatRoomId)
+        members.firstOrNull { it.memberId == memberId }
+            ?: throw CustomException("채팅방에 접근할 수 없습니다.")
+        val target = members.firstOrNull { it.memberId != memberId }
+
+        val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
+            ?: throw CustomException("존재하지 않는 채팅방입니다."))
+
+        chatRoom.delete()
+
+        if (target != null) {
+            val response = MessageGetResponse(
+                messageId = -1,
+                chatRoomId = -1,
+                senderId = -1,
+                targetId = -1,
+                content = "채팅방이 삭제되었습니다.",
+                type = MessageType.SYSTEM,
+                createdAt = LocalDateTime.now()
+            )
+            messageTemplate.convertAndSend("/topic/chat/$chatRoomId", response)
+        }
     }
 
     @Transactional(readOnly = true)

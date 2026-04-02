@@ -58,4 +58,19 @@ final class ChatViewModel: ObservableObject {
             return .failure(error)
         }
     }
+
+    func deleteDirectRoom(chatRoomId: Int64) async -> Result<Void, Error> {
+        guard !isLoading else { return .failure(CancellationError()) }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await chatRoomService.deleteDirectRoom(chatRoomId: chatRoomId)
+            chatRooms.removeAll(where: { $0.id == chatRoomId })
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
+    }
 }

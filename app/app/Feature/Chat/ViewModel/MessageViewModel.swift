@@ -12,6 +12,7 @@ final class MessageViewModel: ObservableObject {
     @Published var hasNext: Bool = true
     @Published var messages: [MessageGetResponse] = []
     @Published var member: ChatRoomGetTargetResponse? = nil
+    @Published var isRoomDelete: Bool = false
 
     private var cursorId: Int64?
     private var cursorDateAt: String?
@@ -100,7 +101,13 @@ final class MessageViewModel: ObservableObject {
         stomp.publisher(for: "/topic/chat/\(chatRoomId)")
             .compactMap { try? JSONDecoder().decode(MessageGetResponse.self, from: Data($0.utf8)) }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.messages.insert($0, at: 0) }
+            .sink { [weak self] message in
+                if message.type == "SYSTEM" {
+                    self?.isRoomDelete = true
+                } else {
+                    self?.messages.insert(message, at: 0)
+                }
+            }
             .store(in: &cancellables)
     }
 

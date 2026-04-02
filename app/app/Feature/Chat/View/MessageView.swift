@@ -11,6 +11,7 @@ struct MessageView: View {
     @StateObject private var stomp = StompManager.shared
 
     @Environment(\.presentToast) var presentToast
+    @Environment(\.dismiss) var dismiss
 
     @State private var message: String = ""
 
@@ -51,6 +52,15 @@ struct MessageView: View {
                 .onTapGesture {
                     hideKeyboard()
                 }
+            }
+        }
+        .onChange(of: vm.isRoomDelete) { _, isDeleted in
+            if isDeleted {
+                presentToast(ToastValue(
+                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
+                    message: "채팅방이 삭제되었습니다."
+                ))
+                dismiss()
             }
         }
         .onAppear {

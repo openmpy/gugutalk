@@ -23,5 +23,10 @@ class ChatRoom(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "deleted_at")
-    val deletedAt: LocalDateTime? = null,
-)
+    var deletedAt: LocalDateTime? = null,
+) {
+
+    fun delete() {
+        this.deletedAt = LocalDateTime.now()
+    }
+}
