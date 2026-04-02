@@ -30,6 +30,7 @@ struct ChatView: View {
                                     )
                                 } label: {
                                     ChatRow(
+                                        profileUrl: it.profileUrl, 
                                         nickname: it.nickname,
                                         updatedAt: it.lastMessageAt ?? "",
                                         content: it.lastMessage ?? "",

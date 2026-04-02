@@ -10,6 +10,7 @@ struct ChatSearchView: View {
                 LazyVStack {
                     ForEach(0..<10) { _ in
                         ChatRow(
+                            profileUrl: nil,
                             nickname: "닉네임",
                             updatedAt: "2026-03-30T12:00:00.0000",
                             content: "마지막 채팅 내용",

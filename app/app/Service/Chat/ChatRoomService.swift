@@ -41,4 +41,16 @@ final class ChatRoomService {
         )
         .decodingWithErrorHandling(CursorResponse<ChatRoomGetResponse>.self)
     }
+
+    func getTarget(
+        chatRoomId: Int64
+    ) async throws -> ChatRoomGetTargetResponse {
+        let url = "\(baseURL)/v1/chat-rooms/\(chatRoomId)/member"
+
+        return try await session.request(
+            url,
+            method: .get,
+        )
+        .decodingWithErrorHandling(ChatRoomGetTargetResponse.self)
+    }
 }

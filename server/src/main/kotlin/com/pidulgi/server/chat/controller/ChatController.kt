@@ -2,6 +2,7 @@ package com.pidulgi.server.chat.controller
 
 import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
+import com.pidulgi.server.chat.dto.response.ChatRoomGetTargetResponse
 import com.pidulgi.server.chat.dto.response.MessageGetResponse
 import com.pidulgi.server.chat.service.ChatRoomService
 import com.pidulgi.server.chat.service.MessageService
@@ -36,6 +37,15 @@ class ChatController(
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<ChatRoomGetResponse>> {
         val response = chatRoomService.gets(memberId, cursorId, cursorDate, size)
+        return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/v1/chat-rooms/{chatRoomId}/member")
+    fun getTarget(
+        @Login memberId: Long,
+        @PathVariable("chatRoomId") chatRoomId: Long,
+    ): ResponseEntity<ChatRoomGetTargetResponse> {
+        val response = chatRoomService.getTarget(memberId, chatRoomId)
         return ResponseEntity.ok(response)
     }
 

@@ -6,7 +6,7 @@ data class ChatRoomGetResponse(
 
     val chatRoomId: Long,
     val memberId: Long,
-    val thumbnail: String,
+    val profileUrl: String?,
     val nickname: String,
     val lastMessage: String?,
     val lastMessageAt: LocalDateTime?,

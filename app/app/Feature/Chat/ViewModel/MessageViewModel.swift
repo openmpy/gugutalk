@@ -5,11 +5,13 @@ import Combine
 final class MessageViewModel: ObservableObject {
 
     private let messageService = MessageService.shared
+    private let chatRoomService = ChatRoomService.shared
     private let stomp = StompManager.shared
 
     @Published var isLoading: Bool = false
     @Published var hasNext: Bool = true
     @Published var messages: [MessageGetResponse] = []
+    @Published var member: ChatRoomGetTargetResponse? = nil
 
     private var cursorId: Int64?
     private var cursorDateAt: String?
@@ -77,6 +79,21 @@ final class MessageViewModel: ObservableObject {
             headers: ["content-type": "application/json"],
         )
         return .success(())
+    }
+
+    func getTarget(chatRoomId: Int64) async -> Result<Void, Error> {
+        guard !isLoading else { return .failure(CancellationError()) }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let response = try await chatRoomService.getTarget(chatRoomId: chatRoomId)
+            member = response
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
     }
 
     func subscribeRoom(chatRoomId: Int64) {

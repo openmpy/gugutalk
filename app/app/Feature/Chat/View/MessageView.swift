@@ -1,5 +1,6 @@
 import SwiftUI
 import Toasts
+import Kingfisher
 
 struct MessageView: View {
 
@@ -68,6 +69,14 @@ struct MessageView: View {
                     message: error.localizedDescription
                 ))
             }
+
+            let targetResult = await vm.getTarget(chatRoomId: chatRoomId)
+            if case .failure(let error) = targetResult {
+                presentToast(ToastValue(
+                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                    message: error.localizedDescription
+                ))
+            }
         }
         .safeAreaInset(edge: .top) {
             GlassEffectContainer(spacing: 5) {
@@ -130,7 +139,7 @@ struct MessageView: View {
             .background(Color(.systemBackground).opacity(0.0001))
         }
         .rotationEffect(.degrees(180))
-        .navigationTitle("홍길동")
+        .navigationTitle(vm.member?.nickname ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
@@ -138,11 +147,20 @@ struct MessageView: View {
                 NavigationLink {
                     MemberProfileView(memberId: memberId)
                 } label: {
-                    Image(systemName: "person.fill")
-                        .font(.footnote)
-                        .foregroundStyle(Color(.systemGray3))
+                    KFImage(URL(string: vm.member?.profileUrl ?? ""))
+                        .resizable()
+                        .placeholder {
+                            Image(systemName: "person.fill")
+                                .font(.footnote)
+                                .foregroundStyle(Color(.systemGray3))
+                                .frame(width: 27, height: 27)
+                                .background(Color(.systemGray6), in: Circle())
+                        }
+                        .font(.title)
                         .frame(width: 27, height: 27)
-                        .background(Color(.systemGray6), in: Circle())
+                        .foregroundColor(Color(.systemGray6))
+                        .background(Color(.systemGray4))
+                        .clipShape(Circle())
                 }
             }
         }
