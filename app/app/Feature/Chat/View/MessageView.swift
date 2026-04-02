@@ -66,10 +66,12 @@ struct MessageView: View {
         .onAppear {
             stomp.subscribe(to: "/topic/chat-rooms/\(chatRoomId)")
             vm.subscribe(chatRoomId: chatRoomId)
+            vm.enter(chatRoomId: chatRoomId)
         }
         .onDisappear {
             stomp.unsubscribe(from: "/topic/chat-rooms/\(chatRoomId)")
             vm.unsubscribe()
+            vm.leave()
         }
         .task {
             let result = await vm.gets(chatRoomId: chatRoomId)

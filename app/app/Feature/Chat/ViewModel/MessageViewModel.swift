@@ -146,7 +146,23 @@ final class MessageViewModel: ObservableObject {
     func unsubscribe() {
         cancellables.removeAll()
     }
-    
+
+    func enter(chatRoomId: Int64) {
+        stomp.send(
+            body: "",
+            to: "/app/chat-rooms/\(chatRoomId)/enter",
+            headers: ["content-type": "application/json"],
+        )
+    }
+
+    func leave() {
+        stomp.send(
+            body: "",
+            to: "/app/chat-rooms/leave",
+            headers: ["content-type": "application/json"],
+        )
+    }
+
     private func insertMessage(_ event: MessageSendEvent) {
         let newMessage = MessageGetResponse(
             messageId: event.messageId,

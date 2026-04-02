@@ -11,6 +11,7 @@ import com.pidulgi.server.chat.dto.response.MessageGetResponse
 import com.pidulgi.server.chat.entity.Message
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
+import com.pidulgi.server.chat.websocket.ChatRoomSessionManager
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
@@ -28,6 +29,7 @@ class MessageService(
     private val chatRoomRepository: ChatRoomRepository,
     private val memberRepository: MemberRepository,
     private val messagingTemplate: SimpMessagingTemplate,
+    private val chatRoomSessionManager: ChatRoomSessionManager,
 ) {
 
     @Value("\${s3.endpoint}")
@@ -50,6 +52,7 @@ class MessageService(
             chatRoom.member1Id
         }
 
+        // 1. 메시지 저장
         val message = Message(
             chatRoom = chatRoom,
             senderId = senderId,
@@ -58,14 +61,28 @@ class MessageService(
         )
         messageRepository.save(message)
 
+        // 2. 채팅방 업데이트
         chatRoom.update(message.content, message.createdAt)
-        chatRoomRepository.increaseUnreadCount(chatRoomId, targetId)
-        val updatedUnreadCount = if (targetId == chatRoom.member1Id) {
-            chatRoom.member1UnreadCount + 1
-        } else chatRoom.member2UnreadCount + 1
 
-        // 방 구독 전체 전송
-        val event = ChatEvent(
+        // 3. 상대가 방에 없을 때만 unread 증가
+        val isActive = chatRoomSessionManager.isInChatRoom(targetId, chatRoomId)
+        if (!isActive) {
+            chatRoomRepository.increaseUnreadCount(chatRoomId, targetId)
+        }
+
+        // 4. unreadCount 계산
+        val updatedUnreadCount =
+            if (isActive) {
+                0
+            } else {
+                if (targetId == chatRoom.member1Id)
+                    chatRoom.member1UnreadCount + 1
+                else
+                    chatRoom.member2UnreadCount + 1
+            }
+
+        // 5. 메시지 이벤트 (방 전체)
+        val messageEvent = ChatEvent(
             SEND_MESSAGE,
             MessageSendEvent(
                 message.id,
@@ -76,11 +93,11 @@ class MessageService(
             )
         )
         messagingTemplate.convertAndSend(
-            "/topic/chat-rooms/${chatRoomId}",
-            event
+            "/topic/chat-rooms/$chatRoomId",
+            messageEvent
         )
 
-        // 채널 구독 개인 전송
+        // 6. 채팅방 리스트 이벤트 (상대방)
         val chatRoomEvent = ChatEvent(
             SEND_CHAT_ROOM,
             ChatRoomSendEvent(
@@ -91,7 +108,7 @@ class MessageService(
                 chatRoom.lastMessage,
                 message.type,
                 chatRoom.lastMessageAt,
-                updatedUnreadCount,
+                updatedUnreadCount
             )
         )
         messagingTemplate.convertAndSendToUser(
