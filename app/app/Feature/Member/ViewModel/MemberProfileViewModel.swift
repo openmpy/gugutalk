@@ -109,14 +109,14 @@ final class MemberProfileViewModel: ObservableObject {
         }
     }
 
-    func createDirectRoom(targetId: Int64, content: String) async -> Result<Void, Error> {
+    func createChatRoom(targetId: Int64, content: String) async -> Result<Void, Error> {
         guard !isLoading else { return .failure(CancellationError()) }
 
         isLoading = true
         defer { isLoading = false }
 
         do {
-            let response = try await chatRoomService.createDirectRoom(targetId: targetId)
+            let response = try await chatRoomService.create(targetId: targetId)
 
             guard let data = try? JSONEncoder().encode(
                 MessageSendRequest(
@@ -127,7 +127,7 @@ final class MemberProfileViewModel: ObservableObject {
 
             stomp.send(
                 body: body,
-                to: "/app/chat/\(response.chatRoomId)",
+                to: "/app/chat-rooms/\(response.chatRoomId)/messages",
                 headers: ["content-type": "application/json"],
             )
             return .success(())

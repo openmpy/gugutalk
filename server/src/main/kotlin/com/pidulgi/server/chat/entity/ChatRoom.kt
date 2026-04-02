@@ -34,7 +34,7 @@ class ChatRoom(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "last_message_at")
-    val lastMessageAt: LocalDateTime? = null,
+    var lastMessageAt: LocalDateTime? = null,
 
     @Column(name = "deleted_at")
     var deletedAt: LocalDateTime? = null,
@@ -67,6 +67,6 @@ class ChatRoom(
         }
 
         this.lastMessage = preview
-        this.deletedAt = lastMessageAt
+        this.lastMessageAt = lastMessageAt
     }
 }

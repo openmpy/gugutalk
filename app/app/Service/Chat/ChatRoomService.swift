@@ -7,7 +7,7 @@ final class ChatRoomService {
     let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
-    func createDirectRoom(
+    func create(
         targetId: Int64
     ) async throws -> ChatRoomCreateResponse {
         let url = "\(baseURL)/v1/chat-rooms?targetId=\(targetId)"
@@ -17,52 +17,5 @@ final class ChatRoomService {
             method: .post
         )
         .decodingWithErrorHandling(ChatRoomCreateResponse.self)
-    }
-
-    func deleteDirectRoom(
-        chatRoomId: Int64
-    ) async throws {
-        let url = "\(baseURL)/v1/chat-rooms/\(chatRoomId)"
-
-        try await session.request(
-            url,
-            method: .delete
-        )
-        .validateWithErrorHandling()
-    }
-
-    func gets(
-        cursorId: Int64?,
-        cursorDateAt: String?,
-        size: Int = 20
-    ) async throws -> CursorResponse<ChatRoomGetResponse> {
-        let url = "\(baseURL)/v1/chat-rooms"
-
-        var params: Parameters = [
-            "size": size
-        ]
-        if cursorId != nil && cursorDateAt != nil {
-            params["cursorId"] = cursorId
-            params["cursorDate"] = cursorDateAt
-        }
-
-        return try await session.request(
-            url,
-            method: .get,
-            parameters: params.compactMapValues { $0 }
-        )
-        .decodingWithErrorHandling(CursorResponse<ChatRoomGetResponse>.self)
-    }
-
-    func getTarget(
-        chatRoomId: Int64
-    ) async throws -> ChatRoomGetTargetResponse {
-        let url = "\(baseURL)/v1/chat-rooms/\(chatRoomId)/member"
-
-        return try await session.request(
-            url,
-            method: .get,
-        )
-        .decodingWithErrorHandling(ChatRoomGetTargetResponse.self)
     }
 }

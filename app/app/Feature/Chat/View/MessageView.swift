@@ -17,76 +17,76 @@ struct MessageView: View {
 
     var body: some View {
         VStack {
-            if vm.messages.isEmpty {
-                Spacer()
-                Text("내역이 비어있습니다.")
-                    .foregroundColor(.primary)
-                    .rotationEffect(.degrees(180))
-                Spacer()
-            } else {
-                ScrollView {
-                    LazyVStack {
-                        ForEach(vm.messages) { it in
-                            MessageBubble(
-                                isMe: it.senderId != memberId,
-                                content: it.content,
-                                createdAt: it.createdAt
-                            )
-                            .onAppear {
-                                if it.id == vm.messages.last?.id {
-                                    Task {
-                                        let result = await vm.loadMoreMessage(chatRoomId: chatRoomId)
-                                        if case .failure(let error) = result {
-                                            presentToast(ToastValue(
-                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                message: error.localizedDescription
-                                            ))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                .onTapGesture {
-                    hideKeyboard()
-                }
-            }
+//            if vm.messages.isEmpty {
+//                Spacer()
+//                Text("내역이 비어있습니다.")
+//                    .foregroundColor(.primary)
+//                    .rotationEffect(.degrees(180))
+//                Spacer()
+//            } else {
+//                ScrollView {
+//                    LazyVStack {
+//                        ForEach(vm.messages) { it in
+//                            MessageBubble(
+//                                isMe: it.senderId != memberId,
+//                                content: it.content,
+//                                createdAt: it.createdAt
+//                            )
+//                            .onAppear {
+//                                if it.id == vm.messages.last?.id {
+//                                    Task {
+//                                        let result = await vm.loadMoreMessage(chatRoomId: chatRoomId)
+//                                        if case .failure(let error) = result {
+//                                            presentToast(ToastValue(
+//                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+//                                                message: error.localizedDescription
+//                                            ))
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                    .padding(.horizontal)
+//                }
+//                .onTapGesture {
+//                    hideKeyboard()
+//                }
+//            }
         }
-        .onChange(of: vm.isRoomDelete) { _, isDeleted in
-            if isDeleted {
-                presentToast(ToastValue(
-                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
-                    message: "채팅방이 삭제되었습니다."
-                ))
-                dismiss()
-            }
-        }
-        .onAppear {
-            stomp.subscribe(to: "/topic/chat/\(chatRoomId)")
-            vm.subscribeRoom(chatRoomId: chatRoomId)
-        }
-        .onDisappear {
-            stomp.unsubscribe(from: "/topic/chat/\(chatRoomId)")
-            vm.unsubscribeRoom()
-        }
+//        .onChange(of: vm.isRoomDelete) { _, isDeleted in
+//            if isDeleted {
+//                presentToast(ToastValue(
+//                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
+//                    message: "채팅방이 삭제되었습니다."
+//                ))
+//                dismiss()
+//            }
+//        }
+//        .onAppear {
+//            stomp.subscribe(to: "/topic/chat/\(chatRoomId)")
+//            vm.subscribeRoom(chatRoomId: chatRoomId)
+//        }
+//        .onDisappear {
+//            stomp.unsubscribe(from: "/topic/chat/\(chatRoomId)")
+//            vm.unsubscribeRoom()
+//        }
         .task {
-            let result = await vm.gets(chatRoomId: chatRoomId)
-            if case .failure(let error) = result {
-                presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                    message: error.localizedDescription
-                ))
-            }
-
-            let targetResult = await vm.getTarget(chatRoomId: chatRoomId)
-            if case .failure(let error) = targetResult {
-                presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                    message: error.localizedDescription
-                ))
-            }
+//            let result = await vm.gets(chatRoomId: chatRoomId)
+//            if case .failure(let error) = result {
+//                presentToast(ToastValue(
+//                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+//                    message: error.localizedDescription
+//                ))
+//            }
+//
+//            let targetResult = await vm.getTarget(chatRoomId: chatRoomId)
+//            if case .failure(let error) = targetResult {
+//                presentToast(ToastValue(
+//                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+//                    message: error.localizedDescription
+//                ))
+//            }
         }
         .safeAreaInset(edge: .top) {
             GlassEffectContainer(spacing: 5) {
@@ -113,18 +113,18 @@ struct MessageView: View {
                                 Spacer()
 
                                 Button {
-                                    Task {
-                                        let result = await vm.sendMessage(chatRoomId: chatRoomId, content: message)
-                                        switch result {
-                                        case .success():
-                                            message = ""
-                                        case .failure(let error):
-                                            presentToast(ToastValue(
-                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                message: error.localizedDescription
-                                            ))
-                                        }
-                                    }
+//                                    Task {
+//                                        let result = await vm.sendMessage(chatRoomId: chatRoomId, content: message)
+//                                        switch result {
+//                                        case .success():
+//                                            message = ""
+//                                        case .failure(let error):
+//                                            presentToast(ToastValue(
+//                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+//                                                message: error.localizedDescription
+//                                            ))
+//                                        }
+//                                    }
                                 } label: {
                                     Image(systemName: "paperplane.fill")
                                         .foregroundColor(.white)
@@ -149,7 +149,7 @@ struct MessageView: View {
             .background(Color(.systemBackground).opacity(0.0001))
         }
         .rotationEffect(.degrees(180))
-        .navigationTitle(vm.member?.nickname ?? "")
+//        .navigationTitle(vm.member?.nickname ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
@@ -157,20 +157,20 @@ struct MessageView: View {
                 NavigationLink {
                     MemberProfileView(memberId: memberId)
                 } label: {
-                    KFImage(URL(string: vm.member?.profileUrl ?? ""))
-                        .resizable()
-                        .placeholder {
-                            Image(systemName: "person.fill")
-                                .font(.footnote)
-                                .foregroundStyle(Color(.systemGray3))
-                                .frame(width: 27, height: 27)
-                                .background(Color(.systemGray6), in: Circle())
-                        }
-                        .font(.title)
-                        .frame(width: 27, height: 27)
-                        .foregroundColor(Color(.systemGray6))
-                        .background(Color(.systemGray4))
-                        .clipShape(Circle())
+//                    KFImage(URL(string: vm.member?.profileUrl ?? ""))
+//                        .resizable()
+//                        .placeholder {
+//                            Image(systemName: "person.fill")
+//                                .font(.footnote)
+//                                .foregroundStyle(Color(.systemGray3))
+//                                .frame(width: 27, height: 27)
+//                                .background(Color(.systemGray6), in: Circle())
+//                        }
+//                        .font(.title)
+//                        .frame(width: 27, height: 27)
+//                        .foregroundColor(Color(.systemGray6))
+//                        .background(Color(.systemGray4))
+//                        .clipShape(Circle())
                 }
             }
         }

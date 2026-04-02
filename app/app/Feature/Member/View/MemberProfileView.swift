@@ -172,7 +172,7 @@ struct MemberProfileView: View {
                 }
 
                 Task {
-                    let result = await vm.createDirectRoom(targetId: memberId, content: message)
+                    let result = await vm.createChatRoom(targetId: memberId, content: message)
                     switch result {
                     case .success():
                         presentToast(ToastValue(

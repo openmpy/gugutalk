@@ -14,76 +14,76 @@ struct ChatView: View {
             VStack {
                 ChatStatusSelector(selectStatus: $selectStatus)
                 
-                if vm.chatRooms.isEmpty {
-                    Spacer()
-                    Text("내역이 비어있습니다.")
-                        .foregroundColor(.primary)
-                    Spacer()
-                } else {
-                    ScrollView {
-                        LazyVStack {
-                            ForEach(vm.chatRooms) { it in
-                                NavigationLink {
-                                    MessageView(
-                                        chatRoomId: it.chatRoomId,
-                                        memberId: it.memberId
-                                    )
-                                } label: {
-                                    ChatRow(
-                                        profileUrl: it.profileUrl, 
-                                        nickname: it.nickname,
-                                        updatedAt: it.lastMessageAt ?? "",
-                                        content: it.lastMessage ?? "",
-                                        unreads: 0
-                                    )
-                                }
-                                .onAppear {
-                                    if it.id == vm.chatRooms.last?.id {
-                                        Task {
-                                            let result = await vm.loadMoreChatRoom()
-                                            if case .failure(let error) = result {
-                                                presentToast(ToastValue(
-                                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                    message: error.localizedDescription
-                                                ))
-                                            }
-                                        }
-                                    }
-                                }
-                                .contextMenu {
-                                    Button(role: .destructive) {
-                                        Task {
-                                            let result = await vm.deleteDirectRoom(chatRoomId: it.chatRoomId)
-                                            switch result {
-                                            case .success():
-                                                presentToast(ToastValue(
-                                                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
-                                                    message: "채팅방을 삭제하셨습니다."
-                                                ))
-                                            case .failure(let error):
-                                                presentToast(ToastValue(
-                                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                    message: error.localizedDescription
-                                                ))
-                                            }
-                                        }
-                                    } label: {
-                                        Label("삭제", systemImage: "trash")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+//                if vm.chatRooms.isEmpty {
+//                    Spacer()
+//                    Text("내역이 비어있습니다.")
+//                        .foregroundColor(.primary)
+//                    Spacer()
+//                } else {
+//                    ScrollView {
+//                        LazyVStack {
+//                            ForEach(vm.chatRooms) { it in
+//                                NavigationLink {
+//                                    MessageView(
+//                                        chatRoomId: it.chatRoomId,
+//                                        memberId: it.memberId
+//                                    )
+//                                } label: {
+//                                    ChatRow(
+//                                        profileUrl: it.profileUrl, 
+//                                        nickname: it.nickname,
+//                                        updatedAt: it.lastMessageAt ?? "",
+//                                        content: it.lastMessage ?? "",
+//                                        unreads: 0
+//                                    )
+//                                }
+//                                .onAppear {
+//                                    if it.id == vm.chatRooms.last?.id {
+//                                        Task {
+//                                            let result = await vm.loadMoreChatRoom()
+//                                            if case .failure(let error) = result {
+//                                                presentToast(ToastValue(
+//                                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+//                                                    message: error.localizedDescription
+//                                                ))
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                                .contextMenu {
+//                                    Button(role: .destructive) {
+//                                        Task {
+//                                            let result = await vm.deleteDirectRoom(chatRoomId: it.chatRoomId)
+//                                            switch result {
+//                                            case .success():
+//                                                presentToast(ToastValue(
+//                                                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
+//                                                    message: "채팅방을 삭제하셨습니다."
+//                                                ))
+//                                            case .failure(let error):
+//                                                presentToast(ToastValue(
+//                                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+//                                                    message: error.localizedDescription
+//                                                ))
+//                                            }
+//                                        }
+//                                    } label: {
+//                                        Label("삭제", systemImage: "trash")
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
             }
             .task {
-                let result = await vm.gets()
-                if case .failure(let error) = result {
-                    presentToast(ToastValue(
-                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                        message: error.localizedDescription
-                    ))
-                }
+//                let result = await vm.gets()
+//                if case .failure(let error) = result {
+//                    presentToast(ToastValue(
+//                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+//                        message: error.localizedDescription
+//                    ))
+//                }
             }
             .navigationTitle("채팅")
             .navigationBarTitleDisplayMode(.inline)
