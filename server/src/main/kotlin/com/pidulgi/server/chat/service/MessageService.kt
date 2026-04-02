@@ -2,7 +2,6 @@ package com.pidulgi.server.chat.service
 
 import com.pidulgi.server.chat.dto.request.MessageSendRequest
 import com.pidulgi.server.chat.dto.response.MessageGetResponse
-import com.pidulgi.server.chat.dto.response.MessageSendResponse
 import com.pidulgi.server.chat.entity.Message
 import com.pidulgi.server.chat.repository.ChatRoomMemberRepository
 import com.pidulgi.server.chat.repository.ChatRoomRepository
@@ -25,8 +24,10 @@ class MessageService(
 
     @Transactional
     fun send(senderId: Long, chatRoomId: Long, request: MessageSendRequest) {
-        chatRoomMemberRepository.findByChatRoomIdAndMemberId(chatRoomId, senderId)
-            ?: throw CustomException("채팅방에 접근할 수 없습니다.")
+        val members = chatRoomMemberRepository.findAllByChatRoomId(chatRoomId)
+        members.firstOrNull { it.memberId == senderId }
+            ?: throw IllegalStateException("채팅방에 접근할 수 없습니다.")
+        val targetId = members.first { it.memberId != senderId }.memberId
 
         val message = Message(
             chatRoomId = chatRoomId,
@@ -37,10 +38,11 @@ class MessageService(
         messageRepository.save(message)
         chatRoomRepository.updateLastMessage(chatRoomId, message.id, message.createdAt)
 
-        val response = MessageSendResponse(
+        val response = MessageGetResponse(
             messageId = message.id,
             chatRoomId = chatRoomId,
             senderId = senderId,
+            targetId = targetId,
             content = request.content,
             type = message.type,
             createdAt = message.createdAt

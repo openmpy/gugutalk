@@ -7,6 +7,7 @@ struct MessageView: View {
     let memberId: Int64
 
     @StateObject private var vm = MessageViewModel()
+    @StateObject private var stomp = StompManager.shared
 
     @Environment(\.presentToast) var presentToast
 
@@ -29,6 +30,19 @@ struct MessageView: View {
                                 content: it.content,
                                 createdAt: it.createdAt
                             )
+                            .onAppear {
+                                if it.id == vm.messages.last?.id {
+                                    Task {
+                                        let result = await vm.loadMoreMessage(chatRoomId: chatRoomId)
+                                        if case .failure(let error) = result {
+                                            presentToast(ToastValue(
+                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                                                message: error.localizedDescription
+                                            ))
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     .padding(.horizontal)
@@ -37,6 +51,14 @@ struct MessageView: View {
                     hideKeyboard()
                 }
             }
+        }
+        .onAppear {
+            stomp.subscribe(to: "/topic/chat/\(chatRoomId)")
+            vm.subscribeRoom(chatRoomId: chatRoomId)
+        }
+        .onDisappear {
+            stomp.unsubscribe(from: "/topic/chat/\(chatRoomId)")
+            vm.unsubscribeRoom()
         }
         .task {
             let result = await vm.gets(chatRoomId: chatRoomId)
@@ -72,6 +94,18 @@ struct MessageView: View {
                                 Spacer()
 
                                 Button {
+                                    Task {
+                                        let result = await vm.sendMessage(chatRoomId: chatRoomId, content: message)
+                                        switch result {
+                                        case .success():
+                                            message = ""
+                                        case .failure(let error):
+                                            presentToast(ToastValue(
+                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                                                message: error.localizedDescription
+                                            ))
+                                        }
+                                    }
                                 } label: {
                                     Image(systemName: "paperplane.fill")
                                         .foregroundColor(.white)
