@@ -11,7 +11,8 @@ final class MessageViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var hasNext: Bool = true
     @Published var messages: [MessageGetResponse] = []
-    
+    @Published var member: MessageGetMemberResponse? = nil
+
     private var cursorId: Int64?
     private var cursorDateAt: String?
     private var cancellables = Set<AnyCancellable>()
@@ -84,7 +85,22 @@ final class MessageViewModel: ObservableObject {
         )
         return .success(())
     }
-    
+
+    func getMember(chatRoomId: Int64) async -> Result<Void, Error> {
+        guard !isLoading else { return .failure(CancellationError()) }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let response = try await messageService.getMember(chatRoomId: chatRoomId)
+            member = response
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
+    }
+
     func subscribe(chatRoomId: Int64) {
         stomp.publisher(for: "/topic/chat-rooms/\(chatRoomId)")
             .receive(on: DispatchQueue.main)

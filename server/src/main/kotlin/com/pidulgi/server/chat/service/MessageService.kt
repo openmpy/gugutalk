@@ -6,6 +6,7 @@ import com.pidulgi.server.chat.dto.event.MessageSendEvent
 import com.pidulgi.server.chat.dto.event.type.ChatEventType.SEND_CHAT_ROOM
 import com.pidulgi.server.chat.dto.event.type.ChatEventType.SEND_MESSAGE
 import com.pidulgi.server.chat.dto.request.MessageSendRequest
+import com.pidulgi.server.chat.dto.response.MessageGetMemberResponse
 import com.pidulgi.server.chat.dto.response.MessageGetResponse
 import com.pidulgi.server.chat.entity.Message
 import com.pidulgi.server.chat.repository.ChatRoomRepository
@@ -95,6 +96,7 @@ class MessageService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun gets(
         memberId: Long,
         chatRoomId: Long,
@@ -102,6 +104,13 @@ class MessageService(
         cursorDate: LocalDateTime?,
         size: Int
     ): CursorResponse<MessageGetResponse> {
+        val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
+            ?: throw CustomException("존재하지 않는 채팅방입니다."))
+
+        if (chatRoom.member1Id != memberId && chatRoom.member2Id != memberId) {
+            throw CustomException("접근할 수 없는 채팅방입니다.")
+        }
+
         val result = messageRepository.findMessagesByCursor(
             chatRoomId,
             cursorId,
@@ -126,6 +135,31 @@ class MessageService(
             nextId = last?.messageId,
             nextDateAt = last?.createdAt,
             hasNext = hasNext
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getMember(memberId: Long, chatRoomId: Long): MessageGetMemberResponse {
+        val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
+            ?: throw CustomException("존재하지 않는 채팅방입니다."))
+
+        if (chatRoom.member1Id != memberId && chatRoom.member2Id != memberId) {
+            throw CustomException("접근할 수 없는 채팅방입니다.")
+        }
+
+        val targetId = if (chatRoom.member1Id == memberId) {
+            chatRoom.member2Id
+        } else {
+            chatRoom.member1Id
+        }
+
+        val target = (memberRepository.findByIdOrNull(targetId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+
+        return MessageGetMemberResponse(
+            target.id,
+            target.profileKey?.let { key -> "$endpoint$key" },
+            target.nickname,
         )
     }
 }
