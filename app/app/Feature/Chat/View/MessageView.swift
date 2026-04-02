@@ -75,28 +75,16 @@ struct MessageView: View {
         }
         .task {
             let result = await vm.gets(chatRoomId: chatRoomId)
-            if case .failure(let error) = result {
+            switch result {
+            case .success():
+                _ = await vm.getMember(chatRoomId: chatRoomId)
+                _ = await vm.markAsRead(chatRoomId: chatRoomId)
+            case .failure(let error):
                 presentToast(ToastValue(
                     icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                     message: error.localizedDescription
                 ))
                 dismiss()
-            }
-
-            let memberResult = await vm.getMember(chatRoomId: chatRoomId)
-            if case .failure(let error) = memberResult {
-                presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                    message: error.localizedDescription
-                ))
-            }
-
-            let markResult = await vm.markAsRead(chatRoomId: chatRoomId)
-            if case .failure(let error) = markResult {
-                presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                    message: error.localizedDescription
-                ))
             }
         }
         .safeAreaInset(edge: .top) {

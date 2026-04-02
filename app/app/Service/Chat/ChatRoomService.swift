@@ -67,4 +67,28 @@ final class ChatRoomService {
         )
         .validateWithErrorHandling()
     }
+
+    func search(
+        keyword: String,
+        cursorId: Int64?,
+        cursorDateAt: String?,
+        size: Int = 20
+    ) async throws -> CursorResponse<ChatRoomGetResponse> {
+        let url = "\(baseURL)/v1/chat-rooms/search?keyword=\(keyword)"
+
+        var params: Parameters = [
+            "size": size
+        ]
+        if cursorId != nil && cursorDateAt != nil {
+            params["cursorId"] = cursorId
+            params["cursorDate"] = cursorDateAt
+        }
+
+        return try await session.request(
+            url,
+            method: .get,
+            parameters: params.compactMapValues { $0 }
+        )
+        .decodingWithErrorHandling(CursorResponse<ChatRoomGetResponse>.self)
+    }
 }

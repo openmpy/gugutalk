@@ -54,4 +54,16 @@ class ChatRoomController(
         chatRoomService.markAsRead(memberId, chatRoomId)
         return ResponseEntity.ok().build()
     }
+
+    @GetMapping("/v1/chat-rooms/search")
+    fun search(
+        @Login memberId: Long,
+        @RequestParam(value = "keyword") keyword: String,
+        @RequestParam(required = false) cursorId: Long?,
+        @RequestParam(required = false) cursorDate: LocalDateTime?,
+        @RequestParam(defaultValue = "20") size: Int,
+    ): ResponseEntity<CursorResponse<ChatRoomGetResponse>> {
+        val response = chatRoomService.search(memberId, keyword, cursorId, cursorDate, size)
+        return ResponseEntity.ok(response)
+    }
 }

@@ -96,7 +96,6 @@ class ChatRoomService(
         cursorDate: LocalDateTime?,
         size: Int
     ): CursorResponse<ChatRoomGetResponse> {
-
         val result = chatRoomRepository.findChatRoomsByCursor(
             memberId = memberId,
             status = status,
@@ -137,6 +136,49 @@ class ChatRoomService(
             ?: return
 
         chatRoom.read(memberId, lastMessageId)
+    }
+
+    @Transactional(readOnly = true)
+    fun search(
+        memberId: Long,
+        keyword: String,
+        cursorId: Long?,
+        cursorDate: LocalDateTime?,
+        size: Int
+    ): CursorResponse<ChatRoomGetResponse> {
+        if (keyword.length < 2) {
+            throw CustomException("검색어는 2자 이상이어야 합니다.")
+        }
+
+        val result = chatRoomRepository.searchChatRoomsByCursor(
+            memberId = memberId,
+            keyword = keyword,
+            cursorId = cursorId,
+            cursorDate = cursorDate,
+            size = size + 1
+        ).map {
+            ChatRoomGetResponse(
+                chatRoomId = it.chatRoomId,
+                targetId = it.targetId,
+                nickname = it.nickname,
+                profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
+                lastMessage = it.lastMessage,
+                lastMessageAt = it.lastMessageAt,
+                sortAt = it.sortAt,
+                unreadCount = it.unreadCount,
+            )
+        }
+
+        val hasNext = result.size > size
+        val items = if (hasNext) result.dropLast(1) else result
+        val last = items.lastOrNull()
+
+        return CursorResponse(
+            payload = items,
+            nextId = last?.chatRoomId,
+            nextDateAt = last?.sortAt,
+            hasNext = hasNext
+        )
     }
 
     private fun findChatRoom(memberA: Long, memberB: Long): ChatRoom? {

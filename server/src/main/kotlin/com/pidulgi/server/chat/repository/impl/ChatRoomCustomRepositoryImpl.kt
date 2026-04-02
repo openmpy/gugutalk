@@ -81,6 +81,76 @@ class ChatRoomCustomRepositoryImpl(
         return (query.resultList as List<Array<Any?>>).map(::toChatRoomItemResponse)
     }
 
+    override fun searchChatRoomsByCursor(
+        memberId: Long,
+        keyword: String?,
+        cursorId: Long?,
+        cursorDate: LocalDateTime?,
+        size: Int
+    ): List<ChatRoomItemResponse> {
+        val cursorCondition = if (cursorId != null && cursorDate != null) {
+            """
+            AND (
+                COALESCE(cr.last_message_at, cr.created_at) < :cursorDate
+                OR (
+                    COALESCE(cr.last_message_at, cr.created_at) = :cursorDate
+                    AND cr.id < :cursorId
+                )
+            )
+            """.trimIndent()
+        } else ""
+
+        val keywordCondition = if (!keyword.isNullOrBlank()) {
+            """
+            AND m.nickname ILIKE '%' || :keyword || '%'
+            """.trimIndent()
+        } else ""
+
+        val sql = """
+            SELECT 
+                cr.id,
+                m.id AS target_id,
+                m.nickname,
+                m.profile_key,
+                cr.last_message,
+                cr.last_message_at,
+                COALESCE(cr.last_message_at, cr.created_at) AS sort_at,
+                CASE 
+                    WHEN cr.member1_id = :memberId THEN cr.member1_unread_count
+                    ELSE cr.member2_unread_count
+                END AS unread_count
+            FROM chat_room cr
+            JOIN member m 
+                ON m.id = CASE 
+                    WHEN cr.member1_id = :memberId THEN cr.member2_id
+                    ELSE cr.member1_id
+                END
+            WHERE cr.deleted_at IS NULL
+                AND (cr.member1_id = :memberId OR cr.member2_id = :memberId)
+                $keywordCondition
+                $cursorCondition
+            ORDER BY sort_at DESC, cr.id DESC
+            LIMIT :size
+        """.trimIndent()
+
+        val query = entityManager.createNativeQuery(sql).apply {
+            setParameter("memberId", memberId)
+            setParameter("size", size)
+
+            if (!keyword.isNullOrBlank()) {
+                setParameter("keyword", keyword)
+            }
+
+            if (cursorId != null && cursorDate != null) {
+                setParameter("cursorId", cursorId)
+                setParameter("cursorDate", cursorDate)
+            }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        return (query.resultList as List<Array<Any?>>).map(::toChatRoomItemResponse)
+    }
+
     private fun toChatRoomItemResponse(row: Array<Any?>) =
         ChatRoomItemResponse(
             chatRoomId = (row[0] as Number).toLong(),

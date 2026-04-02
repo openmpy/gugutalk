@@ -12,4 +12,12 @@ interface ChatRoomCustomRepository {
         cursorDate: LocalDateTime?,
         size: Int
     ): List<ChatRoomItemResponse>
+
+    fun searchChatRoomsByCursor(
+        memberId: Long,
+        keyword: String?,
+        cursorId: Long?,
+        cursorDate: LocalDateTime?,
+        size: Int
+    ): List<ChatRoomItemResponse>
 }
