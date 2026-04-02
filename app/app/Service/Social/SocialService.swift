@@ -40,7 +40,8 @@ final class SocialService {
         try await session.request(
             url,
             method: .delete
-        ).validateWithErrorHandling()
+        )
+        .validateWithErrorHandling()
     }
     
     func getLikedMember(

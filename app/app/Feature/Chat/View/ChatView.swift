@@ -49,27 +49,27 @@ struct ChatView: View {
                                         }
                                     }
                                 }
-//                                .contextMenu {
-//                                    Button(role: .destructive) {
-//                                        Task {
-//                                            let result = await vm.deleteDirectRoom(chatRoomId: it.chatRoomId)
-//                                            switch result {
-//                                            case .success():
-//                                                presentToast(ToastValue(
-//                                                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
-//                                                    message: "채팅방을 삭제하셨습니다."
-//                                                ))
-//                                            case .failure(let error):
-//                                                presentToast(ToastValue(
-//                                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-//                                                    message: error.localizedDescription
-//                                                ))
-//                                            }
-//                                        }
-//                                    } label: {
-//                                        Label("삭제", systemImage: "trash")
-//                                    }
-//                                }
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        Task {
+                                            let result = await vm.delete(chatRoomId: it.chatRoomId)
+                                            switch result {
+                                            case .success():
+                                                presentToast(ToastValue(
+                                                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
+                                                    message: "채팅방을 삭제하셨습니다."
+                                                ))
+                                            case .failure(let error):
+                                                presentToast(ToastValue(
+                                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                                                    message: error.localizedDescription
+                                                ))
+                                            }
+                                        }
+                                    } label: {
+                                        Label("삭제", systemImage: "trash")
+                                    }
+                                }
                             }
                         }
                     }

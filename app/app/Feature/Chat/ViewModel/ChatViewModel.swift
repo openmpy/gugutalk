@@ -61,21 +61,47 @@ final class ChatViewModel: ObservableObject {
         }
     }
 
+    func delete(chatRoomId: Int64) async -> Result<Void, Error> {
+        guard !isLoading else { return .success(()) }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await chatRoomService.delete(chatRoomId: chatRoomId)
+            chatRooms.removeAll { $0.chatRoomId == chatRoomId }
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
+    }
+
     // MARK: - 이벤트
 
     func subscribe() {
         stomp.publisher(for: "/user/queue/chat-rooms")
-            .compactMap {
-                try? JSONDecoder().decode(ChatEvent<ChatRoomSendEvent>.self, from: Data($0.utf8))
-            }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] event in
+            .sink { [weak self] message in
                 guard let self = self else { return }
-                guard event.eventType == "SEND_CHAT_ROOM",
-                      let payload = event.payload
-                else { return }
+                guard let data = message.data(using: .utf8) else { return }
+                guard let base = try? JSONDecoder().decode(ChatBaseEvent.self, from: data) else {
+                    return
+                }
 
-                self.upsertChatRoom(payload)
+                switch base.eventType {
+                case "SEND_CHAT_ROOM":
+                    if let event = try? JSONDecoder().decode(ChatEvent<ChatRoomSendEvent>.self, from: data),
+                       let payload = event.payload {
+                        self.upsertChatRoom(payload)
+                    }
+                case "DELETE_CHAT_ROOM":
+                    if let event = try? JSONDecoder().decode(ChatEvent<ChatRoomDeleteEvent>.self, from: data),
+                       let payload = event.payload {
+                        self.deleteChatRoom(payload.chatRoomId)
+                    }
+                default:
+                    break
+                }
             }
             .store(in: &cancellables)
     }
@@ -98,5 +124,9 @@ final class ChatViewModel: ObservableObject {
             chatRooms.remove(at: index)
         }
         chatRooms.insert(newRoom, at: 0)
+    }
+
+    private func deleteChatRoom(_ chatRoomId: Int64) {
+        self.chatRooms.removeAll { $0.chatRoomId == chatRoomId }
     }
 }
