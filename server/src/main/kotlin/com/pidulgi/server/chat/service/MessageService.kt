@@ -31,7 +31,7 @@ class MessageService(
 
     @Transactional
     fun send(senderId: Long, chatRoomId: Long, request: MessageSendRequest) {
-        val sender = (memberRepository.findByIdOrNull(chatRoomId)
+        val sender = (memberRepository.findByIdOrNull(senderId)
             ?: throw CustomException("존재하지 않는 회원입니다."))
         val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
             ?: throw CustomException("존재하지 않는 채팅방입니다."))
