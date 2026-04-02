@@ -1,6 +1,8 @@
 package com.pidulgi.server.chat.service
 
+import com.pidulgi.server.chat.dto.event.ChatEvent
 import com.pidulgi.server.chat.dto.event.MessageSendEvent
+import com.pidulgi.server.chat.dto.event.type.ChatEventType.SEND_MESSAGE
 import com.pidulgi.server.chat.dto.request.MessageSendRequest
 import com.pidulgi.server.chat.entity.Message
 import com.pidulgi.server.chat.repository.ChatRoomRepository
@@ -38,12 +40,15 @@ class MessageService(
         messageRepository.save(message)
 
         // 메시지 이벤트 전송
-        val event = MessageSendEvent(
-            message.id,
-            senderId,
-            request.content,
-            request.type,
-            message.createdAt,
+        val event = ChatEvent(
+            SEND_MESSAGE,
+            MessageSendEvent(
+                message.id,
+                senderId,
+                request.content,
+                request.type,
+                message.createdAt,
+            )
         )
         messagingTemplate.convertAndSend(
             "/topic/chat-rooms/${chatRoomId}",

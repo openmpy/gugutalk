@@ -32,7 +32,7 @@ class ChatRoom(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "deleted_at")
-    val deletedAt: LocalDateTime? = null,
+    var deletedAt: LocalDateTime? = null,
 ) {
 
     companion object {
@@ -48,5 +48,9 @@ class ChatRoom(
                 member2Id = member2
             )
         }
+    }
+
+    fun delete() {
+        this.deletedAt = LocalDateTime.now()
     }
 }
