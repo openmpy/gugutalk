@@ -80,6 +80,7 @@ class MessageService(
             SEND_CHAT_ROOM,
             ChatRoomSendEvent(
                 chatRoomId,
+                senderId,
                 sender.profileKey?.let { key -> "$endpoint$key" },
                 sender.nickname,
                 chatRoom.lastMessage,

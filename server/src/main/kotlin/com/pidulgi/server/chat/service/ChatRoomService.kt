@@ -100,6 +100,7 @@ class ChatRoomService(
         ).map {
             ChatRoomGetResponse(
                 chatRoomId = it.chatRoomId,
+                targetId = it.targetId,
                 nickname = it.nickname,
                 profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
                 lastMessage = it.lastMessage,

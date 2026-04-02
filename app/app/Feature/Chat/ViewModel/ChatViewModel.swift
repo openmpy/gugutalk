@@ -113,6 +113,7 @@ final class ChatViewModel: ObservableObject {
     private func upsertChatRoom(_ event: ChatRoomSendEvent) {
         let newRoom = ChatRoomGetResponse(
             chatRoomId: event.chatRoomId,
+            targetId: event.senderId,
             nickname: event.nickname,
             profileUrl: event.profileUrl,
             lastMessage: event.lastMessage,

@@ -5,6 +5,7 @@ import Kingfisher
 struct MessageView: View {
 
     let chatRoomId: Int64
+    let memberId: Int64
 
     @StateObject private var vm = MessageViewModel()
     @StateObject private var stomp = StompManager.shared
@@ -148,8 +149,9 @@ struct MessageView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
-                    //                    MemberProfileView(memberId: memberId)
+                    MemberProfileView(memberId: memberId)
                 } label: {
+                    Text("\(memberId)")
                     //                    KFImage(URL(string: vm.member?.profileUrl ?? ""))
                     //                        .resizable()
                     //                        .placeholder {

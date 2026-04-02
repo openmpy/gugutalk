@@ -25,7 +25,8 @@ struct ChatView: View {
                             ForEach(vm.chatRooms) { it in
                                 NavigationLink {
                                     MessageView(
-                                        chatRoomId: it.chatRoomId
+                                        chatRoomId: it.chatRoomId,
+                                        memberId: it.targetId
                                     )
                                 } label: {
                                     ChatRow(

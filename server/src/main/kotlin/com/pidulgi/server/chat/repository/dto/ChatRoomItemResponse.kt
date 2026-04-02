@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 data class ChatRoomItemResponse(
 
     val chatRoomId: Long,
+    val targetId: Long,
     val nickname: String,
     val profileKey: String?,
     val lastMessage: String?,

@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 data class ChatRoomSendEvent(
 
     val chatRoomId: Long,
+    val senderId: Long,
     val profileUrl: String?,
     val nickname: String,
     val lastMessage: String?,

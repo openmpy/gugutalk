@@ -33,6 +33,7 @@ class ChatRoomCustomRepositoryImpl(
         val sql = """
             SELECT 
                 cr.id,
+                m.id AS target_id,
                 m.nickname,
                 m.profile_key,
                 cr.last_message,
@@ -67,10 +68,11 @@ class ChatRoomCustomRepositoryImpl(
 
     private fun toChatRoomItemResponse(row: Array<Any?>) = ChatRoomItemResponse(
         chatRoomId = (row[0] as Number).toLong(),
-        nickname = row[1] as String,
-        profileKey = row[2] as String?,
-        lastMessage = row[3] as String?,
-        lastMessageAt = row[4] as LocalDateTime?,
-        sortAt = row[5] as LocalDateTime,
+        targetId = (row[1] as Number).toLong(),
+        nickname = row[2] as String,
+        profileKey = row[3] as String?,
+        lastMessage = row[4] as String?,
+        lastMessageAt = row[5] as LocalDateTime?,
+        sortAt = row[6] as LocalDateTime,
     )
 }
