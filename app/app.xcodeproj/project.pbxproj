@@ -11,6 +11,7 @@
 		9D9F1E782F7B9A3F00A9C891 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E772F7B9A3F00A9C891 /* Kingfisher */; };
 		9D9F1E7F2F7BA17100A9C891 /* Zoomable in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E7E2F7BA17100A9C891 /* Zoomable */; };
 		9D9F1EA32F7C340900A9C891 /* Toasts in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1EA22F7C340900A9C891 /* Toasts */; };
+		9D9F1EEA2F7E1E5200A9C891 /* SwiftStomp in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1EE92F7E1E5200A9C891 /* SwiftStomp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +34,7 @@
 				9D9F1EA32F7C340900A9C891 /* Toasts in Frameworks */,
 				9D9F1E782F7B9A3F00A9C891 /* Kingfisher in Frameworks */,
 				9D9F1E262F7B029900A9C891 /* Alamofire in Frameworks */,
+				9D9F1EEA2F7E1E5200A9C891 /* SwiftStomp in Frameworks */,
 				9D9F1E7F2F7BA17100A9C891 /* Zoomable in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -80,6 +82,7 @@
 				9D9F1E772F7B9A3F00A9C891 /* Kingfisher */,
 				9D9F1E7E2F7BA17100A9C891 /* Zoomable */,
 				9D9F1EA22F7C340900A9C891 /* Toasts */,
+				9D9F1EE92F7E1E5200A9C891 /* SwiftStomp */,
 			);
 			productName = app;
 			productReference = 9D9F1DBC2F79C1A600A9C891 /* app.app */;
@@ -114,6 +117,7 @@
 				9D9F1E762F7B9A3F00A9C891 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				9D9F1E7D2F7BA17100A9C891 /* XCRemoteSwiftPackageReference "Zoomable" */,
 				9D9F1EA12F7C340900A9C891 /* XCRemoteSwiftPackageReference "swiftui-toasts" */,
+				9D9F1EE82F7E1E5200A9C891 /* XCRemoteSwiftPackageReference "SwiftStomp" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9D9F1DBD2F79C1A600A9C891 /* Products */;
@@ -408,6 +412,14 @@
 				minimumVersion = 1.1.2;
 			};
 		};
+		9D9F1EE82F7E1E5200A9C891 /* XCRemoteSwiftPackageReference "SwiftStomp" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Romixery/SwiftStomp.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -430,6 +442,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9D9F1EA12F7C340900A9C891 /* XCRemoteSwiftPackageReference "swiftui-toasts" */;
 			productName = Toasts;
+		};
+		9D9F1EE92F7E1E5200A9C891 /* SwiftStomp */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D9F1EE82F7E1E5200A9C891 /* XCRemoteSwiftPackageReference "SwiftStomp" */;
+			productName = SwiftStomp;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

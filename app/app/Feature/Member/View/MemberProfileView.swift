@@ -7,6 +7,8 @@ struct MemberProfileView: View {
 
     @StateObject private var vm = MemberProfileViewModel()
 
+    @AppStorage("saveMessage") private var saveMessage: String = ""
+
     @Environment(\.presentToast) var presentToast
 
     @State private var showMenu: Bool = false
@@ -61,6 +63,7 @@ struct MemberProfileView: View {
                     }
 
                     Button {
+                        message = saveMessage
                         showMessage = true
                     } label: {
                         Image(systemName: "envelope.fill")
@@ -160,7 +163,30 @@ struct MemberProfileView: View {
             TextField("내용 입력", text: $message)
 
             Button("전송", role: .confirm) {
-                if message.isEmpty { return }
+                if message.isEmpty {
+                    presentToast(ToastValue(
+                        icon: Image(systemName: "exclamationmark.circle.fill").foregroundColor(.blue),
+                        message: "내용을 입력해주세요."
+                    ))
+                    return
+                }
+
+                Task {
+                    let result = await vm.createDirectRoom(targetId: memberId, content: message)
+                    switch result {
+                    case .success():
+                        presentToast(ToastValue(
+                            icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
+                            message: "쪽지가 전송되었습니다."
+                        ))
+                        saveMessage = message
+                    case .failure(let error):
+                        presentToast(ToastValue(
+                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                            message: error.localizedDescription
+                        ))
+                    }
+                }
             }
             Button("취소", role: .cancel) { }
         }

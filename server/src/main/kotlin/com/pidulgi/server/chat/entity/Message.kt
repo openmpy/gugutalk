@@ -21,6 +21,7 @@ class Message(
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     val content: String,
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     val type: MessageType = MessageType.TEXT,
 

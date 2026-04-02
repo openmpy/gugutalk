@@ -8,6 +8,8 @@ final class MemberProfileViewModel: ObservableObject {
     private let memberImageService = MemberImageService.shared
     private let socialService = SocialService.shared
     private let privateImageGrantService = PrivateImageGrantService.shared
+    private let chatRoomService = ChatRoomService.shared
+    private let stomp = StompManager.shared
 
     @Published var isLoading: Bool = false
     @Published var member: MemberGetResponse? = nil
@@ -78,7 +80,7 @@ final class MemberProfileViewModel: ObservableObject {
         guard let memberId = member?.memberId else { return .success(()) }
 
         isPrivateImageGranted.toggle()
-        
+
         do {
             if isPrivateImageGranted {
                 try await privateImageGrantService.grant(memberId: memberId)
@@ -101,6 +103,33 @@ final class MemberProfileViewModel: ObservableObject {
         do {
             let response = try await memberImageService.getPrivateImages(granterId: granterId)
             privateImages = response.images
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    func createDirectRoom(targetId: Int64, content: String) async -> Result<Void, Error> {
+        guard !isLoading else { return .failure(CancellationError()) }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let response = try await chatRoomService.createDirectRoom(targetId: targetId)
+
+            guard let data = try? JSONEncoder().encode(
+                MessageSendRequest(
+                    content: content,
+                    type: "TEXT"
+                )
+            ), let body = String(data: data, encoding: .utf8) else { return .failure(CancellationError()) }
+
+            stomp.send(
+                body: body,
+                to: "/app/chat/\(response.chatRoomId)",
+                headers: ["content-type": "application/json"],
+            )
             return .success(())
         } catch {
             return .failure(error)
