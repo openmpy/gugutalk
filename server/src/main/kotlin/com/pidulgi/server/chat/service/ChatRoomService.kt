@@ -1,6 +1,7 @@
 package com.pidulgi.server.chat.service
 
 import com.pidulgi.server.chat.dto.event.ChatEvent
+import com.pidulgi.server.chat.dto.event.ChatRoomDeleteEvent
 import com.pidulgi.server.chat.dto.event.type.ChatEventType.DELETE_CHAT_ROOM
 import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
 import com.pidulgi.server.chat.entity.ChatRoom
@@ -46,10 +47,15 @@ class ChatRoomService(
             throw CustomException("접근할 수 없는 채팅방입니다.")
         }
 
-        // 채팅방 삭제
+        val targetId = if (chatRoom.member1Id == memberId) {
+            chatRoom.member2Id
+        } else {
+            chatRoom.member1Id
+        }
+
         chatRoom.delete()
 
-        // 채팅방 삭제 이벤트 전송
+        // 방 구독 전체 전송
         val event = ChatEvent(
             DELETE_CHAT_ROOM,
             null
@@ -57,6 +63,19 @@ class ChatRoomService(
         messagingTemplate.convertAndSend(
             "/topic/chat-rooms/${chatRoomId}",
             event
+        )
+
+        // 채널 구독 개인 전송
+        val chatRoomEvent = ChatEvent(
+            DELETE_CHAT_ROOM,
+            ChatRoomDeleteEvent(
+                chatRoomId,
+            )
+        )
+        messagingTemplate.convertAndSendToUser(
+            targetId.toString(),
+            "/queue/chat-rooms",
+            chatRoomEvent
         )
     }
 

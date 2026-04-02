@@ -4,6 +4,8 @@ import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
 import java.time.LocalDateTime
 
+private const val PREVIEW_MAX_LENGTH = 70
+
 @SQLRestriction("deleted_at IS NULL")
 @Entity
 @Table(name = "chat_room")
@@ -20,7 +22,7 @@ class ChatRoom(
     val member2Id: Long,
 
     @Column(name = "last_message")
-    val lastMessage: String? = null,
+    var lastMessage: String? = null,
 
     @Column(name = "member1_last_read_message_id")
     val member1LastReadMessageId: Long? = null,
@@ -30,6 +32,9 @@ class ChatRoom(
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
+
+    @Column(name = "last_message_at")
+    val lastMessageAt: LocalDateTime? = null,
 
     @Column(name = "deleted_at")
     var deletedAt: LocalDateTime? = null,
@@ -52,5 +57,16 @@ class ChatRoom(
 
     fun delete() {
         this.deletedAt = LocalDateTime.now()
+    }
+
+    fun update(lastMessage: String, lastMessageAt: LocalDateTime) {
+        val preview = if (lastMessage.length > PREVIEW_MAX_LENGTH) {
+            lastMessage.substring(0, PREVIEW_MAX_LENGTH - 3) + "..."
+        } else {
+            lastMessage
+        }
+
+        this.lastMessage = preview
+        this.deletedAt = lastMessageAt
     }
 }
