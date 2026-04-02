@@ -23,7 +23,7 @@ struct ChatRow: View {
 
                     Spacer()
 
-                    Text(updatedAt.relativeTime)
+                    Text(updatedAt.customTime)
                         .foregroundColor(.gray)
                         .font(.footnote)
                 }

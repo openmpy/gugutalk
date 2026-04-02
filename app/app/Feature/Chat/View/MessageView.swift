@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MessageView: View {
 
+    let chatRoomId: Int64
     let memberId: Int64
 
     @State private var message: String = ""
@@ -89,11 +90,5 @@ struct MessageView: View {
                 }
             }
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        MessageView(memberId: 0)
     }
 }

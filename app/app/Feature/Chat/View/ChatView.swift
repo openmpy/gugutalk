@@ -1,6 +1,11 @@
 import SwiftUI
+import Toasts
 
 struct ChatView: View {
+
+    @StateObject private var vm = ChatViewModel()
+
+    @Environment(\.presentToast) var presentToast
 
     @State private var selectStatus: String = "ALL"
 
@@ -8,22 +13,54 @@ struct ChatView: View {
         NavigationStack {
             VStack {
                 ChatStatusSelector(selectStatus: $selectStatus)
-
-                ScrollView {
-                    LazyVStack {
-                        ForEach(0..<10) { _ in
-                            NavigationLink {
-                                MessageView(memberId: 0)
-                            } label: {
-                                ChatRow(
-                                    nickname: "닉네임",
-                                    updatedAt: "2026-03-30T12:00:00.0000",
-                                    content: "마지막 채팅 내용",
-                                    unreads: 1
-                                )
+                
+                if vm.chatRooms.isEmpty {
+                    Spacer()
+                    Text("내역이 비어있습니다.")
+                        .foregroundColor(.primary)
+                    Spacer()
+                } else {
+                    ScrollView {
+                        LazyVStack {
+                            ForEach(vm.chatRooms) { it in
+                                NavigationLink {
+                                    MessageView(
+                                        chatRoomId: it.chatRoomId,
+                                        memberId: it.memberId
+                                    )
+                                } label: {
+                                    ChatRow(
+                                        nickname: it.nickname,
+                                        updatedAt: it.lastMessageAt ?? "",
+                                        content: it.lastMessage ?? "",
+                                        unreads: 0
+                                    )
+                                }
+                                .onAppear {
+                                    if it.id == vm.chatRooms.last?.id {
+                                        Task {
+                                            let result = await vm.loadMoreChatRoom()
+                                            if case .failure(let error) = result {
+                                                presentToast(ToastValue(
+                                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                                                    message: error.localizedDescription
+                                                ))
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
+                }
+            }
+            .task {
+                let result = await vm.gets()
+                if case .failure(let error) = result {
+                    presentToast(ToastValue(
+                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                        message: error.localizedDescription
+                    ))
                 }
             }
             .navigationTitle("채팅")

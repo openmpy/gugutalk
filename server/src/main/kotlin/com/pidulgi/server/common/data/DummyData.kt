@@ -1,5 +1,11 @@
 package com.pidulgi.server.common.data
 
+import com.pidulgi.server.chat.entity.ChatRoom
+import com.pidulgi.server.chat.entity.ChatRoomMember
+import com.pidulgi.server.chat.entity.Message
+import com.pidulgi.server.chat.repository.ChatRoomMemberRepository
+import com.pidulgi.server.chat.repository.ChatRoomRepository
+import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.PrivateImageGrant
 import com.pidulgi.server.member.entity.type.Gender
@@ -14,6 +20,7 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 import java.util.*
 
 @Component
@@ -50,6 +57,9 @@ class DummyDataInit {
         likeRepository: LikeRepository,
         privateImageGrantRepository: PrivateImageGrantRepository,
         blockRepository: BlockRepository,
+        chatRoomRepository: ChatRoomRepository,
+        chatRoomMemberRepository: ChatRoomMemberRepository,
+        messageRepository: MessageRepository,
     ): CommandLineRunner {
         return CommandLineRunner {
             // 회원
@@ -111,6 +121,37 @@ class DummyDataInit {
                 }
 
                 blockRepository.saveAll(blocks)
+            }
+
+            // 채팅방
+            if (chatRoomRepository.count() == 0L) {
+                (2 until 1000).map { i ->
+                    val message = Message(
+                        chatRoomId = i.toLong(),
+                        senderId = 1,
+                        content = "안녕하세요$i",
+                        createdAt = LocalDateTime.now()
+                    )
+                    messageRepository.save(message)
+
+                    val chatRoom = ChatRoom(
+                        lastMessageId = message.id,
+                        lastMessageAt = message.createdAt,
+                    )
+                    chatRoomRepository.save(chatRoom)
+
+                    val memberChatRoom = ChatRoomMember(
+                        chatRoomId = chatRoom.id,
+                        memberId = 1,
+                        lastReadAt = message.createdAt,
+                    )
+                    val targetChatRoom = ChatRoomMember(
+                        chatRoomId = chatRoom.id,
+                        memberId = i.toLong(),
+                        lastReadAt = null
+                    )
+                    chatRoomMemberRepository.saveAll(listOf(memberChatRoom, targetChatRoom))
+                }
             }
 
             println("회원 데이터가 생성되었습니다. ${memberRepository.count()}")

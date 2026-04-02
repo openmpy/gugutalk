@@ -1,15 +1,19 @@
 package com.pidulgi.server.chat.service
 
 import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
+import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
 import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.entity.ChatRoomMember
 import com.pidulgi.server.chat.repository.ChatRoomMemberRepository
 import com.pidulgi.server.chat.repository.ChatRoomRepository
+import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class ChatRoomService(
@@ -18,6 +22,9 @@ class ChatRoomService(
     private val chatRoomMemberRepository: ChatRoomMemberRepository,
     private val memberRepository: MemberRepository,
 ) {
+
+    @Value("\${s3.endpoint}")
+    private lateinit var endpoint: String
 
     @Transactional
     fun createDirectRoom(
@@ -34,11 +41,9 @@ class ChatRoomService(
         chatRoomRepository.findDirectRoom(memberId, targetId)
             ?.let { return ChatRoomCreateResponse(it.id) }
 
-        // 채팅방 생성
         val chatRoom = ChatRoom()
         chatRoomRepository.save(chatRoom)
 
-        // 채팅 회원 생성
         val sender = ChatRoomMember(
             chatRoomId = chatRoom.id,
             memberId = memberId,
@@ -50,5 +55,34 @@ class ChatRoomService(
         chatRoomMemberRepository.saveAll(listOf(sender, receiver))
 
         return ChatRoomCreateResponse(chatRoom.id)
+    }
+
+    @Transactional(readOnly = true)
+    fun gets(
+        memberId: Long,
+        cursorId: Long?,
+        cursorDate: LocalDateTime?,
+        size: Int = 20
+    ): CursorResponse<ChatRoomGetResponse> {
+        val result = chatRoomRepository.findMemberByCursor(memberId, cursorId, cursorDate, size + 1)
+            .map {
+                ChatRoomGetResponse(
+                    chatRoomId = it.chatRoomId,
+                    memberId = it.memberId,
+                    thumbnail = "${endpoint}${it.profileKey}",
+                    nickname = it.nickname,
+                    lastMessage = it.lastMessage,
+                    lastMessageAt = it.lastMessageAt,
+                )
+            }
+        val hasNext = result.size > size
+        val items = if (hasNext) result.dropLast(1) else result
+
+        return CursorResponse(
+            payload = items,
+            nextId = if (hasNext) items.last().chatRoomId else null,
+            nextDateAt = if (hasNext) items.last().lastMessageAt else null,
+            hasNext = hasNext
+        )
     }
 }

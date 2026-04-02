@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
 
-interface ChatRoomRepository : JpaRepository<ChatRoom, Long> {
+interface ChatRoomRepository : JpaRepository<ChatRoom, Long>, ChatRoomCustomRepository {
 
     @Query(
         value = """
