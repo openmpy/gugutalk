@@ -7,7 +7,8 @@ final class MessageViewModel: ObservableObject {
     private let chatRoomService = ChatRoomService.shared
     private let messageService = MessageService.shared
     private let stomp = StompManager.shared
-    
+
+    @Published var isRoomDelete: Bool = false
     @Published var isLoading: Bool = false
     @Published var hasNext: Bool = true
     @Published var messages: [MessageGetResponse] = []
@@ -117,6 +118,8 @@ final class MessageViewModel: ObservableObject {
                        let payload = event.payload {
                         insertMessage(payload)
                     }
+                case "DELETE_CHAT_ROOM":
+                    isRoomDelete = true
                 default:
                     break
                 }

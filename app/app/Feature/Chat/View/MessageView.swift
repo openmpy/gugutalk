@@ -54,15 +54,15 @@ struct MessageView: View {
                 }
             }
         }
-        //        .onChange(of: vm.isRoomDelete) { _, isDeleted in
-        //            if isDeleted {
-        //                presentToast(ToastValue(
-        //                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
-        //                    message: "채팅방이 삭제되었습니다."
-        //                ))
-        //                dismiss()
-        //            }
-        //        }
+        .onChange(of: vm.isRoomDelete) { _, isDeleted in
+            if isDeleted {
+                presentToast(ToastValue(
+                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
+                    message: "채팅방이 삭제되었습니다."
+                ))
+                dismiss()
+            }
+        }
         .onAppear {
             stomp.subscribe(to: "/topic/chat-rooms/\(chatRoomId)")
             vm.subscribe(chatRoomId: chatRoomId)
@@ -78,6 +78,7 @@ struct MessageView: View {
                     icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
                     message: error.localizedDescription
                 ))
+                dismiss()
             }
 
             let memberResult = await vm.getMember(chatRoomId: chatRoomId)
