@@ -131,14 +131,19 @@ class MemberService(
         val member = getMember(memberId)
 
         val accessTokenBlacklist = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + request.accessToken
-        val refreshToken = AUTH_REFRESH_TOKEN_KEY + request.refreshToken
+        val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + request.refreshToken
+        val exists = redisTemplate.hasKey(refreshTokenKey)
+
+        if (exists != true) {
+            throw CustomException("존재하지 않는 리프레시 토큰입니다.")
+        }
 
         redisTemplate.opsForValue().set(
             accessTokenBlacklist,
             memberId.toString(),
             Duration.ofHours(ACCESS_TOKEN_EXPIRE_HOURS)
         )
-        redisTemplate.delete(refreshToken)
+        redisTemplate.delete(refreshTokenKey)
 
         member.withdraw()
     }

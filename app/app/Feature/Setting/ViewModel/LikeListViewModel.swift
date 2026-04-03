@@ -6,7 +6,7 @@ final class LikeListViewModel: ObservableObject {
 
     private let socialService = SocialService.shared
 
-    @Published var state: ViewState = .idle
+    @Published var state: DiscoveryViewState = .idle
     @Published var isLoading: Bool = false
     @Published var hasNext: Bool = true
 

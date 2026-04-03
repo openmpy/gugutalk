@@ -7,33 +7,45 @@ final class SettingViewModel: ObservableObject {
     private let authService = AuthService.shared
     private let memberService = MemberService.shared
 
-    @Published var isLoading: Bool = false
+    @Published var state: SettingViewState = .idle
 
-    func logout(refreshToken: String) async -> Result<Void, Error> {
-        guard !isLoading else { return .failure(CancellationError()) }
+    func logout() async {
+        state = .loading
 
-        isLoading = true
-        defer { isLoading = false }
+        if let refreshToken = AuthStore.shared.refreshToken {
+            try? await authService.logout(refreshToken: refreshToken)
+        }
 
-        do {
-            try await authService.logout(refreshToken: refreshToken)
-            return .success(())
-        } catch {
-            return .failure(error)
+        AuthStore.shared.clearAll()
+        state = .success(.logout)
+    }
+
+    func withdraw() async {
+        guard case .loading = state else {
+            state = .loading
+            return await performWithdraw()
         }
     }
 
-    func withdraw(accessToken: String, refreshToken: String) async -> Result<Void, Error> {
-        guard !isLoading else { return .failure(CancellationError()) }
-
-        isLoading = true
-        defer { isLoading = false }
+    private func performWithdraw() async {
+        guard
+            let accessToken = AuthStore.shared.accessToken,
+            let refreshToken = AuthStore.shared.refreshToken
+        else {
+            state = .error("토큰 값을 찾을 수 없습니다.")
+            return
+        }
 
         do {
-            try await memberService.withdraw(accessToken: accessToken, refreshToken: refreshToken)
-            return .success(())
+            try await memberService.withdraw(
+                accessToken: accessToken,
+                refreshToken: refreshToken
+            )
+            
+            AuthStore.shared.clearAll()
+            state = .success(.withdraw)
         } catch {
-            return .failure(error)
+            state = .error(error.localizedDescription)
         }
     }
 }
