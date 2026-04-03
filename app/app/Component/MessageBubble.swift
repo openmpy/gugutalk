@@ -123,16 +123,20 @@ struct MessageBubble: View {
     private var bubbleContent: some View {
         switch type {
         case "IMAGE":
-            KFImage(URL(string: content))
-                .resizable()
-                .placeholder {
-                    ProgressView()
-                        .frame(width: 200, height: 200)
-                        .background(Color(.systemGray6))
-                }
-                .scaledToFill()
-                .frame(width: 200, height: 200)
-                .clipped()
+            NavigationLink {
+                ImageFullCoverView(image: URL(string: content)!)
+            } label: {
+                KFImage(URL(string: content))
+                    .resizable()
+                    .placeholder {
+                        ProgressView()
+                            .frame(width: 200, height: 200)
+                            .background(Color(.systemGray6))
+                    }
+                    .scaledToFill()
+                    .frame(width: 200, height: 200)
+                    .clipped()
+            }
 
         case "VIDEO":
             VideoThumbnailView(key: content, playingVideoURL: $playingVideoURL)
