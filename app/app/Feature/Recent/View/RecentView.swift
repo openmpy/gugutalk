@@ -2,6 +2,8 @@ import SwiftUI
 
 struct RecentView: View {
 
+    @AppStorage("saveComment") private var saveComment: String = ""
+
     @StateObject private var vm = RecentViewModel()
     @StateObject private var locationManager = LocationManager()
 
@@ -59,24 +61,18 @@ struct RecentView: View {
                 TextField("내용 입력", text: $vm.comment)
 
                 Button("작성") {
-                    if vm.comment.isEmpty {
-                        ToastManager.shared.show("코멘트 내용을 작성해주세요.", type: .error)
-                        return
-                    }
-
                     Task {
                         do {
-                            try await vm.updateComment(comment: vm.comment)
+                            try await vm.updateComment()
 
                             ToastManager.shared.show("코멘트가 작성되었습니다.")
+                            saveComment = vm.comment
                         } catch {
                             ToastManager.shared.show(error.localizedDescription, type: .error)
                         }
                     }
                 }
-                Button("취소", role: .cancel) {
-                    vm.comment = ""
-                }
+                Button("취소", role: .cancel) { }
             }
         }
     }
@@ -162,6 +158,7 @@ struct RecentView: View {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 showComment = true
+                vm.comment = saveComment
             } label: {
                 Image(systemName: "square.and.pencil")
                     .font(.title3)

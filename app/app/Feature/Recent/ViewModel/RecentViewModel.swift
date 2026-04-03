@@ -63,8 +63,11 @@ final class RecentViewModel: ObservableObject {
         hasNext = response.hasNext
     }
 
-    func updateComment(comment: String) async throws {
+    func updateComment() async throws {
         guard !isLoading else { return }
+        guard !comment.isEmpty else {
+            throw AppError("코멘트 내용을 입력해주세요.")
+        }
 
         isLoading = true
         defer { isLoading = false }
