@@ -142,7 +142,7 @@ class AuthService(
         if (memberRepository.existsByNickname(request.nickname)) {
             throw CustomException("이미 가입된 닉네임입니다.")
         }
-        if (LocalDate.now().year - request.birthYear < 19 || LocalDate.now().year - request.birthYear > 60) {
+        if (LocalDate.now().year - request.birthYear !in 19..60) {
             throw CustomException("만 19세 이상 60세 이하만 가입할 수 있습니다.")
         }
     }
