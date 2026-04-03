@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9D8732422F7FDD7F001A8E97 /* SimpleToast in Frameworks */ = {isa = PBXBuildFile; productRef = 9D8732412F7FDD7F001A8E97 /* SimpleToast */; };
 		9D9F1E262F7B029900A9C891 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E252F7B029900A9C891 /* Alamofire */; };
 		9D9F1E782F7B9A3F00A9C891 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E772F7B9A3F00A9C891 /* Kingfisher */; };
 		9D9F1E7F2F7BA17100A9C891 /* Zoomable in Frameworks */ = {isa = PBXBuildFile; productRef = 9D9F1E7E2F7BA17100A9C891 /* Zoomable */; };
@@ -35,6 +36,7 @@
 				9D9F1E782F7B9A3F00A9C891 /* Kingfisher in Frameworks */,
 				9D9F1E262F7B029900A9C891 /* Alamofire in Frameworks */,
 				9D9F1EEA2F7E1E5200A9C891 /* SwiftStomp in Frameworks */,
+				9D8732422F7FDD7F001A8E97 /* SimpleToast in Frameworks */,
 				9D9F1E7F2F7BA17100A9C891 /* Zoomable in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -83,6 +85,7 @@
 				9D9F1E7E2F7BA17100A9C891 /* Zoomable */,
 				9D9F1EA22F7C340900A9C891 /* Toasts */,
 				9D9F1EE92F7E1E5200A9C891 /* SwiftStomp */,
+				9D8732412F7FDD7F001A8E97 /* SimpleToast */,
 			);
 			productName = app;
 			productReference = 9D9F1DBC2F79C1A600A9C891 /* app.app */;
@@ -118,6 +121,7 @@
 				9D9F1E7D2F7BA17100A9C891 /* XCRemoteSwiftPackageReference "Zoomable" */,
 				9D9F1EA12F7C340900A9C891 /* XCRemoteSwiftPackageReference "swiftui-toasts" */,
 				9D9F1EE82F7E1E5200A9C891 /* XCRemoteSwiftPackageReference "SwiftStomp" */,
+				9D8732402F7FDD7F001A8E97 /* XCRemoteSwiftPackageReference "SimpleToast" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9D9F1DBD2F79C1A600A9C891 /* Products */;
@@ -384,6 +388,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		9D8732402F7FDD7F001A8E97 /* XCRemoteSwiftPackageReference "SimpleToast" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sanzaru/SimpleToast.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.12.0;
+			};
+		};
 		9D9F1E242F7B029900A9C891 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
@@ -427,6 +439,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9D8732412F7FDD7F001A8E97 /* SimpleToast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9D8732402F7FDD7F001A8E97 /* XCRemoteSwiftPackageReference "SimpleToast" */;
+			productName = SimpleToast;
+		};
 		9D9F1E252F7B029900A9C891 /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9D9F1E242F7B029900A9C891 /* XCRemoteSwiftPackageReference "Alamofire" */;
