@@ -1,202 +1,23 @@
 import SwiftUI
-import Toasts
 
 struct SignupView: View {
 
     @StateObject private var vm = SignupViewModel()
 
-    @Environment(\.presentToast) var presentToast
-
-    @State private var phoneNumber: String = ""
-    @State private var verificationCode: String = ""
-    @State private var sendVerificationCode = false
-    @State private var password: String = ""
-    @State private var password2: String = ""
-    @State private var selectGender: String = "MALE"
     @State private var goActivate: Bool = false
-    @State private var timeRemaining: Int = 0
-    @State private var timer: Timer?
-
-    private var isPhoneNumberValid: Bool {
-        phoneNumber.starts(with: "010") && phoneNumber.count == 11
-    }
-    private var isSubmit: Bool {
-        isPhoneNumberValid && !verificationCode.isEmpty &&
-        !password.isEmpty && !password2.isEmpty && sendVerificationCode
-    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("휴대폰")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-
-                    HStack {
-                        TextField("휴대폰 번호", text: $phoneNumber)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
-                            .scrollContentBackground(.hidden)
-                            .textInputAutocapitalization(.never)
-                            .disableAutocorrection(true)
-                            .keyboardType(.numberPad)
-
-                        Button {
-                            if !isPhoneNumberValid {
-                                presentToast(ToastValue(
-                                    icon: Image(systemName: "exclamationmark.circle.fill").foregroundColor(.blue),
-                                    message: "올바른 휴대폰 번호를 입력해주세요."
-                                ))
-                                return
-                            }
-
-                            Task {
-                                let result = await vm.sendCodeVerificationCode(phoneNumber: phoneNumber)
-                                switch result {
-                                case .success:
-                                    startTimer()
-                                case .failure(let error):
-                                    presentToast(ToastValue(
-                                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                        message: error.localizedDescription
-                                    ))
-                                }
-                            }
-                        } label: {
-                            Text(sendVerificationCode ? "\(timeRemaining)" : "전송")
-                                .font(.subheadline.bold())
-                                .frame(width: 60, height: 40)
-                                .foregroundColor(.white)
-                                .background(
-                                    isPhoneNumberValid && !sendVerificationCode ? .blue : Color(.systemGray3),
-                                    in: RoundedRectangle(cornerRadius: 20)
-                                )
-                        }
-                        .disabled(!isPhoneNumberValid || sendVerificationCode)
-                    }
-
-                    TextField("인증 번호", text: $verificationCode)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
-                        .scrollContentBackground(.hidden)
-                        .textInputAutocapitalization(.never)
-                        .disableAutocorrection(true)
-                        .keyboardType(.numberPad)
-                }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("비밀번호")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-
-                    SecureField("비밀번호", text: $password)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
-                        .scrollContentBackground(.hidden)
-                        .textInputAutocapitalization(.never)
-                        .disableAutocorrection(true)
-                        .textContentType(.oneTimeCode)
-
-                    SecureField("비밀번호 확인", text: $password2)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
-                        .scrollContentBackground(.hidden)
-                        .textInputAutocapitalization(.never)
-                        .disableAutocorrection(true)
-                        .textContentType(.oneTimeCode)
-                }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("성별")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-
-                    HStack {
-                        Button {
-                            selectGender = "MALE"
-                        } label: {
-                            Text("남자")
-                                .font(.subheadline.bold())
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 40)
-                                .foregroundColor(.white)
-                                .background(
-                                    selectGender == "MALE" ? .blue : Color(.systemGray3),
-                                    in: RoundedRectangle(cornerRadius: 20)
-                                )
-                        }
-
-                        Button {
-                            selectGender = "FEMALE"
-                        } label: {
-                            Text("여자")
-                                .font(.subheadline.bold())
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 40)
-                                .foregroundColor(.white)
-                                .background(
-                                    selectGender == "FEMALE" ? .blue : Color(.systemGray3),
-                                    in: RoundedRectangle(cornerRadius: 20)
-                                )
-                        }
-                    }
-                }
+                phoneSection
+                passwordSection
+                genderSection
             }
             .padding()
         }
-        .onTapGesture {
-            hideKeyboard()
-        }
-        .safeAreaInset(edge: .bottom) {
-            Button {
-                if password != password2 {
-                    presentToast(ToastValue(
-                        icon: Image(systemName: "exclamationmark.circle.fill").foregroundColor(.blue),
-                        message: "비밀번호가 일치하지 않습니다."
-                    ))
-                    return
-                }
-
-                Task {
-                    let result = await vm.signup(
-                        phoneNumber: phoneNumber,
-                        verificationCode: verificationCode,
-                        password: password,
-                        gender: selectGender
-                    )
-                    switch result {
-                    case .success:
-                        goActivate = true
-                    case .failure(let error):
-                        presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                            message: error.localizedDescription
-                        ))
-                    }
-                }
-            } label: {
-                Text("회원가입")
-                    .font(.default.bold())
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical)
-                    .glassEffect(.regular.tint(isSubmit ? Color(.blue) : Color(.systemGray3)).interactive())
-            }
-            .disabled(!isSubmit || vm.isLoading)
-            .padding()
-        }
-        .onDisappear {
-            timer?.invalidate()
-            timer = nil
-        }
+        .onTapGesture { hideKeyboard() }
+        .safeAreaInset(edge: .bottom) { signupButton }
+        .onDisappear { vm.invalidateTimer() }
         .navigationTitle("회원가입")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $goActivate) {
@@ -204,22 +25,130 @@ struct SignupView: View {
         }
     }
 
-    private func startTimer() {
-        sendVerificationCode = true
-        timeRemaining = 300
+    // MARK: - SECTION
 
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            if timeRemaining > 0 {
-                timeRemaining -= 1
-            } else {
-                sendVerificationCode = false
-                timer?.invalidate()
+    private var phoneSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("휴대폰")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+
+            HStack {
+                TextField("휴대폰 번호", text: $vm.phoneNumber)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
+                    .textInputAutocapitalization(.never)
+                    .disableAutocorrection(true)
+                    .keyboardType(.numberPad)
+
+                Button {
+                    Task {
+                        do {
+                            try await vm.sendVerificationCode()
+
+                            ToastManager.shared.show("인증 번호가 전송되었습니다.")
+                        } catch {
+                            ToastManager.shared.show(error.localizedDescription, type: .error)
+                        }
+                    }
+                } label: {
+                    Text(vm.isSent ? "\(vm.timeRemaining)" : "전송")
+                        .font(.subheadline.bold())
+                        .frame(width: 60, height: 40)
+                        .foregroundColor(.white)
+                        .background(
+                            vm.isPhoneNumberValid && !vm.isSent ? .blue : Color(.systemGray3),
+                            in: RoundedRectangle(cornerRadius: 20)
+                        )
+                }
+                .disabled(!vm.isPhoneNumberValid || vm.isSent)
+            }
+
+            TextField("인증 번호", text: $vm.verificationCode)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
+                .keyboardType(.numberPad)
+        }
+    }
+
+    private var passwordSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("비밀번호")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+
+            SecureField("비밀번호", text: $vm.password)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
+                .textContentType(.oneTimeCode)
+
+            SecureField("비밀번호 확인", text: $vm.password2)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
+                .textContentType(.oneTimeCode)
+        }
+    }
+
+    private var genderSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("성별")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+
+            HStack {
+                ForEach([("남자", "MALE"), ("여자", "FEMALE")], id: \.1) { label, value in
+                    Button {
+                        vm.selectedGender = value
+                    } label: {
+                        Text(label)
+                            .font(.subheadline.bold())
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
+                            .foregroundColor(.white)
+                            .background(
+                                vm.selectedGender == value ? .blue : Color(.systemGray3),
+                                in: RoundedRectangle(cornerRadius: 20)
+                            )
+                    }
+                }
             }
         }
     }
-}
 
-#Preview {
-    SignupView()
+    private var signupButton: some View {
+        Button {
+            Task {
+                do {
+                    try await vm.signup()
+
+                    ToastManager.shared.show("회원가입이 완료되었습니다.")
+                    goActivate = true
+                } catch {
+                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                }
+            }
+        } label: {
+            Text("회원가입")
+                .font(.default.bold())
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical)
+                .glassEffect(.regular.tint(vm.isSubmittable ? Color(.blue) : Color(.systemGray3)).interactive())
+        }
+        .disabled(!vm.isSubmittable || vm.isLoading)
+        .padding()
+    }
 }
