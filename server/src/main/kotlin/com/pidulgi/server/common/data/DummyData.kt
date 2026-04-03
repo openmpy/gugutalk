@@ -1,5 +1,10 @@
 package com.pidulgi.server.common.data
 
+import com.pidulgi.server.chat.entity.ChatRoom
+import com.pidulgi.server.chat.entity.Message
+import com.pidulgi.server.chat.entity.type.MessageType
+import com.pidulgi.server.chat.repository.ChatRoomRepository
+import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.PrivateImageGrant
 import com.pidulgi.server.member.entity.type.Gender
@@ -14,10 +19,16 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 import java.util.*
 
 @Component
 class DummyDataInit {
+
+    private companion object {
+        const val DUMMY_MEMBER_COUNT = 100
+        const val DUMMY_MESSAGES_PER_ROOM = 100
+    }
 
     private val geometryFactory = GeometryFactory()
 
@@ -50,11 +61,13 @@ class DummyDataInit {
         likeRepository: LikeRepository,
         privateImageGrantRepository: PrivateImageGrantRepository,
         blockRepository: BlockRepository,
+        chatRoomRepository: ChatRoomRepository,
+        messageRepository: MessageRepository,
     ): CommandLineRunner {
         return CommandLineRunner {
             // 회원
             if (memberRepository.count() == 0L) {
-                val members = (1 until 1000).map { i ->
+                val members = (1 until DUMMY_MEMBER_COUNT + 1).map { i ->
                     val location = locations[(i - 1) % locations.size].let { (lng, lat) ->
                         val offsetLng = lng + (i / locations.size) * 0.002
                         val offsetLat = lat + (i / locations.size) * 0.001
@@ -79,7 +92,7 @@ class DummyDataInit {
 
             // 좋아요
             if (likeRepository.count() == 0L) {
-                val likes = (2 until 1000).map { i ->
+                val likes = (2 until DUMMY_MEMBER_COUNT + 1).map { i ->
                     Like(
                         likerId = 1,
                         likedId = i.toLong()
@@ -91,7 +104,7 @@ class DummyDataInit {
 
             // 비밀 사진
             if (privateImageGrantRepository.count() == 0L) {
-                val grants = (2 until 1000).map { i ->
+                val grants = (2 until DUMMY_MEMBER_COUNT + 1).map { i ->
                     PrivateImageGrant(
                         granterId = 1,
                         granteeId = i.toLong()
@@ -103,7 +116,7 @@ class DummyDataInit {
 
             // 차단
             if (blockRepository.count() == 0L) {
-                val blocks = (2 until 1000).map { i ->
+                val blocks = (2 until DUMMY_MEMBER_COUNT + 1).map { i ->
                     Block(
                         blockerId = 1,
                         blockedId = i.toLong()
@@ -113,10 +126,40 @@ class DummyDataInit {
                 blockRepository.saveAll(blocks)
             }
 
+            // 채팅방 + 메시지
+            if (chatRoomRepository.count() == 0L) {
+                for (otherId in 2 until DUMMY_MEMBER_COUNT + 1) {
+                    val room = chatRoomRepository.save(ChatRoom.of(1L, otherId.toLong()))
+                    val start = LocalDateTime.now().minusDays(otherId.toLong()).minusHours(1)
+                    var lastContent = ""
+                    var lastAt = start
+
+                    repeat(DUMMY_MESSAGES_PER_ROOM) { idx ->
+                        val sender = if (idx % 2 == 0) 1L else otherId.toLong()
+                        val at = start.plusMinutes((idx * 7).toLong())
+                        val content = "더미 메시지 #$otherId (${idx + 1}/$DUMMY_MESSAGES_PER_ROOM)"
+                        val message = Message(
+                            chatRoom = room,
+                            senderId = sender,
+                            content = content,
+                            type = MessageType.TEXT,
+                            createdAt = at,
+                        )
+                        messageRepository.save(message)
+                        lastContent = content
+                        lastAt = at
+                    }
+                    room.update(lastContent, lastAt)
+                    chatRoomRepository.save(room)
+                }
+            }
+
             println("회원 데이터가 생성되었습니다. ${memberRepository.count()}")
             println("좋아요 데이터가 생성되었습니다. ${likeRepository.count()}")
             println("비밀 사진 권한 데이터가 생성되었습니다. ${privateImageGrantRepository.count()}")
             println("차단 데이터가 생성되었습니다. ${blockRepository.count()}")
+            println("채팅방 데이터가 생성되었습니다. ${chatRoomRepository.count()}")
+            println("메시지 데이터가 생성되었습니다. ${messageRepository.count()}")
         }
     }
 }
