@@ -20,6 +20,7 @@ struct MessageView: View {
     @State private var videos: [IdentifiableVideo] = []
     @State private var message: String = ""
     @State private var playingVideoURL: URL? = nil
+    @State private var isUploading = false
 
     var body: some View {
         VStack {
@@ -98,48 +99,58 @@ struct MessageView: View {
         .safeAreaInset(edge: .top) {
             GlassEffectContainer(spacing: 5) {
                 HStack(alignment: .bottom) {
-                    PhotosPicker(
-                        selection: $selectMedia,
-                        maxSelectionCount: 5,
-                        matching: .any(of: [.images, .videos])
-                    ) {
-                        Image(systemName: "paperclip")
-                            .font(.title3)
+                    if isUploading {
+                        ProgressView()
                             .frame(width: 44, height: 44)
-                            .foregroundColor(.primary)
-                    }
-                    .onChange(of: selectMedia) { _, newItems in
-                        guard !newItems.isEmpty else { return }
+                            .glassEffect(.regular.tint(Color(.clear)).interactive())
+                    } else {
+                        PhotosPicker(
+                            selection: $selectMedia,
+                            maxSelectionCount: 5,
+                            matching: .any(of: [.images, .videos])
+                        ) {
+                            Image(systemName: "paperclip")
+                                .font(.title3)
+                                .frame(width: 44, height: 44)
+                                .foregroundColor(.primary)
+                                .glassEffect(.regular.tint(Color(.clear)).interactive())
+                        }
+                        .onChange(of: selectMedia) { _, newItems in
+                            guard !newItems.isEmpty else { return }
 
-                        Task {
-                            var images: [IdentifiableImage] = []
-                            var videos: [IdentifiableVideo] = []
+                            Task {
+                                isUploading = true
+                                defer { isUploading = false }
 
-                            for item in newItems {
-                                if let data = try? await item.loadTransferable(type: Data.self),
-                                   let image = UIImage(data: data) {
-                                    images.append(IdentifiableImage(image: image))
-                                    continue
+                                var images: [IdentifiableImage] = []
+                                var videos: [IdentifiableVideo] = []
+
+                                for item in newItems {
+                                    if let data = try? await item.loadTransferable(type: Data.self),
+                                       let image = UIImage(data: data) {
+                                        images.append(IdentifiableImage(image: image))
+                                        continue
+                                    }
+
+                                    if let videoItem = try? await item.loadTransferable(type: VideoItem.self) {
+                                        videos.append(IdentifiableVideo(video: videoItem.url))
+                                    }
                                 }
 
-                                if let videoItem = try? await item.loadTransferable(type: VideoItem.self) {
-                                    videos.append(IdentifiableVideo(video: videoItem.url))
+                                let result = await vm.sendMedia(
+                                    chatRoomId: chatRoomId,
+                                    images: images,
+                                    videos: videos
+                                )
+                                if case .failure(let error) = result {
+                                    presentToast(ToastValue(
+                                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                                        message: error.localizedDescription
+                                    ))
                                 }
-                            }
 
-                            let result = await vm.sendMedia(
-                                chatRoomId: chatRoomId,
-                                images: images,
-                                videos: videos
-                            )
-                            if case .failure(let error) = result {
-                                presentToast(ToastValue(
-                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                    message: error.localizedDescription
-                                ))
+                                selectMedia = []
                             }
-
-                            selectMedia = []
                         }
                     }
 
