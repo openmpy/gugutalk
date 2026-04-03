@@ -9,6 +9,8 @@ struct MessageBubble: View {
     let createdAt: String
     let type: String
 
+    @Binding var playingVideoURL: URL?
+
     var body: some View {
         if isMe == false {
             HStack(alignment: .bottom, spacing: 3) {
@@ -57,7 +59,7 @@ struct MessageBubble: View {
                 .clipped()
 
         case "VIDEO":
-            VideoThumbnailView(key: content)
+            VideoThumbnailView(key: content, playingVideoURL: $playingVideoURL)
                 .frame(width: 200, height: 200)
 
         default:

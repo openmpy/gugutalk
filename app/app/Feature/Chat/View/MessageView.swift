@@ -19,6 +19,7 @@ struct MessageView: View {
     @State private var images: [IdentifiableImage] = []
     @State private var videos: [IdentifiableVideo] = []
     @State private var message: String = ""
+    @State private var playingVideoURL: URL? = nil
 
     var body: some View {
         VStack {
@@ -36,7 +37,8 @@ struct MessageView: View {
                                 isMe: it.senderId == AuthStore.shared.memberId,
                                 content: it.content,
                                 createdAt: it.createdAt,
-                                type: it.type
+                                type: it.type,
+                                playingVideoURL: $playingVideoURL
                             )
                             .onAppear {
                                 if it.id == vm.messages.last?.id {
@@ -191,6 +193,9 @@ struct MessageView: View {
             .background(Color(.systemBackground).opacity(0.0001))
         }
         .rotationEffect(.degrees(180))
+        .navigationDestination(item: $playingVideoURL) { url in
+            VideoPlayerView(url: url)
+        }
         .navigationTitle(vm.member?.nickname ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)

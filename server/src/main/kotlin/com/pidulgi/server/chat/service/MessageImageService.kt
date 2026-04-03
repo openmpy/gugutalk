@@ -27,7 +27,7 @@ class MessageImageService(
         request: MediaGetPresignedUrlsRequest,
     ): PresignedUrlsResponse {
         val member = getMember(memberId)
-        val chatRoom = (chatRoomRepository.findByIdOrNull(memberId)
+        val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
             ?: throw CustomException("존재하지 않는 채팅방입니다."))
 
         if (chatRoom.member1Id != memberId && chatRoom.member2Id != memberId) {
