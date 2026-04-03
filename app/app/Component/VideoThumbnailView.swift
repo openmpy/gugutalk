@@ -29,9 +29,9 @@ struct VideoThumbnailView: View {
             Image(systemName: "play.circle.fill")
                 .font(.system(size: 44))
                 .foregroundColor(.white)
-        }
-        .onTapGesture {
-            playingVideoURL = videoURL
+                .onTapGesture {
+                    playingVideoURL = videoURL
+                }
         }
         .task {
             thumbnail = await generateThumbnail()

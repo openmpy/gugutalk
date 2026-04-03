@@ -59,7 +59,7 @@ struct MessageBubble: View {
     private var downloadButton: some View {
         Button {
             guard !isDownloading else { return }
-            
+
             downloadContent()
         } label: {
             if isDownloading {
