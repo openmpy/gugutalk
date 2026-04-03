@@ -7,81 +7,72 @@ final class RecentViewModel: ObservableObject {
     private let recentService = RecentService.shared
     private let memberService = MemberService.shared
 
+    @Published var state: DiscoveryViewState = .idle
     @Published var isLoading: Bool = false
+    @Published var isPaging: Bool = false
     @Published var hasNext: Bool = true
+
     @Published var members: [MemberDiscoveryResponse] = []
+    @Published var selectGender: String = "ALL"
+    @Published var comment: String = ""
 
     private var cursorId: Int64?
     private var cursorDateAt: String?
 
-    func getRecentMembers(gender: String) async -> Result<Void, Error> {
-        hasNext = true
+    func getRecentMembers() async {
+        guard case .loading = state else {
+            state = .loading
+            return await fetchFirstPage()
+        }
+    }
 
-        guard !isLoading else { return .success(()) }
-        guard hasNext else { return .success(()) }
-
-        isLoading = true
-        defer { isLoading = false }
-
+    private func fetchFirstPage() async {
         do {
             let response = try await recentService.getRecentMembers(
-                gender: gender,
+                gender: selectGender,
                 cursorId: nil,
                 cursorDateAt: nil
             )
+
             members = response.payload
             cursorId = response.nextId
             cursorDateAt = response.nextDateAt
             hasNext = response.hasNext
-            return .success(())
+
+            state = members.isEmpty ? .empty : .data
         } catch {
-            return .failure(error)
+            state = .error(error.localizedDescription)
         }
     }
 
-    func loadMoreGrantedMember(gender: String) async -> Result<Void, Error> {
-        guard !isLoading else { return .success(()) }
-        guard hasNext else { return .success(()) }
+    func loadMoreRecentMembers() async throws {
+        guard !isPaging, hasNext else { return }
+
+        isPaging = true
+        defer { isPaging = false }
+
+        let response = try await recentService.getRecentMembers(
+            gender: selectGender,
+            cursorId: cursorId,
+            cursorDateAt: cursorDateAt
+        )
+
+        members.append(contentsOf: response.payload)
+        cursorId = response.nextId
+        cursorDateAt = response.nextDateAt
+        hasNext = response.hasNext
+    }
+
+    func updateComment(comment: String) async throws {
+        guard !isLoading else { return }
 
         isLoading = true
         defer { isLoading = false }
 
-        do {
-            let response = try await recentService.getRecentMembers(
-                gender: gender,
-                cursorId: cursorId,
-                cursorDateAt: cursorDateAt
-            )
-            members.append(contentsOf: response.payload)
-            cursorId = response.nextId
-            cursorDateAt = response.nextDateAt
-            hasNext = response.hasNext
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
+        try await memberService.updateComment(comment: comment)
     }
 
-    func updateComment(comment: String) async -> Result<Void, Error> {
-        do {
-            try await memberService.updateComment(comment: comment)
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func bump(latitude: Double?, longitude: Double?) async -> Result<Void, Error> {
-        guard !isLoading else { return .failure(CancellationError()) }
-
-        isLoading = true
-        defer { isLoading = false }
-
-        do {
-            try await memberService.bump(latitude: latitude, longitude: longitude)
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
+    func bump(latitude: Double?, longitude: Double?) async throws {
+        try await memberService.bump(latitude: latitude, longitude: longitude)
     }
 }
