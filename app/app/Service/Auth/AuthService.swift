@@ -67,6 +67,25 @@ final class AuthService {
         .validateWithErrorHandling()
     }
 
+    func validate(
+        nickname: String,
+        birthYear: Int
+    ) async throws {
+        let url = "\(baseURL)/v1/auth/validate"
+        let body = ValidateRequest(
+            nickname: nickname,
+            birthYear: birthYear
+        )
+
+        return try await session.request(
+            url,
+            method: .post,
+            parameters: body,
+            encoder: JSONParameterEncoder.default
+        )
+        .validateWithErrorHandling()
+    }
+
     func login(
         phoneNumber: String,
         password: String

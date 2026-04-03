@@ -3,6 +3,7 @@ package com.pidulgi.server.auth.service
 import com.pidulgi.server.auth.dto.request.ActivateRequest
 import com.pidulgi.server.auth.dto.request.LoginRequest
 import com.pidulgi.server.auth.dto.request.SignupRequest
+import com.pidulgi.server.auth.dto.request.ValidateRequest
 import com.pidulgi.server.auth.dto.response.LoginResponse
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.entity.PhoneVerification
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.time.Duration
+import java.time.LocalDate
 import java.util.*
 
 private const val AUTH_VERIFICATION_CODE_KEY = "auth:phone:code:"
@@ -133,6 +135,16 @@ class AuthService(
             request.birthYear,
             request.bio
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun validate(request: ValidateRequest) {
+        if (memberRepository.existsByNickname(request.nickname)) {
+            throw CustomException("이미 가입된 닉네임입니다.")
+        }
+        if (LocalDate.now().year - request.birthYear < 19 || LocalDate.now().year - request.birthYear > 60) {
+            throw CustomException("만 19세 이상 60세 이하만 가입할 수 있습니다.")
+        }
     }
 
     @Transactional(readOnly = true)

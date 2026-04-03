@@ -67,7 +67,7 @@ final class SignupViewModel: ObservableObject {
 
     private func startTimer() {
         isSent = true
-        timeRemaining = 10
+        timeRemaining = 300
 
         timerTask?.cancel()
         timerTask = Task {
