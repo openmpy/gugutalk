@@ -22,4 +22,19 @@ final class S3Service {
         )
         .validateWithErrorHandling()
     }
+
+    func uploadVideoToS3(
+        fileURL: URL,
+        presigned: PresignedUrlResponse
+    ) async throws {
+        let headers: HTTPHeaders = ["Content-Type": "video/quicktime"]
+
+        return try await AF.upload(
+            fileURL,
+            to: presigned.url,
+            method: .put,
+            headers: headers
+        )
+        .validateWithErrorHandling()
+    }
 }

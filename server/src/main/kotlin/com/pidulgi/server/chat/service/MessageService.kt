@@ -5,10 +5,12 @@ import com.pidulgi.server.chat.dto.event.ChatRoomSendEvent
 import com.pidulgi.server.chat.dto.event.MessageSendEvent
 import com.pidulgi.server.chat.dto.event.type.ChatEventType.SEND_CHAT_ROOM
 import com.pidulgi.server.chat.dto.event.type.ChatEventType.SEND_MESSAGE
+import com.pidulgi.server.chat.dto.request.MessageSendMediaRequest
 import com.pidulgi.server.chat.dto.request.MessageSendRequest
 import com.pidulgi.server.chat.dto.response.MessageGetMemberResponse
 import com.pidulgi.server.chat.dto.response.MessageGetResponse
 import com.pidulgi.server.chat.entity.Message
+import com.pidulgi.server.chat.entity.type.MessageType
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.chat.websocket.ChatRoomSessionManager
@@ -48,16 +50,14 @@ class MessageService(
 
         val targetId = if (chatRoom.member1Id == senderId) {
             chatRoom.member2Id
-        } else {
-            chatRoom.member1Id
-        }
+        } else chatRoom.member1Id
 
         // 1. 메시지 저장
         val message = Message(
             chatRoom = chatRoom,
             senderId = senderId,
             content = request.content,
-            type = request.type,
+            type = MessageType.TEXT,
         )
         messageRepository.save(message)
 
@@ -71,15 +71,9 @@ class MessageService(
         }
 
         // 4. unreadCount 계산
-        val updatedUnreadCount =
-            if (isActive) {
-                0
-            } else {
-                if (targetId == chatRoom.member1Id)
-                    chatRoom.member1UnreadCount + 1
-                else
-                    chatRoom.member2UnreadCount + 1
-            }
+        val updatedUnreadCount = if (isActive) 0
+        else if (targetId == chatRoom.member1Id) chatRoom.member1UnreadCount + 1
+        else chatRoom.member2UnreadCount + 1
 
         // 5. 메시지 이벤트 (방 전체)
         val messageEvent = ChatEvent(
@@ -88,7 +82,7 @@ class MessageService(
                 message.id,
                 senderId,
                 request.content,
-                request.type,
+                MessageType.TEXT,
                 message.createdAt,
             )
         )
@@ -118,6 +112,122 @@ class MessageService(
         )
     }
 
+    @Transactional
+    fun sendMedia(senderId: Long, chatRoomId: Long, request: MessageSendMediaRequest) {
+        val sender = (memberRepository.findByIdOrNull(senderId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+        val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
+            ?: throw CustomException("존재하지 않는 채팅방입니다."))
+
+        if (chatRoom.member1Id != senderId && chatRoom.member2Id != senderId) {
+            throw CustomException("접근할 수 없는 채팅방입니다.")
+        }
+
+        val targetId = if (chatRoom.member1Id == senderId) {
+            chatRoom.member2Id
+        } else chatRoom.member1Id
+
+        val isActive = chatRoomSessionManager.isInChatRoom(targetId, chatRoomId)
+
+        // 이미지 전송
+        for (key in request.imageKeys) {
+            val message = Message(
+                chatRoom = chatRoom,
+                senderId = senderId,
+                content = key,
+                type = MessageType.IMAGE,
+            )
+            messageRepository.save(message)
+            chatRoom.update("이미지", message.createdAt)
+
+            if (!isActive) {
+                chatRoomRepository.increaseUnreadCount(chatRoomId, targetId)
+            }
+
+            val updatedUnreadCount = if (isActive) 0
+            else if (targetId == chatRoom.member1Id) chatRoom.member1UnreadCount + 1
+            else chatRoom.member2UnreadCount + 1
+
+            messagingTemplate.convertAndSend(
+                "/topic/chat-rooms/$chatRoomId",
+                ChatEvent(
+                    SEND_MESSAGE,
+                    MessageSendEvent(
+                        message.id,
+                        senderId,
+                        "${endpoint}${key}",
+                        MessageType.IMAGE,
+                        message.createdAt
+                    )
+                )
+            )
+            messagingTemplate.convertAndSendToUser(
+                targetId.toString(), "/queue/chat-rooms",
+                ChatEvent(
+                    SEND_CHAT_ROOM,
+                    ChatRoomSendEvent(
+                        chatRoomId,
+                        senderId,
+                        sender.profileKey?.let { "$endpoint$it" },
+                        sender.nickname,
+                        "이미지",
+                        MessageType.IMAGE,
+                        message.createdAt,
+                        updatedUnreadCount
+                    )
+                )
+            )
+        }
+
+        // 동영상 전송
+        for (key in request.videoKeys) {
+            val message = Message(
+                chatRoom = chatRoom,
+                senderId = senderId,
+                content = key,
+                type = MessageType.VIDEO,
+            )
+            messageRepository.save(message)
+            chatRoom.update("동영상", message.createdAt)
+
+            if (!isActive) chatRoomRepository.increaseUnreadCount(chatRoomId, targetId)
+
+            val updatedUnreadCount = if (isActive) 0
+            else if (targetId == chatRoom.member1Id) chatRoom.member1UnreadCount + 1
+            else chatRoom.member2UnreadCount + 1
+
+            messagingTemplate.convertAndSend(
+                "/topic/chat-rooms/$chatRoomId",
+                ChatEvent(
+                    SEND_MESSAGE,
+                    MessageSendEvent(
+                        message.id,
+                        senderId,
+                        "${endpoint}${key}",
+                        MessageType.VIDEO,
+                        message.createdAt
+                    )
+                )
+            )
+            messagingTemplate.convertAndSendToUser(
+                targetId.toString(), "/queue/chat-rooms",
+                ChatEvent(
+                    SEND_CHAT_ROOM,
+                    ChatRoomSendEvent(
+                        chatRoomId,
+                        senderId,
+                        sender.profileKey?.let { "$endpoint$it" },
+                        sender.nickname,
+                        "동영상",
+                        MessageType.VIDEO,
+                        message.createdAt,
+                        updatedUnreadCount
+                    )
+                )
+            )
+        }
+    }
+
     @Transactional(readOnly = true)
     fun gets(
         memberId: Long,
@@ -139,10 +249,14 @@ class MessageService(
             cursorDate,
             size + 1
         ).map {
+            val content = when (it.type) {
+                MessageType.IMAGE, MessageType.VIDEO -> "$endpoint${it.content}"
+                else -> it.content
+            }
             MessageGetResponse(
                 it.messageId,
                 it.senderId,
-                it.content,
+                content,
                 it.type,
                 it.createdAt,
             )

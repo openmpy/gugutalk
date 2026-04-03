@@ -5,7 +5,6 @@ import com.pidulgi.server.member.entity.type.ImageType
 data class MemberGetPresignedUrlsRequest(
 
     val images: List<MemberGetPresignedUrlRequest>
-
 ) {
 
     data class MemberGetPresignedUrlRequest(

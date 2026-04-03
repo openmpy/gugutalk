@@ -1,5 +1,6 @@
 package com.pidulgi.server.chat.controller
 
+import com.pidulgi.server.chat.dto.request.MessageSendMediaRequest
 import com.pidulgi.server.chat.dto.request.MessageSendRequest
 import com.pidulgi.server.chat.service.MessageService
 import org.springframework.messaging.handler.annotation.DestinationVariable
@@ -22,5 +23,15 @@ class MessageSocketController(
     ) {
         val senderId = principal.name.toLong()
         messageService.send(senderId, chatRoomId, request)
+    }
+
+    @MessageMapping("/chat-rooms/{chatRoomId}/medias")
+    fun sendMedia(
+        @DestinationVariable chatRoomId: Long,
+        @Payload request: MessageSendMediaRequest,
+        principal: Principal,
+    ) {
+        val senderId = principal.name.toLong()
+        messageService.sendMedia(senderId, chatRoomId, request)
     }
 }

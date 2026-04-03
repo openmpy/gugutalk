@@ -120,8 +120,7 @@ final class MemberProfileViewModel: ObservableObject {
 
             guard let data = try? JSONEncoder().encode(
                 MessageSendRequest(
-                    content: content,
-                    type: "TEXT"
+                    content: content
                 )
             ), let body = String(data: data, encoding: .utf8) else { return .failure(CancellationError()) }
 

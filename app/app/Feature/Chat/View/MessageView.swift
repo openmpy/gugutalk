@@ -1,4 +1,6 @@
 import SwiftUI
+import PhotosUI
+import UniformTypeIdentifiers
 import Toasts
 import Kingfisher
 
@@ -13,6 +15,9 @@ struct MessageView: View {
     @Environment(\.presentToast) var presentToast
     @Environment(\.dismiss) var dismiss
 
+    @State private var selectMedia: [PhotosPickerItem] = []
+    @State private var images: [IdentifiableImage] = []
+    @State private var videos: [IdentifiableVideo] = []
     @State private var message: String = ""
 
     var body: some View {
@@ -30,7 +35,8 @@ struct MessageView: View {
                             MessageBubble(
                                 isMe: it.senderId == AuthStore.shared.memberId,
                                 content: it.content,
-                                createdAt: it.createdAt
+                                createdAt: it.createdAt,
+                                type: it.type
                             )
                             .onAppear {
                                 if it.id == vm.messages.last?.id {
@@ -90,14 +96,49 @@ struct MessageView: View {
         .safeAreaInset(edge: .top) {
             GlassEffectContainer(spacing: 5) {
                 HStack(alignment: .bottom) {
-                    Button {
-
-                    } label: {
+                    PhotosPicker(
+                        selection: $selectMedia,
+                        maxSelectionCount: 5,
+                        matching: .any(of: [.images, .videos])
+                    ) {
                         Image(systemName: "paperclip")
                             .font(.title3)
                             .frame(width: 44, height: 44)
                             .foregroundColor(.primary)
-                            .glassEffect(.regular.tint(Color(.clear)).interactive())
+                    }
+                    .onChange(of: selectMedia) { _, newItems in
+                        guard !newItems.isEmpty else { return }
+
+                        Task {
+                            var images: [IdentifiableImage] = []
+                            var videos: [IdentifiableVideo] = []
+
+                            for item in newItems {
+                                if let data = try? await item.loadTransferable(type: Data.self),
+                                   let image = UIImage(data: data) {
+                                    images.append(IdentifiableImage(image: image))
+                                    continue
+                                }
+
+                                if let videoItem = try? await item.loadTransferable(type: VideoItem.self) {
+                                    videos.append(IdentifiableVideo(video: videoItem.url))
+                                }
+                            }
+
+                            let result = await vm.sendMedia(
+                                chatRoomId: chatRoomId,
+                                images: images,
+                                videos: videos
+                            )
+                            if case .failure(let error) = result {
+                                presentToast(ToastValue(
+                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                                    message: error.localizedDescription
+                                ))
+                            }
+
+                            selectMedia = []
+                        }
                     }
 
                     TextField("메시지 입력", text: $message, axis: .vertical)
@@ -115,7 +156,7 @@ struct MessageView: View {
                                     if (message.isEmpty) { return }
 
                                     Task {
-                                        let result = await vm.send(chatRoomId: chatRoomId, content: message, type: "TEXT")
+                                        let result = await vm.send(chatRoomId: chatRoomId, content: message)
                                         switch result {
                                         case .success():
                                             message = ""
