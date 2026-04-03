@@ -4,13 +4,13 @@ import Combine
 @MainActor
 final class LoginViewModel: ObservableObject {
 
+    private let authService = AuthService.shared
+
     @Published var isLoading: Bool = false
 
     @Published var phoneNumber: String = ""
     @Published var password: String = ""
-
-    private let authService = AuthService.shared
-
+    
     var isPhoneNumberValid: Bool {
         phoneNumber.starts(with: "010") && phoneNumber.count == 11
     }
