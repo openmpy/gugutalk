@@ -3,69 +3,67 @@ import Combine
 
 @MainActor
 final class LikeListViewModel: ObservableObject {
-    
+
     private let socialService = SocialService.shared
-    
+
+    @Published var state: ViewState = .idle
     @Published var isLoading: Bool = false
     @Published var hasNext: Bool = true
+
     @Published var members: [SettingResponse] = []
-    
+
     private var cursorId: Int64?
     private var cursorDateAt: String?
-    
-    func getLikedMember() async -> Result<Void, Error> {
-        hasNext = true
 
-        guard !isLoading else { return .failure(CancellationError()) }
-        guard hasNext else { return .success(()) }
+    func getLikedMember() async {
+        guard case .loading = state else {
+            state = .loading
+            return await fetchFirstPage()
+        }
+    }
 
-        isLoading = true
-        defer { isLoading = false }
-        
+    private func fetchFirstPage() async {
         do {
             let response = try await socialService.getLikedMember(
                 cursorId: nil,
                 cursorDateAt: nil
             )
+
             members = response.payload
             cursorId = response.nextId
             cursorDateAt = response.nextDateAt
             hasNext = response.hasNext
-            return .success(())
+
+            state = members.isEmpty ? .empty : .data
+
         } catch {
-            return .failure(error)
+            state = .error(error.localizedDescription)
         }
     }
-    
-    func loadMoreLikedMember() async -> Result<Void, Error> {
-        guard !isLoading else { return .failure(CancellationError()) }
-        guard hasNext else { return .success(()) }
+
+    func loadMoreLikedMember() async throws {
+        guard !isLoading, hasNext else { return }
 
         isLoading = true
         defer { isLoading = false }
-        
-        do {
-            let response = try await socialService.getLikedMember(
-                cursorId: cursorId,
-                cursorDateAt: cursorDateAt
-            )
-            members.append(contentsOf: response.payload)
-            cursorId = response.nextId
-            cursorDateAt = response.nextDateAt
-            hasNext = response.hasNext
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
-    }
 
-    func unlike(memberId: Int64) async -> Result<Void, Error> {
-        do {
-            _ = try await socialService.unlike(memberId: memberId)
-            members.removeAll { $0.memberId == memberId }
-            return .success(())
-        } catch {
-            return .failure(error)
+        let response = try await socialService.getLikedMember(
+            cursorId: cursorId,
+            cursorDateAt: cursorDateAt
+        )
+
+        members.append(contentsOf: response.payload)
+        cursorId = response.nextId
+        cursorDateAt = response.nextDateAt
+        hasNext = response.hasNext
+    }
+    
+    func unlike(memberId: Int64) async throws {
+        members.removeAll { $0.memberId == memberId }
+
+        if members.isEmpty {
+            state = .empty
         }
+        _ = try await socialService.unlike(memberId: memberId)
     }
 }
