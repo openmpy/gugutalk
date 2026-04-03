@@ -7,6 +7,7 @@ import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateCommentRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateProfileRequest
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
+import com.pidulgi.server.member.dto.response.MemberGetChatEnabledResponse
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.dto.response.MemberGetResponse
 import com.pidulgi.server.member.service.MemberService
@@ -81,6 +82,22 @@ class MemberController(
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<MemberDiscoveryResponse>> {
         val response = memberService.searchByNickname(memberId, keyword, cursorId, size)
+        return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/v1/members/chat-enabled")
+    fun getChatEnabled(
+        @Login memberId: Long,
+    ): ResponseEntity<MemberGetChatEnabledResponse> {
+        val response = memberService.getChatEnabled(memberId)
+        return ResponseEntity.ok(response)
+    }
+
+    @PutMapping("/v1/members/chat-enabled")
+    fun toggleChatEnabled(
+        @Login memberId: Long,
+    ): ResponseEntity<MemberGetChatEnabledResponse> {
+        val response = memberService.toggleChatEnabled(memberId)
         return ResponseEntity.ok(response)
     }
 }

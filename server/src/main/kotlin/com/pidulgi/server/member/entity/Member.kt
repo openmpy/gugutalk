@@ -46,6 +46,9 @@ class Member(
     @Column(columnDefinition = "geography(Point,4326)")
     var location: Point? = null,
 
+    @Column
+    var isChatEnabled: Boolean = true,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
@@ -83,5 +86,9 @@ class Member(
         this.birthYear = birthYear
         this.bio = bio
         this.updatedAt = LocalDateTime.now()
+    }
+
+    fun toggleChatEnabled() {
+        this.isChatEnabled = !isChatEnabled
     }
 }

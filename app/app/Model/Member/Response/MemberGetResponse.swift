@@ -9,6 +9,7 @@ struct MemberGetResponse: Codable {
     var likes: Int64
     let distance: Double?
     let updatedAt: String
+    let isChatEnabled: Bool
     let isLiked: Bool
     let isBlocked: Bool
     let isPrivateImageGranted: Bool

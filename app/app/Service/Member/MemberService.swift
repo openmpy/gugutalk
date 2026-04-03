@@ -103,4 +103,24 @@ final class MemberService {
         )
         .decodingWithErrorHandling(CursorResponse<MemberDiscoveryResponse>.self)
     }
+
+    func getChatEnabled() async throws -> MemberGetChatEnabledResponse {
+        let url = "\(baseURL)/v1/members/chat-enabled"
+
+        return try await session.request(
+            url,
+            method: .get
+        )
+        .decodingWithErrorHandling(MemberGetChatEnabledResponse.self)
+    }
+
+    func toggleChatEnabled() async throws -> MemberGetChatEnabledResponse {
+        let url = "\(baseURL)/v1/members/chat-enabled"
+
+        return try await session.request(
+            url,
+            method: .put
+        )
+        .decodingWithErrorHandling(MemberGetChatEnabledResponse.self)
+    }
 }

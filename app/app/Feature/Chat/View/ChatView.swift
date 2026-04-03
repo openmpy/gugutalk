@@ -95,6 +95,14 @@ struct ChatView: View {
                         message: error.localizedDescription
                     ))
                 }
+
+                let chatEnabledResult = await vm.getChatEnabled()
+                if case .failure(let error) = chatEnabledResult {
+                    presentToast(ToastValue(
+                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
+                        message: error.localizedDescription
+                    ))
+                }
             }
             .navigationTitle("채팅")
             .navigationBarTitleDisplayMode(.inline)
@@ -111,9 +119,11 @@ struct ChatView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // 수신 토글
+                        Task {
+                            await vm.toggleChatEnabled()
+                        }
                     } label: {
-                        Image(systemName: "bell")
+                        Image(systemName: vm.isChatEnabled ? "bell" : "bell.slash")
                             .font(.title3)
                             .foregroundColor(.primary)
                     }

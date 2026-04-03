@@ -69,10 +69,11 @@ struct MemberProfileView: View {
                         Image(systemName: "envelope.fill")
                             .font(.title)
                             .frame(width: 60, height: 60)
-                            .foregroundColor(.blue)
+                            .foregroundColor(vm.member?.isChatEnabled == true ? .blue : .gray)
                             .glassEffect(.regular.interactive())
                             .glassEffectUnion(id: 1, namespace: namespace)
                     }
+                    .disabled(vm.member?.isChatEnabled == false)
 
                     Button {
                         Task {

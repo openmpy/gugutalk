@@ -5,11 +5,13 @@ import Combine
 final class ChatViewModel: ObservableObject {
 
     private let chatRoomService = ChatRoomService.shared
+    private let memberService = MemberService.shared
     private let stomp = StompManager.shared
 
     @Published var isLoading: Bool = false
     @Published var hasNext: Bool = true
     @Published var chatRooms: [ChatRoomGetResponse] = []
+    @Published var isChatEnabled: Bool = false
 
     private var cursorId: Int64?
     private var cursorDateAt: String?
@@ -77,7 +79,35 @@ final class ChatViewModel: ObservableObject {
             return .failure(error)
         }
     }
-    
+
+    func getChatEnabled() async -> Result<Void, Error> {
+        guard !isLoading else { return .success(()) }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let response = try await memberService.getChatEnabled()
+            isChatEnabled = response.enabled
+            return .success(())
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    func toggleChatEnabled() async -> Result<Void, Error> {
+        isChatEnabled.toggle()
+
+        do {
+            let response = try await memberService.toggleChatEnabled()
+            isChatEnabled = response.enabled
+            return .success(())
+        } catch {
+            isChatEnabled.toggle()
+            return .failure(error)
+        }
+    }
+
     // MARK: - 이벤트
 
     func subscribe() {

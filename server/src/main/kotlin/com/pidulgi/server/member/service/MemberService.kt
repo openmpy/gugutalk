@@ -12,6 +12,7 @@ import com.pidulgi.server.member.dto.request.MemberUpdateCommentRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateProfileRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateProfileRequest.ProfileImageUpdate
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
+import com.pidulgi.server.member.dto.response.MemberGetChatEnabledResponse
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.dto.response.MemberGetResponse
 import com.pidulgi.server.member.dto.response.MemberImageResponse
@@ -117,6 +118,7 @@ class MemberService(
             likes = likes,
             distance = distance,
             updatedAt = member.updatedAt,
+            isChatEnabled = member.isChatEnabled,
             isLiked = isLiked,
             isBlocked = isBlocked,
             isPrivateImageGranted = isPrivateImageGranted,
@@ -219,6 +221,19 @@ class MemberService(
             nextDateAt = null,
             hasNext = hasNext,
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getChatEnabled(memberId: Long): MemberGetChatEnabledResponse {
+        val member = getMember(memberId)
+        return MemberGetChatEnabledResponse(member.isChatEnabled)
+    }
+
+    @Transactional
+    fun toggleChatEnabled(memberId: Long): MemberGetChatEnabledResponse {
+        val member = getMember(memberId)
+        member.toggleChatEnabled()
+        return MemberGetChatEnabledResponse(member.isChatEnabled)
     }
 
     private fun getMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)
