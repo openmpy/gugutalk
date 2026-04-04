@@ -1,11 +1,8 @@
 import SwiftUI
-import Toasts
 
 struct ChatView: View {
 
     @StateObject private var vm = ChatViewModel()
-
-    @Environment(\.presentToast) var presentToast
 
     var body: some View {
         NavigationStack {
