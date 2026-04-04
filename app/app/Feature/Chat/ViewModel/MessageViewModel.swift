@@ -203,5 +203,6 @@ final class MessageViewModel: ObservableObject {
         )
 
         messages.insert(newMessage, at: 0)
+        if !messages.isEmpty { state = .data }
     }
 }

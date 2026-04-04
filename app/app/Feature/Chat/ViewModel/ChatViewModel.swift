@@ -140,7 +140,9 @@ final class ChatViewModel: ObservableObject {
         if let index = chatRooms.firstIndex(where: { $0.chatRoomId == event.chatRoomId }) {
             chatRooms.remove(at: index)
         }
+
         chatRooms.insert(newRoom, at: 0)
+        if !chatRooms.isEmpty { state = .data }
     }
 
     private func deleteChatRoom(_ chatRoomId: Int64) {
