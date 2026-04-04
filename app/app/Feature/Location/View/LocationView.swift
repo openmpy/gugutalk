@@ -58,7 +58,7 @@ struct LocationView: View {
                         latitude: locationManager.latitude,
                         longitude: locationManager.longitude
                     )
-                    
+
                     await vm.refresh()
                 }
             }
@@ -144,7 +144,7 @@ struct LocationView: View {
 
             Button("다시 시도") {
                 Task {
-                    await vm.getLocationMembers()
+                    await vm.refresh()
                 }
             }
 
