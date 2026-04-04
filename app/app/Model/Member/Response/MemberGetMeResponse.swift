@@ -8,5 +8,5 @@ struct MemberGetMeResponse: Codable {
     let age: Int
     let birthYear: Int
     let bio: String?
-    let likes: Int
+    let likes: Int64
 }

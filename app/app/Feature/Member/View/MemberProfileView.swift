@@ -1,125 +1,62 @@
 import SwiftUI
-import Toasts
 
 struct MemberProfileView: View {
 
     let memberId: Int64
 
-    @StateObject private var vm = MemberProfileViewModel()
-
     @AppStorage("saveMessage") private var saveMessage: String = ""
 
-    @Environment(\.presentToast) var presentToast
+    @StateObject private var vm = MemberProfileViewModel()
 
     @State private var showMenu: Bool = false
     @State private var showMessage: Bool = false
     @State private var showBlock: Bool = false
     @State private var goReport: Bool = false
     @State private var goPrivateImage: Bool = false
-    @State private var message: String = ""
 
     @Namespace var namespace
 
     var body: some View {
         VStack {
-            if let member = vm.member {
-                ScrollView {
-                    MemberProfileImage(
-                        images: member.images.compactMap { URL(string: $0.url) }
-                    )
+            switch vm.state {
 
-                    MemberProfileInfo(
-                        nickname: member.nickname,
-                        updatedAt: member.updatedAt,
-                        gender: member.gender,
-                        age: member.age,
-                        bio: member.bio ?? "",
-                        likes: Int(member.likes),
-                        distance: member.distance
-                    )
+            case .idle:
+                Spacer()
+                EmptyView()
+                Spacer()
+
+            case .loading:
+                Spacer()
+                ProgressView()
+                Spacer()
+
+            case .data:
+                if let member = vm.member {
+                    memberSection(member: member)
                 }
+
+            case .error(let message):
+                errorSection(message: message)
             }
         }
         .safeAreaInset(edge: .bottom) {
             GlassEffectContainer {
                 HStack(spacing: 25) {
-                    Button {
-                        Task {
-                            let result = await vm.toggleLike()
-                            if case .failure(let error) = result {
-                                presentToast(ToastValue(
-                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                    message: error.localizedDescription
-                                ))
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "heart.fill")
-                            .font(.title)
-                            .frame(width: 60, height: 60)
-                            .foregroundColor(vm.isLiked ? .red : .gray)
-                            .glassEffect(.regular.interactive())
-                            .glassEffectUnion(id: 1, namespace: namespace)
-                    }
-
-                    Button {
-                        message = saveMessage
-                        showMessage = true
-                    } label: {
-                        Image(systemName: "envelope.fill")
-                            .font(.title)
-                            .frame(width: 60, height: 60)
-                            .foregroundColor(vm.member?.isChatEnabled == true ? .blue : .gray)
-                            .glassEffect(.regular.interactive())
-                            .glassEffectUnion(id: 1, namespace: namespace)
-                    }
-                    .disabled(vm.member?.isChatEnabled == false)
-
-                    Button {
-                        Task {
-                            let result = await vm.getPrivateImages(granterId: memberId)
-                            switch result {
-                            case .success():
-                                goPrivateImage = true
-                            case .failure(let error):
-                                presentToast(ToastValue(
-                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                    message: error.localizedDescription
-                                ))
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "photo.fill")
-                            .font(.title)
-                            .frame(width: 60, height: 60)
-                            .foregroundColor(vm.isPrivateImageGrantedByTarget ? .green : .gray)
-                            .glassEffect(.regular.interactive())
-                            .glassEffectUnion(id: 1, namespace: namespace)
-                    }
-                    .disabled(!vm.isPrivateImageGrantedByTarget)
-
-                    Button {
-                        showBlock = true
-                    } label: {
-                        Image(systemName: "nosign")
-                            .font(.title)
-                            .frame(width: 60, height: 60)
-                            .foregroundColor(vm.isBlocked ? .orange : .gray)
-                            .glassEffect(.regular.interactive())
-                            .glassEffectUnion(id: 1, namespace: namespace)
-                    }
+                    likeButton
+                    messageButton
+                    privateButton
+                    blockButton
                 }
             }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
-        .task {
-            let result = await vm.getMember(memberId: memberId)
-            if case .failure(let error) = result {
-                presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                    message: error.localizedDescription
-                ))
+        .overlay {
+            if vm.isLoading {
+                LoadingOverlay()
             }
+        }
+        .task {
+            await vm.getMember(memberId: memberId)
         }
         .navigationTitle("프로필")
         .navigationBarTitleDisplayMode(.inline)
@@ -134,20 +71,17 @@ struct MemberProfileView: View {
                         .foregroundColor(.primary)
                 }
                 .confirmationDialog("메뉴", isPresented: $showMenu) {
-                    Button(vm.isPrivateImageGranted ? "비밀 사진 닫기" : "비밀 사진 열기", role: .confirm) {
+                    Button(vm.member?.isPrivateImageGranted == true ? "비밀 사진 닫기" : "비밀 사진 열기", role: .confirm) {
                         Task {
-                            let result = await vm.togglePrivateImageGrant()
-                            if case .failure(let error) = result {
-                                presentToast(ToastValue(
-                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                    message: error.localizedDescription
-                                ))
-                            }
+                            try? await vm.togglePrivateImageGrant(memberId: memberId)
                         }
                     }
+                    .disabled(vm.isLoading)
+
                     Button("신고", role: .destructive) {
                         goReport = true
                     }
+
                     Button("취소", role: .cancel) { }
                 }
             }
@@ -161,53 +95,133 @@ struct MemberProfileView: View {
             )
         }
         .alert("쪽지", isPresented: $showMessage) {
-            TextField("내용 입력", text: $message)
+            TextField("내용 입력", text: $vm.message)
 
             Button("전송", role: .confirm) {
-                if message.isEmpty {
-                    presentToast(ToastValue(
-                        icon: Image(systemName: "exclamationmark.circle.fill").foregroundColor(.blue),
-                        message: "내용을 입력해주세요."
-                    ))
-                    return
-                }
-
                 Task {
-                    let result = await vm.createChatRoom(targetId: memberId, content: message)
-                    switch result {
-                    case .success():
-                        presentToast(ToastValue(
-                            icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
-                            message: "쪽지가 전송되었습니다."
-                        ))
-                        saveMessage = message
-                    case .failure(let error):
-                        presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                            message: error.localizedDescription
-                        ))
+                    do {
+                        try await vm.createChatRoom(targetId: memberId, content: vm.message)
+                        ToastManager.shared.show("쪽지가 전송되었습니다.")
+                    } catch {
+                        ToastManager.shared.show(error.localizedDescription, type: .error)
                     }
                 }
             }
+
             Button("취소", role: .cancel) { }
         }
-        .alert(vm.isBlocked ? "차단 해제" : "차단", isPresented: $showBlock) {
-            Button(vm.isBlocked ? "차단 해제" : "차단", role: .destructive) {
+        .alert(vm.member?.isBlocked == true ? "차단 해제" : "차단", isPresented: $showBlock) {
+            Button(vm.member?.isBlocked == true ? "차단 해제" : "차단", role: .destructive) {
                 Task {
-                    let result = await vm.toggleBlock()
-                    if case .failure(let error) = result {
-                        presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                            message: error.localizedDescription
-                        ))
-                    }
+                    try? await vm.toggleBlock(memberId: memberId)
                 }
             }
             Button("취소", role: .cancel) { }
         } message: {
-            Text(vm.isBlocked
-                 ? "차단을 해제하시겠습니까?"
-                 : "채팅 내역이 모두 삭제되며 서로의 목록에서도 표시되지 않습니다.")
+            Text(vm.member?.isBlocked == true ? "차단을 해제하시겠습니까?" : "채팅 내역이 모두 삭제되며 서로의 목록에서도 표시되지 않습니다.")
+        }
+    }
+
+    // MARK: - SECTION
+
+    private func memberSection(member: MemberGetResponse) -> some View {
+        ScrollView {
+            MemberProfileImage(
+                images: member.images.compactMap { URL(string: $0.url) }
+            )
+
+            MemberProfileInfo(
+                nickname: member.nickname,
+                updatedAt: member.updatedAt,
+                gender: member.gender,
+                age: member.age,
+                bio: member.bio ?? "",
+                likes: member.likes,
+                distance: member.distance
+            )
+        }
+    }
+
+    private var likeButton: some View {
+        Button {
+            Task {
+                try? await vm.toggleLike(memberId: memberId)
+            }
+        } label: {
+            Image(systemName: "heart.fill")
+                .font(.title)
+                .frame(width: 60, height: 60)
+                .foregroundColor(vm.member?.isLiked == true ? .red : .gray)
+                .glassEffect(.regular.interactive())
+                .glassEffectUnion(id: 1, namespace: namespace)
+        }
+        .disabled(vm.isLoading)
+    }
+
+    private var messageButton: some View {
+        Button {
+            vm.message = saveMessage
+            showMessage = true
+        } label: {
+            Image(systemName: "envelope.fill")
+                .font(.title)
+                .frame(width: 60, height: 60)
+                .foregroundColor(vm.member?.isChatEnabled == true ? .blue : .gray)
+                .glassEffect(.regular.interactive())
+                .glassEffectUnion(id: 1, namespace: namespace)
+        }
+        .disabled(vm.isLoading || vm.member?.isChatEnabled == false)
+    }
+
+    private var privateButton: some View {
+        Button {
+            Task {
+                do {
+                    try await vm.getPrivateImages(granterId: memberId)
+                    goPrivateImage = true
+                } catch {
+                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                }
+            }
+        } label: {
+            Image(systemName: "photo.fill")
+                .font(.title)
+                .frame(width: 60, height: 60)
+                .foregroundColor(vm.member?.isPrivateImageGrantedByTarget == true ? .green : .gray)
+                .glassEffect(.regular.interactive())
+                .glassEffectUnion(id: 1, namespace: namespace)
+        }
+        .disabled(vm.member?.isPrivateImageGrantedByTarget == false)
+    }
+
+    private var blockButton: some View {
+        Button {
+            showBlock = true
+        } label: {
+            Image(systemName: "nosign")
+                .font(.title)
+                .frame(width: 60, height: 60)
+                .foregroundColor(vm.member?.isBlocked == true ? .orange : .gray)
+                .glassEffect(.regular.interactive())
+                .glassEffectUnion(id: 1, namespace: namespace)
+        }
+        .disabled(vm.isLoading)
+    }
+
+    private func errorSection(message: String) -> some View {
+        VStack {
+            Spacer()
+
+            Text(message)
+                .padding(.bottom)
+
+            Button("다시 시도") {
+                Task {
+                    await vm.getMember(memberId: memberId)
+                }
+            }
+
+            Spacer()
         }
     }
 }

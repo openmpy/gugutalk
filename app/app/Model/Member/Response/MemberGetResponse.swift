@@ -1,4 +1,4 @@
-struct MemberGetResponse: Codable {
+struct MemberGetResponse: Codable, Equatable {
 
     let memberId: Int64
     let images: [MemberImageResponse]
@@ -10,8 +10,8 @@ struct MemberGetResponse: Codable {
     let distance: Double?
     let updatedAt: String
     let isChatEnabled: Bool
-    let isLiked: Bool
-    let isBlocked: Bool
-    let isPrivateImageGranted: Bool
+    var isLiked: Bool
+    var isBlocked: Bool
+    var isPrivateImageGranted: Bool
     let isPrivateImageGrantedByTarget: Bool
 }

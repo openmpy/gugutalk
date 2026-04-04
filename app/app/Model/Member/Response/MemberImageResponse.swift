@@ -1,4 +1,4 @@
-struct MemberImageResponse: Codable {
+struct MemberImageResponse: Codable, Equatable {
 
     let imageId: Int64
     let index: Int

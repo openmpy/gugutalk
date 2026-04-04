@@ -11,127 +11,123 @@ final class MemberProfileViewModel: ObservableObject {
     private let chatRoomService = ChatRoomService.shared
     private let stomp = StompManager.shared
 
+    @Published var state: MemberProfileViewState = .idle
+
     @Published var isLoading: Bool = false
     @Published var member: MemberGetResponse? = nil
     @Published var privateImages: [MemberPrivateImageResponse] = []
-    @Published var isLiked: Bool = false
-    @Published var isBlocked: Bool = false
-    @Published var isPrivateImageGranted: Bool = false
-    @Published var isPrivateImageGrantedByTarget: Bool = false
+    @Published var message: String = ""
 
-    func getMember(memberId: Int64) async -> Result<Void, Error> {
-        guard !isLoading else { return .failure(CancellationError()) }
+    func getMember(memberId: Int64) async {
+        guard state != .loading else { return }
 
-        isLoading = true
-        defer { isLoading = false }
+        state = .loading
+        await fetch(memberId: memberId)
+    }
 
+    private func fetch(memberId: Int64) async {
         do {
             let response = try await memberService.getMember(memberId: memberId)
+
             member = response
-            isLiked = response.isLiked
-            isBlocked = response.isBlocked
-            isPrivateImageGranted = response.isPrivateImageGranted
-            isPrivateImageGrantedByTarget = response.isPrivateImageGrantedByTarget
-            return .success(())
+            state = .data
         } catch {
-            return .failure(error)
+            member = nil
+            state = .error(error.localizedDescription)
         }
     }
 
-    func toggleLike() async -> Result<Void, Error> {
-        guard let memberId = member?.memberId else { return .success(()) }
-
-        isLiked.toggle()
-
-        do {
-            let response: LikeCountResponse
-            if isLiked {
-                response = try await socialService.like(memberId: memberId)
-            } else {
-                response = try await socialService.unlike(memberId: memberId)
-            }
-            member?.likes = response.likes
-            return .success(())
-        } catch {
-            isLiked.toggle()
-            return .failure(error)
-        }
-    }
-
-    func toggleBlock() async -> Result<Void, Error> {
-        guard let memberId = member?.memberId else { return .success(()) }
-
-        isBlocked.toggle()
-
-        do {
-            if isBlocked {
-                try await socialService.block(memberId: memberId)
-            } else {
-                try await socialService.unblock(memberId: memberId)
-            }
-            return .success(())
-        } catch {
-            isBlocked.toggle()
-            return .failure(error)
-        }
-    }
-
-    func togglePrivateImageGrant() async -> Result<Void, Error> {
-        guard let memberId = member?.memberId else { return .success(()) }
-
-        isPrivateImageGranted.toggle()
-
-        do {
-            if isPrivateImageGranted {
-                try await privateImageGrantService.grant(memberId: memberId)
-            } else {
-                try await privateImageGrantService.revoke(memberId: memberId)
-            }
-            return .success(())
-        } catch {
-            isPrivateImageGranted.toggle()
-            return .failure(error)
-        }
-    }
-
-    func getPrivateImages(granterId: Int64) async -> Result<Void, Error> {
-        guard !isLoading else { return .failure(CancellationError()) }
+    func toggleLike(memberId: Int64) async throws {
+        guard !isLoading else { return }
+        guard var member = member else { return }
 
         isLoading = true
         defer { isLoading = false }
 
-        do {
-            let response = try await memberImageService.getPrivateImages(granterId: granterId)
-            privateImages = response.images
-            return .success(())
-        } catch {
-            return .failure(error)
+        let response: LikeCountResponse
+
+        if member.isLiked == false {
+            response = try await socialService.like(memberId: memberId)
+            member.isLiked = true
+        } else {
+            response = try await socialService.unlike(memberId: memberId)
+            member.isLiked = false
         }
+
+        member.likes = response.likes
+        self.member = member
     }
 
-    func createChatRoom(targetId: Int64, content: String) async -> Result<Void, Error> {
-        guard !isLoading else { return .failure(CancellationError()) }
+    func toggleBlock(memberId: Int64) async throws {
+        guard !isLoading else { return }
+        guard var member = member else { return }
 
         isLoading = true
         defer { isLoading = false }
 
-        do {
-            let response = try await chatRoomService.create(targetId: targetId)
+        if member.isBlocked == false {
+            try await socialService.block(memberId: memberId)
+            member.isBlocked = true
 
-            guard let data = try? JSONEncoder().encode(
-                MessageSendRequest(
-                    content: content
-                )
-            ), let body = String(data: data, encoding: .utf8) else { return .failure(CancellationError()) }
+            ToastManager.shared.show("차단하셨습니다.")
+        } else {
+            try await socialService.unblock(memberId: memberId)
+            member.isBlocked = false
 
-            stomp.send(
-                body: body,
-                to: "/app/chat-rooms/\(response.chatRoomId)/messages",
-                headers: ["content-type": "application/json"],
+            ToastManager.shared.show("차단을 해제하셨습니다.")
+        }
+
+        self.member = member
+    }
+
+    func togglePrivateImageGrant(memberId: Int64) async throws {
+        guard !isLoading else { return }
+        guard var member = member else { return }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        if member.isPrivateImageGranted == false {
+            try await privateImageGrantService.grant(memberId: memberId)
+            member.isPrivateImageGranted = true
+
+            ToastManager.shared.show("비밀 사진을 열으셨습니다.")
+        } else {
+            try await privateImageGrantService.revoke(memberId: memberId)
+            member.isPrivateImageGranted = false
+
+            ToastManager.shared.show("비밀 사진을 닫으셨습니다.")
+        }
+
+        self.member = member
+    }
+
+    func getPrivateImages(granterId: Int64) async throws {
+        let response = try await memberImageService.getPrivateImages(granterId: granterId)
+        privateImages = response.images
+    }
+
+    func createChatRoom(targetId: Int64, content: String) async throws {
+        guard !isLoading else { return }
+        guard !content.isEmpty else {
+            throw AppError("쪽지 내용을 입력해주세요.")
+        }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        let response = try await chatRoomService.create(targetId: targetId)
+
+        guard let data = try? JSONEncoder().encode(
+            MessageSendRequest(
+                content: content
             )
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
+        ), let body = String(data: data, encoding: .utf8) else { return }
+
+        stomp.send(
+            body: body,
+            to: "/app/chat-rooms/\(response.chatRoomId)/messages",
+            headers: ["content-type": "application/json"],
+        )
     }
 }

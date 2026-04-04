@@ -7,7 +7,7 @@ struct MemberProfileInfo: View {
     let gender: String
     let age: Int
     let bio: String
-    let likes: Int
+    let likes: Int64
     let distance: Double?
     
     var body: some View {
