@@ -19,6 +19,11 @@ struct ActivateView: View {
         }
         .onTapGesture { hideKeyboard() }
         .safeAreaInset(edge: .bottom) { activateButton }
+        .overlay {
+            if vm.isLoading {
+                LoadingOverlay()
+            }
+        }
         .navigationTitle("프로필 설정")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)

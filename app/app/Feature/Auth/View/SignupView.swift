@@ -18,6 +18,11 @@ struct SignupView: View {
         .onTapGesture { hideKeyboard() }
         .safeAreaInset(edge: .bottom) { signupButton }
         .onDisappear { vm.invalidateTimer() }
+        .overlay {
+            if vm.isLoading {
+                LoadingOverlay()
+            }
+        }
         .navigationTitle("회원가입")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $goActivate) {

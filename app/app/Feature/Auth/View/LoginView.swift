@@ -21,6 +21,11 @@ struct LoginView: View {
             .safeAreaInset(edge: .bottom) {
                 loginButton
             }
+            .overlay {
+                if vm.isLoading {
+                    LoadingOverlay()
+                }
+            }
             .navigationTitle("로그인")
             .navigationBarTitleDisplayMode(.inline)
         }
