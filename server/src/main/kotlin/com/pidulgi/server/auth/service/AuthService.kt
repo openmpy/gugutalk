@@ -138,9 +138,11 @@ class AuthService(
     }
 
     @Transactional(readOnly = true)
-    fun validate(request: ValidateRequest) {
-        if (memberRepository.existsByNickname(request.nickname)) {
-            throw CustomException("이미 가입된 닉네임입니다.")
+    fun validate(memberId: Long, request: ValidateRequest) {
+        val member = getMember(memberId)
+
+        if (member.nickname != request.nickname && memberRepository.existsByNickname(request.nickname)) {
+            throw CustomException("이미 사용 중인 닉네임입니다.")
         }
         if (LocalDate.now().year - request.birthYear !in 19..60) {
             throw CustomException("만 19세 이상 60세 이하만 가입할 수 있습니다.")

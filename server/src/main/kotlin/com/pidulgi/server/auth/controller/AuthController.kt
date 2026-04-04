@@ -47,9 +47,10 @@ class AuthController(
 
     @PostMapping("/v1/auth/validate")
     fun validate(
+        @Login memberId: Long,
         @RequestBody request: ValidateRequest
     ): ResponseEntity<Unit> {
-        authService.validate(request)
+        authService.validate(memberId, request)
         return ResponseEntity.ok().build()
     }
 

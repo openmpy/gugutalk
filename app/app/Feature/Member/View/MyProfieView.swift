@@ -75,7 +75,8 @@ struct MyProfieView: View {
 
             Button("다시 시도") {
                 Task {
-                    await vm.getMe()                }
+                    await vm.getMe()
+                }
             }
 
             Spacer()

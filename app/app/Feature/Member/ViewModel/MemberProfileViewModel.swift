@@ -11,9 +11,9 @@ final class MemberProfileViewModel: ObservableObject {
     private let chatRoomService = ChatRoomService.shared
     private let stomp = StompManager.shared
 
+    @Published var isLoading: Bool = false
     @Published var state: MemberProfileViewState = .idle
 
-    @Published var isLoading: Bool = false
     @Published var member: MemberGetResponse? = nil
     @Published var privateImages: [MemberPrivateImageResponse] = []
     @Published var message: String = ""

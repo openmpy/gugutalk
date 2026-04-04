@@ -23,15 +23,14 @@ final class ActivateViewModel: ObservableObject {
 
     func activate() async throws {
         guard !isLoading else { return }
+        guard let birthYear = birthYear, (19...60).contains(Calendar.current.component(.year, from: Date()) - birthYear) else {
+            throw AppError("만 19세 이상 60세 이하만 가입할 수 있습니다.")
+        }
 
         isLoading = true
         defer { isLoading = false }
 
         // 검증
-        guard let birthYear = birthYear, (19...60).contains(Calendar.current.component(.year, from: Date()) - birthYear) else {
-            throw AppError("만 19세 이상 60세 이하만 가입할 수 있습니다.")
-        }
-
         try await authService.validate(nickname: nickname, birthYear: birthYear)
 
         // 이미지 업로드

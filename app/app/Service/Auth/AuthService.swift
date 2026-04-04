@@ -1,24 +1,24 @@
 import Alamofire
 
 final class AuthService {
-
+    
     static let shared = AuthService()
-
+    
     let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
-
+    
     func sendCodeVerificationCode(
         phoneNumber: String
     ) async throws {
         let url = "\(baseURL)/v1/auth/phone/send?phoneNumber=\(phoneNumber)"
-
+        
         return try await AF.request(
             url,
             method: .post
         )
         .validateWithErrorHandling()
     }
-
+    
     func signup(
         uuid: String,
         phoneNumber: String,
@@ -34,7 +34,7 @@ final class AuthService {
             password: password,
             gender: gender
         )
-
+        
         return try await AF.request(
             url,
             method: .post,
@@ -43,7 +43,7 @@ final class AuthService {
         )
         .decodingWithErrorHandling(SignupResponse.self)
     }
-
+    
     func activate(
         images: [ActivateImageRequest],
         nickname: String,
@@ -57,7 +57,7 @@ final class AuthService {
             birthYear: birthYear,
             bio: bio
         )
-
+        
         return try await session.request(
             url,
             method: .put,
@@ -66,7 +66,7 @@ final class AuthService {
         )
         .validateWithErrorHandling()
     }
-
+    
     func validate(
         nickname: String,
         birthYear: Int
@@ -76,7 +76,7 @@ final class AuthService {
             nickname: nickname,
             birthYear: birthYear
         )
-
+        
         return try await session.request(
             url,
             method: .post,
@@ -85,7 +85,7 @@ final class AuthService {
         )
         .validateWithErrorHandling()
     }
-
+    
     func login(
         phoneNumber: String,
         password: String
@@ -95,7 +95,7 @@ final class AuthService {
             phoneNumber: phoneNumber,
             password: password
         )
-
+        
         return try await AF.request(
             url,
             method: .post,
@@ -104,12 +104,12 @@ final class AuthService {
         )
         .decodingWithErrorHandling(LoginResponse.self)
     }
-
+    
     func logout(
         refreshToken: String
     ) async throws {
         let url = "\(baseURL)/v1/auth/logout?refreshToken=\(refreshToken)"
-
+        
         try await session.request(
             url,
             method: .delete
