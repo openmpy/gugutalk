@@ -71,7 +71,9 @@ final class ChatViewModel: ObservableObject {
         defer { isLoading = false }
 
         try await chatRoomService.delete(chatRoomId: chatRoomId)
+
         chatRooms.removeAll { $0.chatRoomId == chatRoomId }
+        if chatRooms.isEmpty { state = .empty }
     }
 
     func getChatEnabled() async throws {
@@ -143,5 +145,6 @@ final class ChatViewModel: ObservableObject {
 
     private func deleteChatRoom(_ chatRoomId: Int64) {
         self.chatRooms.removeAll { $0.chatRoomId == chatRoomId }
+        if chatRooms.isEmpty { state = .empty }
     }
 }

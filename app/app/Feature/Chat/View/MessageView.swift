@@ -1,7 +1,5 @@
 import SwiftUI
 import PhotosUI
-import UniformTypeIdentifiers
-import Toasts
 import Kingfisher
 
 struct MessageView: View {
@@ -12,191 +10,65 @@ struct MessageView: View {
     @StateObject private var vm = MessageViewModel()
     @StateObject private var stomp = StompManager.shared
 
-    @Environment(\.presentToast) var presentToast
     @Environment(\.dismiss) var dismiss
 
     @State private var selectMedia: [PhotosPickerItem] = []
-    @State private var images: [IdentifiableImage] = []
-    @State private var videos: [IdentifiableVideo] = []
-    @State private var message: String = ""
     @State private var playingVideoURL: URL? = nil
-    @State private var isUploading = false
 
     var body: some View {
         VStack {
-            if vm.messages.isEmpty {
-                Spacer()
-                Text("내역이 비어있습니다.")
-                    .foregroundColor(.primary)
-                    .rotationEffect(.degrees(180))
-                Spacer()
-            } else {
-                ScrollView {
-                    LazyVStack {
-                        ForEach(vm.messages) { it in
-                            MessageBubble(
-                                isMe: it.senderId == AuthStore.shared.memberId,
-                                content: it.content,
-                                createdAt: it.createdAt,
-                                type: it.type,
-                                playingVideoURL: $playingVideoURL
-                            )
-                            .onAppear {
-                                if it.id == vm.messages.last?.id {
-                                    Task {
-                                        let result = await vm.loadMore(chatRoomId: chatRoomId)
-                                        if case .failure(let error) = result {
-                                            presentToast(ToastValue(
-                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                message: error.localizedDescription
-                                            ))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
+            VStack {
+                switch vm.state {
+
+                case .idle:
+                    Spacer()
+                    EmptyView()
+                    Spacer()
+
+                case .loading:
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+
+                case .empty:
+                    Spacer()
+                    Text("내역이 비어있습니다.")
+                        .rotationEffect(.degrees(180))
+                    Spacer()
+
+                case .data:
+                    listSection
+
+                case .error(let message):
+                    errorSection(message: message)
                 }
-                .onTapGesture {
-                    hideKeyboard()
-                }
-            }
-        }
-        .onChange(of: vm.isRoomDelete) { _, isDeleted in
-            if isDeleted {
-                presentToast(ToastValue(
-                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
-                    message: "채팅방이 삭제되었습니다."
-                ))
-                dismiss()
             }
         }
         .onAppear {
             stomp.subscribe(to: "/topic/chat-rooms/\(chatRoomId)")
             vm.subscribe(chatRoomId: chatRoomId)
-            vm.enter(chatRoomId: chatRoomId)
         }
         .onDisappear {
             stomp.unsubscribe(from: "/topic/chat-rooms/\(chatRoomId)")
             vm.unsubscribe()
-            vm.leave()
         }
         .task {
-            let result = await vm.gets(chatRoomId: chatRoomId)
-            switch result {
-            case .success():
-                _ = await vm.getMember(chatRoomId: chatRoomId)
-                _ = await vm.markAsRead(chatRoomId: chatRoomId)
-            case .failure(let error):
-                presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                    message: error.localizedDescription
-                ))
+            await vm.gets(chatRoomId: chatRoomId)
+            try? await vm.getMember(chatRoomId: chatRoomId)
+            try? await vm.markAsRead(chatRoomId: chatRoomId)
+        }
+        .onChange(of: vm.isRoomDelete) { _, isDeleted in
+            if isDeleted {
+                ToastManager.shared.show("채팅방이 삭제되었습니다.")
                 dismiss()
             }
         }
         .safeAreaInset(edge: .top) {
             GlassEffectContainer(spacing: 5) {
                 HStack(alignment: .bottom) {
-                    if isUploading {
-                        ProgressView()
-                            .frame(width: 44, height: 44)
-                            .glassEffect(.regular.tint(Color(.clear)).interactive())
-                    } else {
-                        PhotosPicker(
-                            selection: $selectMedia,
-                            maxSelectionCount: 5,
-                            matching: .any(of: [.images, .videos])
-                        ) {
-                            Image(systemName: "paperclip")
-                                .font(.title3)
-                                .frame(width: 44, height: 44)
-                                .foregroundColor(.primary)
-                                .glassEffect(.regular.tint(Color(.clear)).interactive())
-                        }
-                        .onChange(of: selectMedia) { _, newItems in
-                            guard !newItems.isEmpty else { return }
+                    uploadSection
 
-                            Task {
-                                isUploading = true
-                                defer { isUploading = false }
-
-                                var images: [IdentifiableImage] = []
-                                var videos: [IdentifiableVideo] = []
-
-                                for item in newItems {
-                                    if let data = try? await item.loadTransferable(type: Data.self),
-                                       let image = UIImage(data: data) {
-                                        images.append(IdentifiableImage(image: image))
-                                        continue
-                                    }
-
-                                    if let videoItem = try? await item.loadTransferable(type: VideoItem.self) {
-                                        videos.append(IdentifiableVideo(video: videoItem.url))
-                                    }
-                                }
-
-                                let result = await vm.sendMedia(
-                                    chatRoomId: chatRoomId,
-                                    images: images,
-                                    videos: videos
-                                )
-                                if case .failure(let error) = result {
-                                    presentToast(ToastValue(
-                                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                        message: error.localizedDescription
-                                    ))
-                                }
-
-                                selectMedia = []
-                            }
-                        }
-                    }
-
-                    TextField("메시지 입력", text: $message, axis: .vertical)
-                        .font(.subheadline)
-                        .lineLimit(5)
-                        .padding(.leading)
-                        .padding(.trailing, 50)
-                        .padding(.vertical, 8)
-                        .frame(minHeight: 44)
-                        .overlay(
-                            HStack {
-                                Spacer()
-
-                                Button {
-                                    if (message.isEmpty) { return }
-
-                                    Task {
-                                        let result = await vm.send(chatRoomId: chatRoomId, content: message)
-                                        switch result {
-                                        case .success():
-                                            message = ""
-                                        case .failure(let error):
-                                            presentToast(ToastValue(
-                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                message: error.localizedDescription
-                                            ))
-                                        }
-                                    }
-                                } label: {
-                                    Image(systemName: "paperplane.fill")
-                                        .foregroundColor(.white)
-                                        .frame(width: 36, height: 36)
-                                        .background(message.isEmpty ? Color(.systemGray3) : .blue)
-                                        .clipShape(Circle())
-                                }
-                                .padding(.trailing, 4)
-                                .padding(.bottom, 4)
-                            }, alignment: .bottom
-                        )
-                        .glassEffect(
-                            .regular.tint(.clear).interactive(),
-                            in: .rect(cornerRadius: 20)
-                        )
-                        .autocorrectionDisabled(true)
-                        .textInputAutocapitalization(.never)
+                    inputSection
                 }
                 .padding()
             }
@@ -231,6 +103,136 @@ struct MessageView: View {
                         .clipShape(Circle())
                 }
             }
+        }
+    }
+
+    // MARK: - SECTION
+
+    private var listSection: some View {
+        ScrollView {
+            LazyVStack {
+                ForEach(vm.messages) { it in
+                    MessageBubble(
+                        isMe: it.senderId == AuthStore.shared.memberId,
+                        content: it.content,
+                        createdAt: it.createdAt,
+                        type: it.type,
+                        playingVideoURL: $playingVideoURL
+                    )
+                    .onAppear {
+                        if it.id == vm.messages.last?.id && vm.hasNext {
+                            Task {
+                                try? await vm.loadMore(chatRoomId: chatRoomId)
+                            }
+                        }
+                    }
+                }
+
+                if vm.isPaging {
+                    ProgressView()
+                        .padding()
+                }
+            }
+            .padding(.horizontal)
+        }
+        .onTapGesture {
+            hideKeyboard()
+        }
+    }
+
+    private var uploadSection: some View {
+        Group {
+            if vm.isUploading {
+                ProgressView()
+                    .frame(width: 44, height: 44)
+                    .glassEffect(.regular.tint(Color(.clear)).interactive())
+            } else {
+                PhotosPicker(
+                    selection: $selectMedia,
+                    maxSelectionCount: 5,
+                    matching: .any(of: [.images, .videos])
+                ) {
+                    Image(systemName: "paperclip")
+                        .font(.title3)
+                        .frame(width: 44, height: 44)
+                        .foregroundColor(.primary)
+                        .glassEffect(.regular.tint(Color(.clear)).interactive())
+                }
+            }
+        }
+        .onChange(of: selectMedia) { _, newItems in
+            guard !newItems.isEmpty else { return }
+
+            Task {
+                for item in newItems {
+                    if let data = try? await item.loadTransferable(type: Data.self),
+                       let image = UIImage(data: data) {
+                        vm.images.append(IdentifiableImage(image: image))
+                        continue
+                    }
+
+                    if let videoItem = try? await item.loadTransferable(type: VideoItem.self) {
+                        vm.videos.append(IdentifiableVideo(video: videoItem.url))
+                    }
+                }
+
+                try await vm.sendMedia(chatRoomId: chatRoomId)
+                selectMedia = []
+            }
+        }
+    }
+
+    private var inputSection: some View {
+        TextField("메시지 입력", text: $vm.message, axis: .vertical)
+            .font(.subheadline)
+            .lineLimit(5)
+            .padding(.leading)
+            .padding(.trailing, 50)
+            .padding(.vertical, 8)
+            .frame(minHeight: 44)
+            .overlay(
+                HStack {
+                    Spacer()
+
+                    Button {
+                        Task {
+                            try? await vm.send(chatRoomId: chatRoomId)
+                            vm.message = ""
+                        }
+                    } label: {
+                        Image(systemName: "paperplane.fill")
+                            .foregroundColor(.white)
+                            .frame(width: 36, height: 36)
+                            .background(vm.message.isEmpty ? Color(.systemGray3) : .blue)
+                            .clipShape(Circle())
+                    }
+                    .padding(.trailing, 4)
+                    .padding(.bottom, 4)
+                    .disabled(vm.isLoading || vm.message.isEmpty)
+                }, alignment: .bottom
+            )
+            .glassEffect(
+                .regular.tint(.clear).interactive(),
+                in: .rect(cornerRadius: 20)
+            )
+            .autocorrectionDisabled(true)
+            .textInputAutocapitalization(.never)
+    }
+
+    private func errorSection(message: String) -> some View {
+        VStack {
+            Spacer()
+
+            Text(message)
+                .padding(.bottom)
+
+            Button("다시 시도") {
+                Task {
+                    await vm.gets(chatRoomId: chatRoomId)
+                }
+            }
+
+            Spacer()
         }
     }
 }
