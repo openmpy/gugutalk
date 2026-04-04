@@ -62,29 +62,7 @@ struct MemberProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showMenu = true
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.title3)
-                        .foregroundColor(.primary)
-                }
-                .confirmationDialog("메뉴", isPresented: $showMenu) {
-                    Button(vm.member?.isPrivateImageGranted == true ? "비밀 사진 닫기" : "비밀 사진 열기", role: .confirm) {
-                        Task {
-                            try? await vm.togglePrivateImageGrant(memberId: memberId)
-                        }
-                    }
-                    .disabled(vm.isLoading)
-
-                    Button("신고", role: .destructive) {
-                        goReport = true
-                    }
-
-                    Button("취소", role: .cancel) { }
-                }
-            }
+            toolbar
         }
         .navigationDestination(isPresented: $goReport) {
             ReportView(memberId: memberId, nickname: vm.member?.nickname ?? "")
@@ -206,6 +184,32 @@ struct MemberProfileView: View {
                 .glassEffectUnion(id: 1, namespace: namespace)
         }
         .disabled(vm.isLoading)
+    }
+
+    private var toolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                showMenu = true
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.title3)
+                    .foregroundColor(.primary)
+            }
+            .confirmationDialog("메뉴", isPresented: $showMenu) {
+                Button(vm.member?.isPrivateImageGranted == true ? "비밀 사진 닫기" : "비밀 사진 열기", role: .confirm) {
+                    Task {
+                        try? await vm.togglePrivateImageGrant(memberId: memberId)
+                    }
+                }
+                .disabled(vm.isLoading)
+
+                Button("신고", role: .destructive) {
+                    goReport = true
+                }
+
+                Button("취소", role: .cancel) { }
+            }
+        }
     }
 
     private func errorSection(message: String) -> some View {
