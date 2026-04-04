@@ -7,7 +7,7 @@ final class RecentViewModel: ObservableObject {
     private let recentService = RecentService.shared
     private let memberService = MemberService.shared
 
-    @Published var state: DiscoveryViewState = .idle
+    @Published var state: RecentViewState = .idle
     @Published var isLoading: Bool = false
     @Published var isPaging: Bool = false
     @Published var hasNext: Bool = true

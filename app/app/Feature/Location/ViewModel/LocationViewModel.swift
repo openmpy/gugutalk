@@ -4,73 +4,63 @@ import Combine
 @MainActor
 final class LocationViewModel: ObservableObject {
 
-    private let locationService = LocationService.shared
+    private let locaionService = LocationService.shared
     private let memberService = MemberService.shared
 
+    @Published var state: LocationViewState = .idle
     @Published var isLoading: Bool = false
+    @Published var isPaging: Bool = false
     @Published var hasNext: Bool = true
+
     @Published var members: [MemberDiscoveryResponse] = []
+    @Published var selectGender: String = "ALL"
 
     private var page: Int = 0
-    private let size: Int = 20
+    private var size: Int = 20
 
-    func getLocationMembers(gender: String) async -> Result<Void, Error> {
-        page = 0
-        hasNext = true
+    func getLocationMembers() async {
+        guard case .loading = state else {
+            state = .loading
+            return await fetchFirstPage()
+        }
+    }
 
-        guard !isLoading else { return .success(()) }
-
-        isLoading = true
-        defer { isLoading = false }
-        
+    private func fetchFirstPage() async {
         do {
-            let response = try await locationService.getLocationMembers(
-                gender: gender,
+            let response = try await locaionService.getLocationMembers(
+                gender: selectGender,
                 page: 0,
                 size: size
             )
+
             members = response.payload
-            hasNext = response.hasNext
             page = 1
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
-    }
-    
-    func loadMoreLocationMembers(gender: String) async -> Result<Void, Error> {
-        guard !isLoading else { return .success(()) }
-        guard hasNext else { return .success(()) }
-
-        isLoading = true
-        defer { isLoading = false }
-
-        do {
-            let response = try await locationService.getLocationMembers(
-                gender: gender,
-                page: page,
-                size: size
-            )
-            members.append(contentsOf: response.payload)
             hasNext = response.hasNext
-            page += 1
-            return .success(())
+
+            state = members.isEmpty ? .empty : .data
         } catch {
-            return .failure(error)
+            state = .error(error.localizedDescription)
         }
     }
 
-    func bump(latitude: Double?, longitude: Double?) async -> Result<Void, Error> {
-        guard !isLoading else { return .failure(CancellationError()) }
+    func loadMoreLocationMembers() async throws {
+        guard !isPaging, hasNext else { return }
 
-        isLoading = true
-        defer { isLoading = false }
+        isPaging = true
+        defer { isPaging = false }
 
-        do {
-            try await memberService.bump(latitude: latitude, longitude: longitude)
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
+        let response = try await locaionService.getLocationMembers(
+            gender: selectGender,
+            page: page,
+            size: size
+        )
+
+        members.append(contentsOf: response.payload)
+        page = page + 1
+        hasNext = response.hasNext
+    }
+
+    func bump(latitude: Double?, longitude: Double?) async throws {
+        try await memberService.bump(latitude: latitude, longitude: longitude)
     }
 }

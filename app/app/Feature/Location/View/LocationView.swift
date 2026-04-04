@@ -1,135 +1,148 @@
 import SwiftUI
-import Toasts
 
 struct LocationView: View {
 
     @StateObject private var vm = LocationViewModel()
     @StateObject private var locationManager = LocationManager()
 
-    @Environment(\.presentToast) var presentToast
-
-    @State private var selectGender: String = "ALL"
-
     var body: some View {
         NavigationStack {
             VStack {
-                if !locationManager.isAuthorized {
+                GenderSelector(selectGender: $vm.selectGender)
+
+                switch vm.state {
+
+                case .idle:
                     Spacer()
-                    VStack(spacing: 20) {
-                        Text("위치 권한을 허용해주세요.")
-                            .foregroundColor(.primary)
-
-                        Button {
-                            if let url = URL(string: UIApplication.openSettingsURLString) {
-                                UIApplication.shared.open(url)
-                            }
-                        } label: {
-                            Text("설정으로 이동")
-                                .font(.default.bold())
-                                .frame(height: 40)
-                                .padding(.horizontal)
-                                .foregroundColor(.white)
-                                .background(.blue, in: RoundedRectangle(cornerRadius: 20))
-                        }
-                    }
+                    EmptyView()
                     Spacer()
-                } else {
-                    GenderSelector(selectGender: $selectGender)
 
-                    if vm.members.isEmpty && !vm.isLoading {
-                        Spacer()
-                        Text("주변 회원이 없습니다.")
-                            .foregroundColor(.primary)
-                        Spacer()
-                    } else {
-                        ScrollView {
-                            LazyVStack {
-                                ForEach(vm.members) { it in
-                                    NavigationLink {
-                                        MemberProfileView(memberId: it.memberId)
-                                    } label: {
-                                        MemberRow(
-                                            profileUrl: it.profileUrl,
-                                            nickname: it.nickname,
-                                            updatedAt: it.updatedAt,
-                                            content: it.comment ?? "",
-                                            gender: it.gender,
-                                            age: it.age,
-                                            likes: it.likes,
-                                            distance: it.distance
-                                        )
-                                    }
-                                    .onAppear {
-                                        if it.id == vm.members.last?.id {
-                                            Task {
-                                                let result = await vm.loadMoreLocationMembers(gender: selectGender.uppercased())
-                                                if case .failure(let error) = result {
-                                                    presentToast(ToastValue(
-                                                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                        message: error.localizedDescription
-                                                    ))
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .refreshable {
-                            Task {
-                        let bumpResult = await vm.bump(
-                                latitude: locationManager.latitude,
-                                longitude: locationManager.longitude
-                            )
-                            if case .failure(let error) = bumpResult {
-                                    presentToast(ToastValue(
-                                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                        message: error.localizedDescription
-                                    ))
-                                }
+                case .loading:
+                    Spacer()
+                    ProgressView()
+                    Spacer()
 
-                                try? await locationManager.fetchLocation()
+                case .unauthorized:
+                    unauthorizedSection
 
-                                let result = await vm.getLocationMembers(gender: selectGender.uppercased())
-                                if case .failure(let error) = result {
-                                    presentToast(ToastValue(
-                                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                        message: error.localizedDescription
-                                    ))
-                                }
-                            }
-                        }
-                    }
+                case .empty:
+                    Spacer()
+                    Text("내역이 비어있습니다.")
+                    Spacer()
+
+                case .data:
+                    listSection
+
+                case .error(let message):
+                    errorSection(message: message)
                 }
             }
             .task {
                 if locationManager.isAuthorized {
                     try? await locationManager.fetchLocation()
+                    try? await vm.bump(
+                        latitude: locationManager.latitude,
+                        longitude: locationManager.longitude
+                    )
 
-                    let result = await vm.getLocationMembers(gender: selectGender.uppercased())
-                    if case .failure(let error) = result {
-                        presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                            message: error.localizedDescription
-                        ))
-                    }
+                    await vm.getLocationMembers()
                 } else {
+                    vm.state = .unauthorized
                     locationManager.requestPermission()
                 }
             }
-            .onChange(of: selectGender) { _, newValue in
+            .onChange(of: vm.selectGender) { _, _ in
                 Task {
-                    let result = await vm.getLocationMembers(gender: newValue.uppercased())
-                    if case .failure(let error) = result {
-                        presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                            message: error.localizedDescription
-                        ))
-                    }
+                    await vm.getLocationMembers()
                 }
             }
-            .navigationTitle("위치")
+            .overlay {
+                if vm.isLoading {
+                    LoadingOverlay()
+                }
+            }
+            .navigationTitle("거리")
             .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+    // MARK: - SECTION
+
+    private var listSection: some View {
+        ScrollView {
+            LazyVStack {
+                ForEach(vm.members) { it in
+                    NavigationLink {
+                        MemberProfileView(memberId: it.memberId)
+                    } label: {
+                        MemberRow(
+                            profileUrl: it.profileUrl,
+                            nickname: it.nickname,
+                            updatedAt: it.updatedAt,
+                            content: it.comment ?? "",
+                            gender: it.gender,
+                            age: it.age,
+                            likes: it.likes,
+                            distance: it.distance
+                        )
+                    }
+                    .onAppear {
+                        if it.id == vm.members.last?.id && vm.hasNext {
+                            Task {
+                                try? await vm.loadMoreLocationMembers()
+                            }
+                        }
+                    }
+                }
+
+                if vm.isPaging {
+                    ProgressView()
+                        .padding()
+                }
+            }
+        }
+        .refreshable {
+            Task {
+                try? await locationManager.fetchLocation()
+                try? await vm.bump(
+                    latitude: locationManager.latitude,
+                    longitude: locationManager.longitude
+                )
+
+                await vm.getLocationMembers()
+            }
+        }
+    }
+
+    private var unauthorizedSection: some View {
+        VStack {
+            Spacer()
+
+            Text("위치 접근 권한이 없습니다.")
+                .padding(.bottom)
+
+            Button("설정으로 이동") {
+                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+            }
+
+            Spacer()
+        }
+    }
+
+    private func errorSection(message: String) -> some View {
+        VStack {
+            Spacer()
+
+            Text(message)
+                .padding(.bottom)
+
+            Button("다시 시도") {
+                Task {
+                    await vm.getLocationMembers()
+                }
+            }
+
+            Spacer()
         }
     }
 }
