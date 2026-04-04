@@ -1,91 +1,101 @@
 import SwiftUI
-import Toasts
 
 struct MemberSearchView: View {
 
     @StateObject private var vm = MemberSearchViewModel()
 
-    @Environment(\.presentToast) var presentToast
-
-    @State private var keyword: String = ""
-
     var body: some View {
         VStack {
-            if vm.members.isEmpty && !keyword.isEmpty && !vm.isLoading {
+            switch vm.state {
+
+            case .idle:
+                Spacer()
+                Text("닉네임을 입력해주세요.")
+                Spacer()
+
+            case .loading:
+                Spacer()
+                ProgressView()
+                Spacer()
+
+            case .empty:
                 Spacer()
                 Text("검색 결과가 없습니다.")
-                    .foregroundColor(.secondary)
                 Spacer()
-            } else {
-                ScrollView {
-                    LazyVStack {
-                        ForEach(vm.members) { member in
-                            NavigationLink {
-                                MemberProfileView(memberId: member.memberId)
-                            } label: {
-                                MemberRow(
-                                    profileUrl: member.profileUrl,
-                                    nickname: member.nickname,
-                                    updatedAt: member.updatedAt,
-                                    content: member.comment ?? "",
-                                    gender: member.gender,
-                                    age: member.age,
-                                    likes: member.likes,
-                                    distance: member.distance
-                                )
-                            }
-                            .onAppear {
-                                if member.id == vm.members.last?.id {
-                                    Task {
-                                        let result = await vm.loadMore(keyword: keyword)
-                                        if case .failure(let error) = result {
-                                            presentToast(ToastValue(
-                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                message: error.localizedDescription
-                                            ))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                .onTapGesture {
-                    hideKeyboard()
-                }
+
+            case .data:
+                listSection
+
+            case .error(let message):
+                errorSection(message: message)
             }
         }
         .searchable(
-            text: $keyword,
+            text: $vm.keyword,
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "닉네임 입력 (2자 이상)"
         )
-        .onChange(of: keyword) { _, newValue in
+        .onChange(of: vm.keyword) { _, newValue in
             if newValue.isEmpty {
-                vm.members = []
+                vm.state = .idle
             }
         }
         .onSubmit(of: .search) {
-            guard keyword.count >= 2 else { return }
-
             Task {
-                let result = await vm.search(keyword: keyword)
-                if case .failure(let error) = result {
-                    presentToast(ToastValue(
-                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                        message: error.localizedDescription
-                    ))
-                }
+                await vm.search()
             }
         }
         .navigationTitle("회원 검색")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
     }
-}
 
-#Preview {
-    NavigationStack {
-        MemberSearchView()
+    // MARK: - SECTION
+
+    private var listSection: some View {
+        ScrollView {
+            LazyVStack {
+                ForEach(vm.members) { it in
+                    NavigationLink {
+                        MemberProfileView(memberId: it.memberId)
+                    } label: {
+                        MemberRow(
+                            profileUrl: it.profileUrl,
+                            nickname: it.nickname,
+                            updatedAt: it.updatedAt,
+                            content: it.comment ?? "",
+                            gender: it.gender,
+                            age: it.age,
+                            likes: it.likes,
+                            distance: it.distance
+                        )
+                    }
+                    .onAppear {
+                        if it.id == vm.members.last?.id && vm.hasNext {
+                            Task {
+                                try? await vm.loadMore()
+                            }
+                        }
+                    }
+                }
+                if vm.isPaging {
+                    ProgressView()
+                        .padding()
+                }
+            }
+        }
+    }
+    
+    private func errorSection(message: String) -> some View {
+        VStack {
+            Text(message)
+                .padding(.bottom)
+
+            Button("다시 시도") {
+                Task {
+                    await vm.search()
+                }
+            }
+        }
     }
 }
