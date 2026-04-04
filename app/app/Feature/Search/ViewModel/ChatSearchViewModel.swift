@@ -7,27 +7,29 @@ final class ChatSearchViewModel: ObservableObject {
     private let chatRoomService = ChatRoomService.shared
     private let stomp = StompManager.shared
 
-    @Published var isLoading: Bool = false
+    @Published var state: MemberSearchViewState = .idle
+    @Published var isPaging: Bool = false
     @Published var hasNext: Bool = true
-    @Published var chatRooms: [ChatRoomGetResponse] = []
 
+    @Published var chatRooms: [ChatRoomGetResponse] = []
+    @Published var keyword: String = ""
+
+    private var isLoading: Bool = false
     private var cursorId: Int64?
     private var cursorDateAt: String?
     private var cancellables = Set<AnyCancellable>()
 
-    func search(keyword: String) async -> Result<Void, Error> {
+    func search() async {
         guard keyword.count >= 2 else {
-            chatRooms = []
-            return .success(())
+            state = .idle
+            return
         }
-
-        cursorId = nil
-        hasNext = true
-
-        guard !isLoading else { return .success(()) }
+        guard !isLoading else { return }
 
         isLoading = true
         defer { isLoading = false }
+
+        state = .loading
 
         do {
             let response = try await chatRoomService.search(
@@ -35,37 +37,34 @@ final class ChatSearchViewModel: ObservableObject {
                 cursorId: nil,
                 cursorDateAt: nil,
             )
+
             chatRooms = response.payload
             cursorId = response.nextId
             cursorDateAt = response.nextDateAt
             hasNext = response.hasNext
-            return .success(())
+
+            state = chatRooms.isEmpty ? .empty : .data
         } catch {
-            return .failure(error)
+            state = .error(error.localizedDescription)
         }
     }
 
-    func loadMore(keyword: String) async -> Result<Void, Error> {
-        guard !isLoading else { return .success(()) }
-        guard hasNext else { return .success(()) }
+    func loadMore() async throws {
+        guard !isPaging, hasNext else { return }
 
-        isLoading = true
-        defer { isLoading = false }
+        isPaging = true
+        defer { isPaging = false }
 
-        do {
-            let response = try await chatRoomService.search(
-                keyword: keyword,
-                cursorId: cursorId,
-                cursorDateAt: cursorDateAt,
-            )
-            chatRooms.append(contentsOf: response.payload)
-            cursorId = response.nextId
-            cursorDateAt = response.nextDateAt
-            hasNext = response.hasNext
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
+        let response = try await chatRoomService.search(
+            keyword: keyword,
+            cursorId: cursorId,
+            cursorDateAt: cursorDateAt
+        )
+
+        chatRooms.append(contentsOf: response.payload)
+        cursorId = response.nextId
+        cursorDateAt = response.nextDateAt
+        hasNext = response.hasNext
     }
 
     // MARK: - 이벤트

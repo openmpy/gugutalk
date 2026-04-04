@@ -1,80 +1,34 @@
 import SwiftUI
-import Toasts
 
 struct ChatSearchView: View {
 
     @StateObject private var vm = ChatSearchViewModel()
 
-    @Environment(\.presentToast) var presentToast
-
-    @State private var keyword: String = ""
-
     var body: some View {
         VStack {
-            if keyword.isEmpty || vm.chatRooms.isEmpty {
-                Spacer()
-                Text("검색 결과가 없습니다.")
-                    .foregroundColor(.secondary)
-                Spacer()
-            } else {
-                ScrollView {
-                    LazyVStack {
-                        ForEach(vm.chatRooms) { it in
-                            NavigationLink {
-                                MessageView(
-                                    chatRoomId: it.chatRoomId,
-                                    memberId: it.targetId
-                                )
-                            } label: {
-                                ChatRow(
-                                    profileUrl: it.profileUrl,
-                                    nickname: it.nickname,
-                                    updatedAt: it.sortAt,
-                                    content: it.lastMessage ?? "",
-                                    unreads: it.unreadCount
-                                )
-                            }
-                            .onAppear {
-                                if it.id == vm.chatRooms.last?.id {
-                                    Task {
-                                        let result = await vm.loadMore(keyword: keyword)
-                                        if case .failure(let error) = result {
-                                            presentToast(ToastValue(
-                                                icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                message: error.localizedDescription
-                                            ))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                .onTapGesture {
-                    hideKeyboard()
-                }
-            }
-        }
-        .searchable(
-            text: $keyword,
-            placement: .navigationBarDrawer(displayMode: .always),
-            prompt: "닉네임 입력 (2자 이상)"
-        )
-        .onChange(of: keyword) { _, newValue in
-            if newValue.isEmpty {
-                vm.chatRooms = []
-            }
-        }
-        .onSubmit(of: .search) {
-            guard keyword.count >= 2 else { return }
+            VStack {
+                switch vm.state {
 
-            Task {
-                let result = await vm.search(keyword: keyword)
-                if case .failure(let error) = result {
-                    presentToast(ToastValue(
-                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                        message: error.localizedDescription
-                    ))
+                case .idle:
+                    Spacer()
+                    Text("닉네임을 입력해주세요.")
+                    Spacer()
+
+                case .loading:
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+
+                case .empty:
+                    Spacer()
+                    Text("검색 결과가 없습니다.")
+                    Spacer()
+
+                case .data:
+                    listSection
+
+                case .error(let message):
+                    errorSection(message: message)
                 }
             }
         }
@@ -84,25 +38,75 @@ struct ChatSearchView: View {
         .onDisappear {
             vm.unsubscribe()
         }
-        .task {
-            guard keyword.count >= 2 else { return }
-            
-            let result = await vm.search(keyword: keyword)
-            if case .failure(let error) = result {
-                presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                    message: error.localizedDescription
-                ))
+        .searchable(
+            text: $vm.keyword,
+            placement: .navigationBarDrawer(displayMode: .always),
+            prompt: "닉네임 입력 (2자 이상)"
+        )
+        .onChange(of: vm.keyword) { _, newValue in
+            if newValue.isEmpty {
+                vm.state = .idle
+            }
+        }
+        .onSubmit(of: .search) {
+            Task {
+                await vm.search()
             }
         }
         .navigationTitle("채팅 검색")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
     }
-}
 
-#Preview {
-    NavigationStack {
-        ChatSearchView()
+    // MARK: - SECTION
+
+    private var listSection: some View {
+        ScrollView {
+            LazyVStack {
+                ForEach(vm.chatRooms) { it in
+                    NavigationLink {
+                        MessageView(
+                            chatRoomId: it.chatRoomId,
+                            memberId: it.targetId
+                        )
+                    } label: {
+                        ChatRow(
+                            profileUrl: it.profileUrl,
+                            nickname: it.nickname,
+                            updatedAt: it.sortAt,
+                            content: it.lastMessage ?? "",
+                            unreads: it.unreadCount
+                        )
+                    }
+                    .onAppear {
+                        if it.id == vm.chatRooms.last?.id && vm.hasNext {
+                            Task {
+                                try? await vm.loadMore()
+                            }
+                        }
+                    }
+                }
+                if vm.isPaging {
+                    ProgressView()
+                        .padding()
+                }
+            }
+        }
+        .onTapGesture {
+            hideKeyboard()
+        }
+    }
+
+    private func errorSection(message: String) -> some View {
+        VStack {
+            Text(message)
+                .padding(.bottom)
+
+            Button("다시 시도") {
+                Task {
+                    await vm.search()
+                }
+            }
+        }
     }
 }
