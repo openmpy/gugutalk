@@ -43,7 +43,7 @@ struct RecentView: View {
             }
             .onChange(of: vm.selectGender) { _, _ in
                 Task {
-                    await vm.getRecentMembers()
+                    await vm.refresh()
                 }
             }
             .overlay {
@@ -120,7 +120,7 @@ struct RecentView: View {
                     longitude: locationManager.longitude
                 )
 
-                await vm.getRecentMembers()
+                await vm.refresh()
             }
         }
     }

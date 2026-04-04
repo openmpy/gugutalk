@@ -53,7 +53,13 @@ struct LocationView: View {
             }
             .onChange(of: vm.selectGender) { _, _ in
                 Task {
-                    await vm.getLocationMembers()
+                    try? await locationManager.fetchLocation()
+                    try? await vm.bump(
+                        latitude: locationManager.latitude,
+                        longitude: locationManager.longitude
+                    )
+                    
+                    await vm.refresh()
                 }
             }
             .overlay {
@@ -109,7 +115,7 @@ struct LocationView: View {
                     longitude: locationManager.longitude
                 )
 
-                await vm.getLocationMembers()
+                await vm.refresh()
             }
         }
     }

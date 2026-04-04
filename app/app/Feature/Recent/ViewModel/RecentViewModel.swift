@@ -11,6 +11,7 @@ final class RecentViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var isPaging: Bool = false
     @Published var hasNext: Bool = true
+    @Published var hasLoaded: Bool = false
 
     @Published var members: [MemberDiscoveryResponse] = []
     @Published var selectGender: String = "ALL"
@@ -20,10 +21,16 @@ final class RecentViewModel: ObservableObject {
     private var cursorDateAt: String?
 
     func getRecentMembers() async {
-        guard case .loading = state else {
-            state = .loading
-            return await fetchFirstPage()
-        }
+        guard !hasLoaded else { return }
+
+        state = .loading
+        await fetchFirstPage()
+        hasLoaded = true
+    }
+
+    func refresh() async {
+        state = .loading
+        await fetchFirstPage()
     }
 
     private func fetchFirstPage() async {
