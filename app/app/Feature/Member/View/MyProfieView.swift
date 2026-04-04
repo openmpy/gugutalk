@@ -1,40 +1,34 @@
 import SwiftUI
-import Toasts
 
 struct MyProfieView: View {
 
     @StateObject private var vm = MyProfileViewModel()
 
-    @Environment(\.presentToast) var presentToast
-
     var body: some View {
         VStack {
-            if let member = vm.member {
-                ScrollView {
-                    MemberProfileImage(images: member.publicImages.compactMap { URL(string: $0.url) })
+            switch vm.state {
 
-                    MemberProfileInfo(
-                        nickname: member.nickname,
-                        updatedAt: nil,
-                        gender: member.gender,
-                        age: member.age,
-                        bio: member.bio ?? "",
-                        likes: member.likes,
-                        distance: nil
-                    )
-                }
-            } else {
+            case .idle:
+                Spacer()
+                EmptyView()
+                Spacer()
+
+            case .loading:
+                Spacer()
                 ProgressView()
+                Spacer()
+
+            case .data:
+                if let member = vm.member {
+                    memberSection(member: member)
+                }
+
+            case .error(let message):
+                errorSection(message: message)
             }
         }
         .task {
-            let result = await vm.getMe()
-            if case .failure(let error) = result {
-                presentToast(ToastValue(
-                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                    message: error.localizedDescription
-                ))
-            }
+            await vm.getMe()
         }
         .navigationTitle("내 프로필")
         .navigationBarTitleDisplayMode(.inline)
@@ -51,8 +45,40 @@ struct MyProfieView: View {
             }
         }
     }
-}
 
-#Preview {
-    MyProfieView()
+    // MARK: - SECTION
+
+    private func memberSection(member: MemberGetMeResponse) -> some View {
+        ScrollView {
+            MemberProfileImage(
+                images: member.publicImages.compactMap { URL(string: $0.url) }
+            )
+
+            MemberProfileInfo(
+                nickname: member.nickname,
+                updatedAt: nil,
+                gender: member.gender,
+                age: member.age,
+                bio: member.bio ?? "",
+                likes: member.likes,
+                distance: nil
+            )
+        }
+    }
+
+    private func errorSection(message: String) -> some View {
+        VStack {
+            Spacer()
+
+            Text(message)
+                .padding(.bottom)
+
+            Button("다시 시도") {
+                Task {
+                    await vm.getMe()                }
+            }
+
+            Spacer()
+        }
+    }
 }

@@ -6,20 +6,26 @@ final class MyProfileViewModel: ObservableObject {
 
     private let memberService = MemberService.shared
 
-    @Published var isLoading: Bool = false
+    @Published var state: MyProfileViewState = .idle
+
     @Published var member: MemberGetMeResponse? = nil
 
-    func getMe() async -> Result<Void, Error> {
-        guard !isLoading else { return .failure(CancellationError()) }
+    func getMe() async {
+        guard state != .loading else { return }
 
-        isLoading = true
-        defer { isLoading = false }
+        state = .loading
+        await fetch()
+    }
 
+    private func fetch() async {
         do {
-            member = try await memberService.getMe()
-            return .success(())
+            let response = try await memberService.getMe()
+
+            member = response
+            state = .data
         } catch {
-            return .failure(error)
+            member = nil
+            state = .error(error.localizedDescription)
         }
     }
 }
