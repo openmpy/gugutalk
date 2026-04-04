@@ -1,6 +1,5 @@
 import SwiftUI
 import PhotosUI
-import Toasts
 
 struct ReportView: View {
 
@@ -9,102 +8,28 @@ struct ReportView: View {
 
     @StateObject private var vm = ReportViewModel()
 
-    @Environment(\.presentToast) var presentToast
     @Environment(\.dismiss) var dismiss
 
-    @State private var selectType: ReportType = .abuse
     @State private var images: [PhotosPickerItem] = []
-    @State private var selectImages: [IdentifiableImage] = []
-    @State private var reason: String = ""
 
     var body: some View {
         VStack {
             Spacer()
 
-            Text("신고 남용 시 서비스 이용이 제한됩니다.")
-                .font(.subheadline.bold())
-                .padding(10)
-                .frame(maxWidth: .infinity)
-                .foregroundColor(.white)
-                .background(.red)
+            reportBanner
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading) {
-                        ForEach(ReportType.allCases) { it in
-                            Button {
-                                selectType = it
-                            } label: {
-                                HStack {
-                                    Text(it.title)
-                                        .font(.subheadline)
-                                        .foregroundColor(.primary)
-
-                                    Spacer()
-
-                                    Image(systemName: selectType == it ? "checkmark.circle.fill" : "circle")
-                                        .foregroundColor(.red)
-                                }
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(20)
-                                .padding(.top, 5)
-                            }
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("증거 자료 (선택)")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
-
-                        ImagePicker(maxImages: 5, images: $images, selectImages: $selectImages)
-                    }
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("추가 설명 (선택)")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
-
-                        TextEditor(text: $reason)
-                            .padding(.horizontal, 11)
-                            .padding(.vertical, 7)
-                            .frame(height: 150)
-                            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
-                            .scrollContentBackground(.hidden)
-                            .textInputAutocapitalization(.never)
-                            .disableAutocorrection(true)
-                    }
-                }
-                .padding()
-            }
-            .onTapGesture {
-                hideKeyboard()
-            }
+            reportSection
         }
         .safeAreaInset(edge: .bottom) {
             Button {
                 Task {
-                    let result = await vm.create(
-                        reportedId: memberId,
-                        images: selectImages,
-                        type: selectType.rawValue.uppercased(),
-                        reason: reason
-                    )
-                    switch result {
-                    case .success:
-                        presentToast(ToastValue(
-                            icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
-                            message: "신고가 접수되었습니다."
-                        ))
+                    do {
+                        try await vm.report(reportedId: memberId)
+
+                        ToastManager.shared.show("신고가 접수되었습니다.")
                         dismiss()
-                    case .failure(let error):
-                        presentToast(ToastValue(
-                            icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                            message: error.localizedDescription
-                        ))
+                    } catch {
+                        ToastManager.shared.show(error.localizedDescription, type: .error)
                     }
                 }
             } label: {
@@ -118,11 +43,81 @@ struct ReportView: View {
             .disabled(vm.isLoading)
             .padding()
         }
+        .overlay {
+            if vm.isLoading {
+                LoadingOverlay()
+            }
+        }
         .navigationTitle("신고 (\(nickname))")
         .navigationBarTitleDisplayMode(.inline)
     }
-}
 
-#Preview {
-    ReportView(memberId: 1, nickname: "홍길동")
+    // MARK: - SECTION
+
+    private var reportBanner: some View {
+        Text("신고 남용 시 서비스 이용이 제한됩니다.")
+            .font(.subheadline.bold())
+            .padding(10)
+            .frame(maxWidth: .infinity)
+            .foregroundColor(.white)
+            .background(.red)
+    }
+
+    private var reportSection: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading) {
+                    ForEach(ReportType.allCases) { it in
+                        Button {
+                            vm.selectType = it
+                        } label: {
+                            HStack {
+                                Text(it.title)
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+
+                                Spacer()
+
+                                Image(systemName: vm.selectType == it ? "checkmark.circle.fill" : "circle")
+                                    .foregroundColor(.red)
+                            }
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(20)
+                            .padding(.top, 5)
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("증거 자료 (선택)")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+
+                    ImagePicker(maxImages: 5, images: $images, selectImages: $vm.selectImages)
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("추가 설명 (선택)")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                    
+                    TextEditor(text: $vm.reason)
+                        .padding(.horizontal, 11)
+                        .padding(.vertical, 7)
+                        .frame(height: 150)
+                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
+                        .scrollContentBackground(.hidden)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                }
+            }
+            .padding()
+        }
+        .onTapGesture {
+            hideKeyboard()
+        }
+    }
 }
