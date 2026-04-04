@@ -7,78 +7,38 @@ struct ChatView: View {
 
     @Environment(\.presentToast) var presentToast
 
-    @State private var selectStatus: String = "ALL"
-
     var body: some View {
         NavigationStack {
             VStack {
-                ChatStatusSelector(selectStatus: $selectStatus)
-                
-                if vm.chatRooms.isEmpty {
+                ChatStatusSelector(selectStatus: $vm.selectStatus)
+
+                switch vm.state {
+
+                case .idle:
+                    Spacer()
+                    EmptyView()
+                    Spacer()
+
+                case .loading:
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+
+                case .empty:
                     Spacer()
                     Text("내역이 비어있습니다.")
-                        .foregroundColor(.primary)
                     Spacer()
-                } else {
-                    ScrollView {
-                        LazyVStack {
-                            ForEach(vm.chatRooms) { it in
-                                NavigationLink {
-                                    MessageView(
-                                        chatRoomId: it.chatRoomId,
-                                        memberId: it.targetId
-                                    )
-                                } label: {
-                                    ChatRow(
-                                        profileUrl: it.profileUrl, 
-                                        nickname: it.nickname,
-                                        updatedAt: it.sortAt,
-                                        content: it.lastMessage ?? "",
-                                        unreads: it.unreadCount
-                                    )
-                                }
-                                .onAppear {
-                                    if it.id == vm.chatRooms.last?.id {
-                                        Task {
-                                            let result = await vm.loadMore(status: selectStatus)
-                                            if case .failure(let error) = result {
-                                                presentToast(ToastValue(
-                                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                    message: error.localizedDescription
-                                                ))
-                                            }
-                                        }
-                                    }
-                                }
-                                .contextMenu {
-                                    Button(role: .destructive) {
-                                        Task {
-                                            let result = await vm.delete(chatRoomId: it.chatRoomId)
-                                            switch result {
-                                            case .success():
-                                                presentToast(ToastValue(
-                                                    icon: Image(systemName: "checkmark.circle.fill").foregroundColor(.green),
-                                                    message: "채팅방을 삭제하셨습니다."
-                                                ))
-                                            case .failure(let error):
-                                                presentToast(ToastValue(
-                                                    icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                                                    message: error.localizedDescription
-                                                ))
-                                            }
-                                        }
-                                    } label: {
-                                        Label("삭제", systemImage: "trash")
-                                    }
-                                }
-                            }
-                        }
-                    }
+
+                case .data:
+                    listSection
+
+                case .error(let message):
+                    errorSection(message: message)
                 }
             }
-            .onChange(of: selectStatus) { _, newStatus in
+            .onChange(of: vm.selectStatus) { _, newStatus in
                 Task {
-                    await vm.gets(status: newStatus)
+                    await vm.gets()
                 }
             }
             .onAppear {
@@ -87,22 +47,14 @@ struct ChatView: View {
             .onDisappear {
                 vm.unsubscribe()
             }
+            .overlay {
+                if vm.isLoading {
+                    LoadingOverlay()
+                }
+            }
             .task {
-                let result = await vm.gets(status: selectStatus)
-                if case .failure(let error) = result {
-                    presentToast(ToastValue(
-                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                        message: error.localizedDescription
-                    ))
-                }
-
-                let chatEnabledResult = await vm.getChatEnabled()
-                if case .failure(let error) = chatEnabledResult {
-                    presentToast(ToastValue(
-                        icon: Image(systemName: "xmark.circle.fill").foregroundColor(.red),
-                        message: error.localizedDescription
-                    ))
-                }
+                await vm.gets()
+                try? await vm.getChatEnabled()
             }
             .navigationTitle("채팅")
             .navigationBarTitleDisplayMode(.inline)
@@ -120,19 +72,84 @@ struct ChatView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         Task {
-                            await vm.toggleChatEnabled()
+                            try? await vm.toggleChatEnabled()
                         }
                     } label: {
                         Image(systemName: vm.isChatEnabled ? "bell" : "bell.slash")
                             .font(.title3)
                             .foregroundColor(.primary)
                     }
+                    .disabled(vm.isLoading)
                 }
             }
         }
     }
-}
 
-#Preview {
-    ChatView()
+    // MARK: - SECTION
+
+    private var listSection: some View {
+        ScrollView {
+            LazyVStack {
+                ForEach(vm.chatRooms) { it in
+                    NavigationLink {
+                        MessageView(
+                            chatRoomId: it.chatRoomId,
+                            memberId: it.targetId
+                        )
+                    } label: {
+                        ChatRow(
+                            profileUrl: it.profileUrl,
+                            nickname: it.nickname,
+                            updatedAt: it.sortAt,
+                            content: it.lastMessage ?? "",
+                            unreads: it.unreadCount
+                        )
+                    }
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            Task {
+                                do {
+                                    try await vm.delete(chatRoomId: it.chatRoomId)
+                                    ToastManager.shared.show("채팅방을 삭제하셨습니다.")
+                                } catch {
+                                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                                }
+                            }
+                        } label: {
+                            Label("삭제", systemImage: "trash")
+                        }
+                    }
+                    .onAppear {
+                        if it.id == vm.chatRooms.last?.id && vm.hasNext {
+                            Task {
+                                try? await vm.loadMore()
+                            }
+                        }
+                    }
+                }
+
+                if vm.isPaging {
+                    ProgressView()
+                        .padding()
+                }
+            }
+        }
+    }
+
+    private func errorSection(message: String) -> some View {
+        VStack {
+            Spacer()
+
+            Text(message)
+                .padding(.bottom)
+
+            Button("다시 시도") {
+                Task {
+                    await vm.gets()
+                }
+            }
+
+            Spacer()
+        }
+    }
 }

@@ -8,104 +8,85 @@ final class ChatViewModel: ObservableObject {
     private let memberService = MemberService.shared
     private let stomp = StompManager.shared
 
+    @Published var state: ChatViewState = .idle
     @Published var isLoading: Bool = false
+    @Published var isPaging: Bool = false
     @Published var hasNext: Bool = true
+
     @Published var chatRooms: [ChatRoomGetResponse] = []
     @Published var isChatEnabled: Bool = false
+
+    @Published var selectStatus: String = "ALL"
 
     private var cursorId: Int64?
     private var cursorDateAt: String?
     private var cancellables = Set<AnyCancellable>()
 
-    func gets(status: String) async -> Result<Void, Error> {
-        hasNext = true
+    func gets() async {
+        state = .loading
+        await fetchFirstPage()
+    }
 
-        guard !isLoading else { return .success(()) }
-        guard hasNext else { return .success(()) }
-
-        isLoading = true
-        defer { isLoading = false }
-
+    private func fetchFirstPage() async {
         do {
             let response = try await chatRoomService.gets(
-                status: status,
+                status: selectStatus,
                 cursorId: nil,
                 cursorDateAt: nil
             )
+
             chatRooms = response.payload
             cursorId = response.nextId
             cursorDateAt = response.nextDateAt
             hasNext = response.hasNext
-            return .success(())
+
+            state = chatRooms.isEmpty ? .empty : .data
         } catch {
-            return .failure(error)
+            state = .error(error.localizedDescription)
         }
     }
 
-    func loadMore(status: String) async -> Result<Void, Error> {
-        guard !isLoading else { return .success(()) }
-        guard hasNext else { return .success(()) }
+    func loadMore() async throws {
+        guard !isPaging, hasNext else { return }
+
+        isPaging = true
+        defer { isPaging = false }
+
+        let response = try await chatRoomService.gets(
+            status: selectStatus,
+            cursorId: cursorId,
+            cursorDateAt: cursorDateAt
+        )
+
+        chatRooms.append(contentsOf: response.payload)
+        cursorId = response.nextId
+        cursorDateAt = response.nextDateAt
+        hasNext = response.hasNext
+    }
+
+    func delete(chatRoomId: Int64) async throws {
+        guard !isLoading else { return }
 
         isLoading = true
         defer { isLoading = false }
 
-        do {
-            let response = try await chatRoomService.gets(
-                status: status,
-                cursorId: cursorId,
-                cursorDateAt: cursorDateAt
-            )
-            chatRooms.append(contentsOf: response.payload)
-            cursorId = response.nextId
-            cursorDateAt = response.nextDateAt
-            hasNext = response.hasNext
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
+        try await chatRoomService.delete(chatRoomId: chatRoomId)
+        chatRooms.removeAll { $0.chatRoomId == chatRoomId }
     }
 
-    func delete(chatRoomId: Int64) async -> Result<Void, Error> {
-        guard !isLoading else { return .success(()) }
+    func getChatEnabled() async throws {
+        let response = try await memberService.getChatEnabled()
+        isChatEnabled = response.enabled
+    }
+
+    func toggleChatEnabled() async throws {
+        guard !isLoading else { return }
 
         isLoading = true
         defer { isLoading = false }
 
-        do {
-            try await chatRoomService.delete(chatRoomId: chatRoomId)
-            chatRooms.removeAll { $0.chatRoomId == chatRoomId }
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func getChatEnabled() async -> Result<Void, Error> {
-        guard !isLoading else { return .success(()) }
-
-        isLoading = true
-        defer { isLoading = false }
-
-        do {
-            let response = try await memberService.getChatEnabled()
-            isChatEnabled = response.enabled
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func toggleChatEnabled() async -> Result<Void, Error> {
-        isChatEnabled.toggle()
-
-        do {
-            let response = try await memberService.toggleChatEnabled()
-            isChatEnabled = response.enabled
-            return .success(())
-        } catch {
-            isChatEnabled.toggle()
-            return .failure(error)
-        }
+        let response = try await memberService.toggleChatEnabled()
+        isChatEnabled = response.enabled
     }
 
     // MARK: - 이벤트
