@@ -6,7 +6,7 @@ final class PrivateImageGrantListViewModel: ObservableObject {
 
     private let grantService = PrivateImageGrantService.shared
 
-    @Published var state: DiscoveryViewState = .idle
+    @Published var state: SocialViewState = .idle
     @Published var isLoading: Bool = false
     @Published var hasNext: Bool = true
 

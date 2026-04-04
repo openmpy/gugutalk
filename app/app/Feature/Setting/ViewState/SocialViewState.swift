@@ -1,4 +1,4 @@
-enum DiscoveryViewState {
+enum SocialViewState {
     
     case idle
     case loading
