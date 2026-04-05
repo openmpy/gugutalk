@@ -1,8 +1,7 @@
 package com.pidulgi.server.common.exception
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.HttpRequestMethodNotSupportedException
@@ -14,7 +13,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
-    private val log: Logger by lazy { LoggerFactory.getLogger("GlobalExceptionHandler") }
+    private val log = KotlinLogging.logger {}
 
     @ExceptionHandler(CustomException::class)
     fun customException(
@@ -75,21 +74,15 @@ class GlobalExceptionHandler {
         e: Exception,
         servletRequest: HttpServletRequest,
     ): ResponseEntity<ErrorResponse> {
-        log.error(
-            "exception method = {}, uri = {}, message = {}",
-            servletRequest.method,
-            servletRequest.requestURI,
-            e.message
-        )
+        log.error {
+            "exception method = ${servletRequest.method}, uri = ${servletRequest.requestURI}, message = ${e.message}"
+        }
         return ResponseEntity.internalServerError().body(ErrorResponse(e.message))
     }
 
     private fun showWarningLog(servletRequest: HttpServletRequest, message: String?) {
-        log.warn(
-            "exception method = {}, uri = {}, message = {}",
-            servletRequest.method,
-            servletRequest.requestURI,
-            message
-        )
+        log.warn {
+            "exception method = ${servletRequest.method}, uri = ${servletRequest.requestURI}, message = $message"
+        }
     }
 }

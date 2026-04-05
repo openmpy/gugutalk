@@ -1,9 +1,8 @@
 package com.pidulgi.server.common.auth
 
 import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
@@ -19,7 +18,7 @@ class JwtProvider(
     private val redisTemplate: StringRedisTemplate,
 ) {
 
-    private val log: Logger by lazy { LoggerFactory.getLogger("JwtProvider") }
+    private val log = KotlinLogging.logger {}
 
     private val accessTokenExpiry = Duration.ofSeconds(accessTokenExpireSeconds)
     private val refreshTokenExpiry = Duration.ofDays(30)
@@ -49,12 +48,12 @@ class JwtProvider(
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
         }.onFailure { e ->
             when (e) {
-                is ExpiredJwtException -> log.warn("토큰이 만료되었습니다. {}", e.message)
-                is UnsupportedJwtException -> log.warn("지원되지 않는 토큰입니다. {}", e.message)
-                is MalformedJwtException -> log.warn("형식이 잘못된 토큰입니다. {}", e.message)
-                is SecurityException -> log.warn("유효하지 않은 서명입니다. {}", e.message)
-                is IllegalArgumentException -> log.warn("토큰 클레임이 비어 있습니다. {}", e.message)
-                else -> log.warn("알 수 없는 오류가 발생했습니다. {}", e.message)
+                is ExpiredJwtException -> log.warn { "토큰이 만료되었습니다. ${e.message}" }
+                is UnsupportedJwtException -> log.warn { "지원되지 않는 토큰입니다. ${e.message}" }
+                is MalformedJwtException -> log.warn { "형식이 잘못된 토큰입니다. ${e.message}" }
+                is SecurityException -> log.warn { "유효하지 않은 서명입니다. ${e.message}" }
+                is IllegalArgumentException -> log.warn { "토큰 클레임이 비어 있습니다. ${e.message}" }
+                else -> log.warn { "알 수 없는 오류가 발생했습니다. ${e.message}" }
             }
         }.isSuccess
 
