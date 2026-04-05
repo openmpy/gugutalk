@@ -4,7 +4,6 @@ import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.social.dto.response.LikeCountResponse
-import com.pidulgi.server.social.repository.dto.LikeItemResponse
 import com.pidulgi.server.social.service.LikeService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
