@@ -21,9 +21,11 @@ class ReportScheduler(
             PENDING, expiredBefore
         )
 
-        if (pendingImages.isNotEmpty()) {
-            reportImageRepository.deleteAll(pendingImages)
-            s3Service.deleteAll(pendingImages.map { it.key })
+        if (pendingImages.isEmpty()) {
+            return
         }
+
+        reportImageRepository.deleteAllByIdInBatch(pendingImages.map { it.id })
+        s3Service.deleteAll(pendingImages.map { it.key })
     }
 }

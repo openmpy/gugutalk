@@ -10,6 +10,7 @@ class S3CleanupEventListener(
 
     private val s3Service: S3Service
 ) {
+
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

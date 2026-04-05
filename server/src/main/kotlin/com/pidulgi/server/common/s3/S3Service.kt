@@ -4,8 +4,7 @@ import com.pidulgi.server.common.s3.PresignedUrlsResponse.PresignedUrlResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
-import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.*
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
@@ -55,13 +54,32 @@ class S3Service(
 
             s3Client.deleteObject(request)
         } catch (e: Exception) {
-            throw RuntimeException("S3 삭제 실패: key = $key", e)
+            throw RuntimeException("S3 삭제 실패 - key: $key", e)
         }
     }
 
     fun deleteAll(keys: List<String>) {
-        keys.forEach {
-            delete(it)
+        if (keys.isEmpty()) {
+            return
+        }
+
+        keys.chunked(1000).forEach { chunk ->
+            val objects = chunk.map { key ->
+                ObjectIdentifier.builder().key(key).build()
+            }
+
+            val delete = Delete.builder().objects(objects).build()
+
+            val request = DeleteObjectsRequest.builder()
+                .bucket(bucket)
+                .delete(delete)
+                .build()
+
+            try {
+                s3Client.deleteObjects(request)
+            } catch (e: Exception) {
+                throw RuntimeException("S3 배치 삭제 실패 - keys: $chunk", e)
+            }
         }
     }
 }
