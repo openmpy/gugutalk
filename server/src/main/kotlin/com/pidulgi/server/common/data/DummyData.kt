@@ -17,11 +17,13 @@ import com.pidulgi.server.social.repository.LikeRepository
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.springframework.boot.CommandLineRunner
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.util.*
 
+@ConditionalOnProperty(name = ["app.dummy-data.init"], havingValue = "true")
 @Component
 class DummyDataInit {
 
