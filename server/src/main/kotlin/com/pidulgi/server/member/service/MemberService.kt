@@ -154,6 +154,8 @@ class MemberService(
 
         val chatRooms = chatRoomRepository.findByMember1IdOrMember2Id(memberId, memberId)
         chatRooms.forEach {
+            it.delete()
+
             val event = ChatEvent(
                 DELETE_CHAT_ROOM,
                 null

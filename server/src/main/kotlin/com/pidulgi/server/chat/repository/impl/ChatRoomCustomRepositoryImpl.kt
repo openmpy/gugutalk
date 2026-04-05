@@ -59,6 +59,7 @@ class ChatRoomCustomRepositoryImpl(
                     WHEN cr.member1_id = :memberId THEN cr.member2_id
                     ELSE cr.member1_id
                 END
+                AND m.deleted_at IS NULL
             WHERE cr.deleted_at IS NULL
                 AND (cr.member1_id = :memberId OR cr.member2_id = :memberId)
                 $unreadCondition
@@ -125,6 +126,7 @@ class ChatRoomCustomRepositoryImpl(
                     WHEN cr.member1_id = :memberId THEN cr.member2_id
                     ELSE cr.member1_id
                 END
+                AND m.deleted_at IS NULL
             WHERE cr.deleted_at IS NULL
                 AND (cr.member1_id = :memberId OR cr.member2_id = :memberId)
                 $keywordCondition
