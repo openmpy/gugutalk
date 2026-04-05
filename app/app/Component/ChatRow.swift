@@ -45,10 +45,11 @@ struct ChatRow: View {
                 }
 
                 HStack {
-                    Text(content)
+                    Text(content.byCharWrapping)
                         .foregroundColor(.gray)
                         .font(.subheadline)
                         .lineLimit(2)
+                        .multilineTextAlignment(.leading)
 
                     Spacer()
 

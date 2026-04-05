@@ -13,7 +13,7 @@ struct MemberProfileInfo: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(nickname)
+                Text(nickname.byCharWrapping)
                     .font(.title.bold())
                     .foregroundColor(.primary)
                 
@@ -43,7 +43,7 @@ struct MemberProfileInfo: View {
             .foregroundColor(.gray)
             .padding(.bottom)
             
-            Text(bio)
+            Text(bio.byCharWrapping)
                 .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()

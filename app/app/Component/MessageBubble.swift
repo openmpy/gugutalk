@@ -143,7 +143,7 @@ struct MessageBubble: View {
                 .frame(width: 200, height: 200)
 
         default:
-            Text(content)
+            Text(content.byCharWrapping)
                 .font(.subheadline)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)

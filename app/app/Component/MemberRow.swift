@@ -36,7 +36,7 @@ struct MemberRow: View {
 
             VStack(alignment: .leading) {
                 HStack{
-                    Text(nickname)
+                    Text(nickname.byCharWrapping)
                         .foregroundColor(.primary)
                         .font(.default.bold())
 
@@ -47,10 +47,11 @@ struct MemberRow: View {
                         .font(.footnote)
                 }
 
-                Text(content)
+                Text(content.byCharWrapping)
                     .foregroundColor(.gray)
                     .font(.subheadline)
                     .lineLimit(1)
+                    .multilineTextAlignment(.leading)
 
                 HStack {
                     HStack {

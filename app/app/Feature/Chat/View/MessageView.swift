@@ -219,6 +219,7 @@ struct MessageView: View {
         TextField("메시지 입력", text: $vm.message, axis: .vertical)
             .font(.subheadline)
             .lineLimit(5)
+            .multilineTextAlignment(.leading)
             .padding(.leading)
             .padding(.trailing, 50)
             .padding(.vertical, 8)
