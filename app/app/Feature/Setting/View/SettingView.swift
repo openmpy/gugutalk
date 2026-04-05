@@ -126,16 +126,6 @@ struct SettingView: View {
 
     private var noticeSection: some View {
         VStack(spacing: 0) {
-            SettingRow(title: "공지사항", icon: "megaphone.fill", color: .teal)
-                .onTapGesture {
-                    safariItem = IdentifiableURL(url: URL(string: "https://www.notion.so/339495438f1c806c8c89e3b092b9636e?v=339495438f1c80c68712000c761d1c87")!)
-                }
-
-            Button {
-            } label: {
-                SettingRow(title: "건의사항", icon: "lightbulb.fill", color: .yellow)
-            }
-
             Button {
             } label: {
                 SettingRow(title: "문의사항", icon: "envelope.fill", color: .indigo)
