@@ -14,11 +14,10 @@ import java.time.LocalDateTime
 @Service
 class PrivateImageGrantService(
 
+    @Value("\${s3.endpoint}") private val endpoint: String,
+
     private val privateImageGrantRepository: PrivateImageGrantRepository,
 ) {
-
-    @Value("\${s3.endpoint}")
-    private lateinit var endpoint: String
 
     @Transactional
     fun open(granterId: Long, granteeId: Long) {

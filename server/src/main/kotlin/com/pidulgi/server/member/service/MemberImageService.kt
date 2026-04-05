@@ -12,7 +12,6 @@ import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,15 +19,11 @@ import java.util.*
 
 @Service
 class MemberImageService(
-
     private val memberRepository: MemberRepository,
     private val privateImageGrantRepository: PrivateImageGrantRepository,
     private val memberImageRepository: MemberImageRepository,
     private val s3Service: S3Service,
 ) {
-
-    @Value("\${s3.endpoint}")
-    private lateinit var endpoint: String
 
     @Transactional
     fun getPresignedUrls(

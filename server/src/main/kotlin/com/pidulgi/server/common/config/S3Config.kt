@@ -10,13 +10,11 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 @Configuration
-class S3Config {
+class S3Config(
 
-    @Value("\${s3.access-key}")
-    private lateinit var accessKey: String
-
-    @Value("\${s3.secret-key}")
-    private lateinit var secretKey: String
+    @Value("\${s3.access-key}") private val accessKey: String,
+    @Value("\${s3.secret-key}") private val secretKey: String,
+) {
 
     @Bean
     fun s3Client(): S3Client {

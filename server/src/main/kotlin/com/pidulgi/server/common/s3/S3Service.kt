@@ -14,12 +14,11 @@ import java.time.Duration
 @Service
 class S3Service(
 
+    @Value("\${s3.bucket}") private val bucket: String,
+
     private val s3Client: S3Client,
     private val s3Presigner: S3Presigner,
 ) {
-
-    @Value("\${s3.bucket}")
-    private lateinit var bucket: String
 
     fun createPresignedUrl(key: String, contentType: String): PresignedUrlResponse {
         val presignRequest = PutObjectPresignRequest.builder()

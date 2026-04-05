@@ -27,15 +27,14 @@ import java.time.LocalDateTime
 @Service
 class MessageService(
 
+    @Value("\${s3.endpoint}") private val endpoint: String,
+
     private val messageRepository: MessageRepository,
     private val chatRoomRepository: ChatRoomRepository,
     private val memberRepository: MemberRepository,
     private val messagingTemplate: SimpMessagingTemplate,
     private val chatRoomSessionManager: ChatRoomSessionManager,
 ) {
-
-    @Value("\${s3.endpoint}")
-    private lateinit var endpoint: String
 
     @Transactional
     fun send(senderId: Long, chatRoomId: Long, request: MessageSendRequest) {

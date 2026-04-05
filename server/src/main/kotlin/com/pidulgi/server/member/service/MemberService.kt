@@ -2,7 +2,6 @@ package com.pidulgi.server.member.service
 
 import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
 import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
-import com.pidulgi.server.common.auth.ACCESS_TOKEN_EXPIRE_HOURS
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.s3.S3Service
@@ -37,6 +36,9 @@ import java.time.LocalDate
 @Service
 class MemberService(
 
+    @Value("\${s3.endpoint}") private val endpoint: String,
+    @Value("\${jwt.access-token-expire-seconds}") private val accessTokenExpireSeconds: Long,
+
     private val memberRepository: MemberRepository,
     private val memberImageRepository: MemberImageRepository,
     private val likeRepository: LikeRepository,
@@ -45,9 +47,6 @@ class MemberService(
     private val redisTemplate: StringRedisTemplate,
     private val s3Service: S3Service,
 ) {
-
-    @Value("\${s3.endpoint}")
-    private lateinit var endpoint: String
 
     @Transactional(readOnly = true)
     fun getMe(memberId: Long): MemberGetMeResponse {
@@ -141,7 +140,7 @@ class MemberService(
         redisTemplate.opsForValue().set(
             accessTokenBlacklist,
             memberId.toString(),
-            Duration.ofHours(ACCESS_TOKEN_EXPIRE_HOURS)
+            Duration.ofSeconds(accessTokenExpireSeconds)
         )
         redisTemplate.delete(refreshTokenKey)
 

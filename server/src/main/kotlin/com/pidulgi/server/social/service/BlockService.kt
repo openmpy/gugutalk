@@ -14,11 +14,10 @@ import java.time.LocalDateTime
 @Service
 class BlockService(
 
+    @Value("\${s3.endpoint}") private val endpoint: String,
+
     private val blockRepository: BlockRepository,
 ) {
-
-    @Value("\${s3.endpoint}")
-    private lateinit var endpoint: String
 
     @Transactional
     fun add(blockerId: Long, blockedId: Long) {

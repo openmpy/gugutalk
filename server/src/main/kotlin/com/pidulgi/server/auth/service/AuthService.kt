@@ -6,7 +6,6 @@ import com.pidulgi.server.auth.dto.response.RotateTokenResponse
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.entity.PhoneVerification
 import com.pidulgi.server.auth.repository.PhoneVerificationRepository
-import com.pidulgi.server.common.auth.ACCESS_TOKEN_EXPIRE_HOURS
 import com.pidulgi.server.common.auth.AuthenticationExtractor
 import com.pidulgi.server.common.auth.JwtProvider
 import com.pidulgi.server.common.exception.CustomException
@@ -17,6 +16,7 @@ import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
@@ -35,6 +35,8 @@ private const val AUTH_VERIFICATION_CODE_MINUTES: Long = 5
 
 @Service
 class AuthService(
+
+    @Value("\${jwt.access-token-expire-seconds}") private val accessTokenExpireSeconds: Long,
 
     private val memberRepository: MemberRepository,
     private val memberImageRepository: MemberImageRepository,
@@ -183,7 +185,7 @@ class AuthService(
         redisTemplate.opsForValue().set(
             accessTokenBlacklist,
             "1",
-            Duration.ofHours(ACCESS_TOKEN_EXPIRE_HOURS)
+            Duration.ofHours(accessTokenExpireSeconds)
         )
         redisTemplate.delete(refreshTokenKey)
     }

@@ -10,20 +10,18 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.*
 
-const val ACCESS_TOKEN_EXPIRE_HOURS: Long = 10
-
 @Component
 class JwtProvider(
 
-    private val redisTemplate: StringRedisTemplate
-) {
+    @Value("\${jwt.secret-key}") private val secretKey: String,
+    @Value("\${jwt.access-token-expire-seconds}") private val accessTokenExpireSeconds: Long,
 
-    @Value("\${jwt.secret-key}")
-    private lateinit var secretKey: String
+    private val redisTemplate: StringRedisTemplate,
+) {
 
     private val log: Logger by lazy { LoggerFactory.getLogger("JwtProvider") }
 
-    private val accessTokenExpiry = Duration.ofSeconds(ACCESS_TOKEN_EXPIRE_HOURS)
+    private val accessTokenExpiry = Duration.ofSeconds(accessTokenExpireSeconds)
     private val refreshTokenExpiry = Duration.ofDays(30)
 
     fun generateAccessToken(memberId: Long): String {

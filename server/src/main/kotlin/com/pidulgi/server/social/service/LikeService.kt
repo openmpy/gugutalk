@@ -15,11 +15,10 @@ import java.time.LocalDateTime
 @Service
 class LikeService(
 
+    @Value("\${s3.endpoint}") private val endpoint: String,
+
     private val likeRepository: LikeRepository,
 ) {
-
-    @Value("\${s3.endpoint}")
-    private lateinit var endpoint: String
 
     @Transactional
     fun like(likerId: Long, likedId: Long): LikeCountResponse {

@@ -11,11 +11,10 @@ import java.time.LocalDate
 @Service
 class LocationService(
 
+    @Value("\${s3.endpoint}") private val endpoint: String,
+
     private val memberRepository: MemberRepository,
 ) {
-
-    @Value("\${s3.endpoint}")
-    private lateinit var endpoint: String
 
     @Transactional(readOnly = true)
     fun getLocationMembers(
