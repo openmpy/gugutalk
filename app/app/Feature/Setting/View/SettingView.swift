@@ -1,4 +1,5 @@
 import SwiftUI
+import MessageUI
 
 struct SettingView: View {
 
@@ -10,6 +11,7 @@ struct SettingView: View {
 
     @State private var showMenu: Bool = false
     @State private var showDelete: Bool = false
+    @State private var safariItem: IdentifiableURL? = nil
 
     var body: some View {
         NavigationStack {
@@ -36,6 +38,9 @@ struct SettingView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 toolbar
+            }
+            .sheet(item: $safariItem) { item in
+                SafariView(url: item.url)
             }
             .alert("회원 탈퇴", isPresented: $showDelete) {
                 Button("탈퇴", role: .destructive) {
@@ -122,11 +127,34 @@ struct SettingView: View {
     private var noticeSection: some View {
         VStack(spacing: 0) {
             SettingRow(title: "공지사항", icon: "megaphone.fill", color: .teal)
-            SettingRow(title: "건의사항", icon: "lightbulb.fill", color: .yellow)
-            SettingRow(title: "문의사항", icon: "envelope.fill", color: .indigo)
-            SettingRow(title: "버그제보", icon: "exclamationmark.triangle.fill", color: .red)
+                .onTapGesture {
+                    safariItem = IdentifiableURL(url: URL(string: "https://www.notion.so/339495438f1c806c8c89e3b092b9636e?v=339495438f1c80c68712000c761d1c87")!)
+                }
+
+            Button {
+            } label: {
+                SettingRow(title: "건의사항", icon: "lightbulb.fill", color: .yellow)
+            }
+
+            Button {
+            } label: {
+                SettingRow(title: "문의사항", icon: "envelope.fill", color: .indigo)
+            }
+
+            Button {
+            } label: {
+                SettingRow(title: "버그제보", icon: "exclamationmark.triangle.fill", color: .red)
+            }
+
             SettingRow(title: "서비스 이용약관", icon: "doc.text.fill", color: .gray)
+                .onTapGesture {
+                    safariItem = IdentifiableURL(url: URL(string: "https://www.notion.so/339495438f1c805cbe36fc2cbd3aedad?source=copy_link")!)
+                }
+
             SettingRow(title: "개인정보 취급방침", icon: "shield.fill", color: .green)
+                .onTapGesture {
+                    safariItem = IdentifiableURL(url: URL(string: "https://www.notion.so/339495438f1c801b85a4d8ac01eee33e?source=copy_link")!)
+                }
         }
         .cornerRadius(20)
     }

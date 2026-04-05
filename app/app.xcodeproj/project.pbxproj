@@ -19,9 +19,22 @@
 		9D9F1DBC2F79C1A600A9C891 /* app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = app.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9D8733CD2F8241F4001A8E97 /* Exceptions for "app" folder in "app" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9D9F1DBB2F79C1A600A9C891 /* app */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9D9F1DBE2F79C1A600A9C891 /* app */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9D8733CD2F8241F4001A8E97 /* Exceptions for "app" folder in "app" target */,
+			);
 			path = app;
 			sourceTree = "<group>";
 		};
@@ -283,6 +296,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = app/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "위치 정보를 사용하여 주변 정보를 제공합니다.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "사진 및 동영상을 저장하기 위해 접근이 필요합니다.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "사진 및 동영상을 저장하기 위해 접근이 필요합니다.";
@@ -330,6 +344,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = app/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "위치 정보를 사용하여 주변 정보를 제공합니다.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "사진 및 동영상을 저장하기 위해 접근이 필요합니다.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "사진 및 동영상을 저장하기 위해 접근이 필요합니다.";
