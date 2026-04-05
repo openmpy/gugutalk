@@ -122,7 +122,9 @@ struct SettingView: View {
     private var noticeSection: some View {
         VStack(spacing: 0) {
             SettingRow(title: "공지사항", icon: "megaphone.fill", color: .teal)
+            SettingRow(title: "건의사항", icon: "lightbulb.fill", color: .yellow)
             SettingRow(title: "문의사항", icon: "envelope.fill", color: .indigo)
+            SettingRow(title: "버그제보", icon: "exclamationmark.triangle.fill", color: .red)
             SettingRow(title: "서비스 이용약관", icon: "doc.text.fill", color: .gray)
             SettingRow(title: "개인정보 취급방침", icon: "shield.fill", color: .green)
         }
