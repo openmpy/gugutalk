@@ -1,5 +1,8 @@
 package com.pidulgi.server.social.service
 
+import com.pidulgi.server.chat.dto.event.ChatEvent
+import com.pidulgi.server.chat.dto.event.ChatRoomDeleteEvent
+import com.pidulgi.server.chat.dto.event.type.ChatEventType.DELETE_CHAT_ROOM
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.dto.SettingResponse
@@ -7,6 +10,7 @@ import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.social.entity.Block
 import com.pidulgi.server.social.repository.BlockRepository
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -19,6 +23,7 @@ class BlockService(
 
     private val blockRepository: BlockRepository,
     private val chatRoomRepository: ChatRoomRepository,
+    private val messagingTemplate: SimpMessagingTemplate
 ) {
 
     @Transactional
@@ -38,7 +43,31 @@ class BlockService(
 
         val (member1Id, member2Id) = if (blockerId < blockedId) blockerId to blockedId else blockedId to blockerId
         val chatRoom = chatRoomRepository.findByMember1IdAndMember2Id(member1Id, member2Id)
-        chatRoom?.delete()
+
+        chatRoom?.let {
+            it.delete()
+
+            val event = ChatEvent(
+                DELETE_CHAT_ROOM,
+                null
+            )
+            messagingTemplate.convertAndSend(
+                "/topic/chat-rooms/${chatRoom.id}",
+                event
+            )
+
+            val chatRoomEvent = ChatEvent(
+                DELETE_CHAT_ROOM,
+                ChatRoomDeleteEvent(
+                    chatRoom.id,
+                )
+            )
+            messagingTemplate.convertAndSendToUser(
+                blockedId.toString(),
+                "/queue/chat-rooms",
+                chatRoomEvent
+            )
+        }
     }
 
     @Transactional

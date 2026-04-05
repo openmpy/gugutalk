@@ -2,6 +2,8 @@ package com.pidulgi.server.member.service
 
 import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
 import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
+import com.pidulgi.server.chat.dto.event.ChatEvent
+import com.pidulgi.server.chat.dto.event.type.ChatEventType.DELETE_CHAT_ROOM
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
@@ -29,6 +31,7 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -47,6 +50,7 @@ class MemberService(
     private val blockRepository: BlockRepository,
     private val privateImageGrantRepository: PrivateImageGrantRepository,
     private val redisTemplate: StringRedisTemplate,
+    private val messagingTemplate: SimpMessagingTemplate,
     private val s3Service: S3Service,
 ) {
 
@@ -149,7 +153,16 @@ class MemberService(
         member.withdraw()
 
         val chatRooms = chatRoomRepository.findByMember1IdOrMember2Id(memberId, memberId)
-        chatRooms.forEach { it.delete() }
+        chatRooms.forEach {
+            val event = ChatEvent(
+                DELETE_CHAT_ROOM,
+                null
+            )
+            messagingTemplate.convertAndSend(
+                "/topic/chat-rooms/${it.id}",
+                event
+            )
+        }
     }
 
     @Transactional
