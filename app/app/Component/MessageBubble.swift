@@ -147,6 +147,11 @@ struct MessageBubble: View {
                 .font(.subheadline)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
+                .onLongPressGesture {
+                    UIPasteboard.general.string = content
+
+                    ToastManager.shared.show("내용이 복사되었습니다.")
+                }
         }
     }
 }

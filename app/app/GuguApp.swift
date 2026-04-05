@@ -1,6 +1,5 @@
 import SwiftUI
 import SimpleToast
-import Toasts
 
 @main
 struct GuguApp: App {
@@ -20,10 +19,8 @@ struct GuguApp: App {
                         .onAppear {
                             stomp.connect(accessToken: AuthStore.shared.accessToken ?? "")
                         }
-                        .installToast(position: .top)
                 } else {
                     LoginView()
-                        .installToast(position: .top)
                 }
             }
             .simpleToast(isPresented: $toast.isShow, options: toastOptions) {
