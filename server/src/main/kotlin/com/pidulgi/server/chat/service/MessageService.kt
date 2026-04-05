@@ -9,6 +9,7 @@ import com.pidulgi.server.chat.dto.request.MessageSendMediaRequest
 import com.pidulgi.server.chat.dto.request.MessageSendRequest
 import com.pidulgi.server.chat.dto.response.MessageGetMemberResponse
 import com.pidulgi.server.chat.dto.response.MessageGetResponse
+import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.entity.Message
 import com.pidulgi.server.chat.entity.type.MessageType
 import com.pidulgi.server.chat.repository.ChatRoomRepository
@@ -16,6 +17,7 @@ import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.chat.websocket.ChatRoomSessionManager
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
@@ -38,10 +40,8 @@ class MessageService(
 
     @Transactional
     fun send(senderId: Long, chatRoomId: Long, request: MessageSendRequest) {
-        val sender = (memberRepository.findByIdOrNull(senderId)
-            ?: throw CustomException("존재하지 않는 회원입니다."))
-        val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
-            ?: throw CustomException("존재하지 않는 채팅방입니다."))
+        val sender = getMember(senderId)
+        val chatRoom = getChatRoom(chatRoomId)
 
         if (chatRoom.member1Id != senderId && chatRoom.member2Id != senderId) {
             throw CustomException("접근할 수 없는 채팅방입니다.")
@@ -113,10 +113,8 @@ class MessageService(
 
     @Transactional
     fun sendMedia(senderId: Long, chatRoomId: Long, request: MessageSendMediaRequest) {
-        val sender = (memberRepository.findByIdOrNull(senderId)
-            ?: throw CustomException("존재하지 않는 회원입니다."))
-        val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
-            ?: throw CustomException("존재하지 않는 채팅방입니다."))
+        val sender = getMember(senderId)
+        val chatRoom = getChatRoom(chatRoomId)
 
         if (chatRoom.member1Id != senderId && chatRoom.member2Id != senderId) {
             throw CustomException("접근할 수 없는 채팅방입니다.")
@@ -235,8 +233,7 @@ class MessageService(
         cursorDate: LocalDateTime?,
         size: Int
     ): CursorResponse<MessageGetResponse> {
-        val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
-            ?: throw CustomException("존재하지 않는 채팅방입니다."))
+        val chatRoom = getChatRoom(chatRoomId)
 
         if (chatRoom.member1Id != memberId && chatRoom.member2Id != memberId) {
             throw CustomException("접근할 수 없는 채팅방입니다.")
@@ -275,8 +272,7 @@ class MessageService(
 
     @Transactional(readOnly = true)
     fun getMember(memberId: Long, chatRoomId: Long): MessageGetMemberResponse {
-        val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
-            ?: throw CustomException("존재하지 않는 채팅방입니다."))
+        val chatRoom = getChatRoom(chatRoomId)
 
         if (chatRoom.member1Id != memberId && chatRoom.member2Id != memberId) {
             throw CustomException("접근할 수 없는 채팅방입니다.")
@@ -288,8 +284,7 @@ class MessageService(
             chatRoom.member1Id
         }
 
-        val target = (memberRepository.findByIdOrNull(targetId)
-            ?: throw CustomException("존재하지 않는 회원입니다."))
+        val target = getMember(targetId)
 
         return MessageGetMemberResponse(
             target.id,
@@ -297,4 +292,10 @@ class MessageService(
             target.nickname,
         )
     }
+
+    private fun getMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)
+        ?: throw CustomException("존재하지 않는 회원입니다."))
+
+    private fun getChatRoom(chatRoomId: Long): ChatRoom =
+        (chatRoomRepository.findByIdOrNull(chatRoomId) ?: throw CustomException("존재하지 않는 채팅방입니다."))
 }

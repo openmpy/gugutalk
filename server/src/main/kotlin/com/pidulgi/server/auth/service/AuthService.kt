@@ -185,7 +185,7 @@ class AuthService(
         redisTemplate.opsForValue().set(
             accessTokenBlacklist,
             "1",
-            Duration.ofHours(accessTokenExpireSeconds)
+            Duration.ofSeconds(accessTokenExpireSeconds)
         )
         redisTemplate.delete(refreshTokenKey)
     }
