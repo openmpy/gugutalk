@@ -5,7 +5,6 @@ import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.report.dto.ReportCreateRequest
 import com.pidulgi.server.report.entity.Report
-import com.pidulgi.server.report.entity.ReportImage
 import com.pidulgi.server.report.repository.ReportImageRepository
 import com.pidulgi.server.report.repository.ReportRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -39,14 +38,12 @@ class ReportService(
         )
         reportRepository.save(report)
 
-        val reportImages = request.images.map {
-            ReportImage(
-                reportId = report.id,
-                key = it.key,
-                sortOrder = it.index
-            )
+        val keys = request.images.map { it.key }
+        val images = reportImageRepository.findAllByKeyIn(keys)
+
+        images.forEach {
+            it.upload(report.id)
         }
-        reportImageRepository.saveAll(reportImages)
     }
 
     private fun getMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)

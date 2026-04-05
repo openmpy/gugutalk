@@ -26,13 +26,14 @@ class StompChannelInterceptor(
         if (accessor.command == StompCommand.CONNECT) {
             val header = (accessor.getFirstNativeHeader(HttpHeaders.AUTHORIZATION)
                 ?: throw MessagingException("인증 헤더 값을 찾을 수 없습니다."))
-            val accessToken = header.removePrefix(AUTHORIZATION_HEADER_PREFIX)
 
-            if (!jwtProvider.validateToken(accessToken)) {
-                throw MessagingException("토큰이 유효하지 않습니다.")
+            if (!header.startsWith(AUTHORIZATION_HEADER_PREFIX)) {
+                throw MessagingException("유효하지 않은 토큰 형식입니다.")
             }
 
+            val accessToken = header.removePrefix(AUTHORIZATION_HEADER_PREFIX)
             val memberId = jwtProvider.extractMemberId(accessToken)
+
             accessor.setUser { memberId.toString() }
         }
         return message
