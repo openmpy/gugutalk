@@ -19,6 +19,7 @@ import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.social.repository.BlockRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -34,6 +35,7 @@ class MessageService(
     private val messageRepository: MessageRepository,
     private val chatRoomRepository: ChatRoomRepository,
     private val memberRepository: MemberRepository,
+    private val blockRepository: BlockRepository,
     private val messagingTemplate: SimpMessagingTemplate,
     private val chatRoomSessionManager: ChatRoomSessionManager,
 ) {
@@ -50,6 +52,10 @@ class MessageService(
         val targetId = if (chatRoom.member1Id == senderId) {
             chatRoom.member2Id
         } else chatRoom.member1Id
+
+        if (blockRepository.findBlock(senderId, targetId) != null) {
+            throw CustomException("차단된 회원입니다.")
+        }
 
         // 1. 메시지 저장
         val message = Message(
@@ -123,6 +129,10 @@ class MessageService(
         val targetId = if (chatRoom.member1Id == senderId) {
             chatRoom.member2Id
         } else chatRoom.member1Id
+
+        if (blockRepository.findBlock(senderId, targetId) != null) {
+            throw CustomException("차단된 회원입니다.")
+        }
 
         val isActive = chatRoomSessionManager.isInChatRoom(targetId, chatRoomId)
 

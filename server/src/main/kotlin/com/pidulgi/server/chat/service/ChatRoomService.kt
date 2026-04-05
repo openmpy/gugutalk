@@ -11,6 +11,7 @@ import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.social.repository.BlockRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -26,6 +27,7 @@ class ChatRoomService(
     private val chatRoomRepository: ChatRoomRepository,
     private val messageRepository: MessageRepository,
     private val memberRepository: MemberRepository,
+    private val blockRepository: BlockRepository,
     private val messagingTemplate: SimpMessagingTemplate,
 ) {
 
@@ -36,6 +38,10 @@ class ChatRoomService(
     ): ChatRoomCreateResponse {
         memberRepository.findByIdOrNull(targetId)
             ?: throw CustomException("존재하지 않는 회원입니다.")
+
+        if (blockRepository.findBlock(senderId, targetId) != null) {
+            throw CustomException("차단된 회원입니다.")
+        }
 
         val chatRoom = findChatRoom(senderId, targetId)
             ?: chatRoomRepository.save(ChatRoom.of(senderId, targetId))
