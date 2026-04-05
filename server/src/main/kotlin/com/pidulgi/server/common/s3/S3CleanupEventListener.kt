@@ -15,9 +15,7 @@ class S3CleanupEventListener(
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleS3Cleanup(event: S3CleanupEvent) {
-        event.keys.forEach { key ->
-            runCatching { s3Service.delete(key) }
-                .onFailure { logger.error("S3 삭제 실패 - key: $key", it) }
-        }
+        runCatching { s3Service.deleteAll(event.keys) }
+            .onFailure { logger.error("S3 배치 삭제 실패 - keys: ${event.keys}", it) }
     }
 }
