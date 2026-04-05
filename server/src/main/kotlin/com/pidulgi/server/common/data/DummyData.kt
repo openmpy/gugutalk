@@ -10,7 +10,6 @@ import com.pidulgi.server.member.entity.PrivateImageGrant
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
-import com.pidulgi.server.social.entity.Block
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.BlockRepository
 import com.pidulgi.server.social.repository.LikeRepository
@@ -117,16 +116,16 @@ class DummyDataInit {
             }
 
             // 차단
-            if (blockRepository.count() == 0L) {
-                val blocks = (2 until DUMMY_MEMBER_COUNT + 1).map { i ->
-                    Block(
-                        blockerId = 1,
-                        blockedId = i.toLong()
-                    )
-                }
-
-                blockRepository.saveAll(blocks)
-            }
+//            if (blockRepository.count() == 0L) {
+//                val blocks = (2 until DUMMY_MEMBER_COUNT + 1).map { i ->
+//                    Block(
+//                        blockerId = 1,
+//                        blockedId = i.toLong()
+//                    )
+//                }
+//
+//                blockRepository.saveAll(blocks)
+//            }
 
             // 채팅방 + 메시지
             if (chatRoomRepository.count() == 0L) {

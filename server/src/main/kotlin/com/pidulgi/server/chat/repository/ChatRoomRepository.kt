@@ -4,6 +4,8 @@ import com.pidulgi.server.chat.entity.ChatRoom
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
+import java.time.LocalDateTime
 
 interface ChatRoomRepository : JpaRepository<ChatRoom, Long>, ChatRoomCustomRepository {
 
@@ -28,4 +30,25 @@ interface ChatRoomRepository : JpaRepository<ChatRoom, Long>, ChatRoomCustomRepo
         """
     )
     fun increaseUnreadCount(chatRoomId: Long, targetId: Long)
+
+    @Query(
+        value = """
+            SELECT *
+            FROM chat_room r
+            WHERE r.deleted_at IS NOT NULL
+            AND r.deleted_at <= :deletedAt
+        """,
+        nativeQuery = true
+    )
+    fun findAllDeleted(@Param("deletedAt") deletedAt: LocalDateTime): List<ChatRoom>
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+        value = """
+            DELETE FROM chat_room
+            WHERE id IN :ids
+        """,
+        nativeQuery = true
+    )
+    fun hardDeleteByIdIn(@Param("ids") ids: List<Long>)
 }
