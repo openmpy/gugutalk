@@ -11,6 +11,7 @@ struct MessageView: View {
     @StateObject private var stomp = StompManager.shared
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var selectMedia: [PhotosPickerItem] = []
     @State private var playingVideoURL: URL? = nil
@@ -61,6 +62,13 @@ struct MessageView: View {
             if isDeleted {
                 ToastManager.shared.show("채팅방이 삭제되었습니다.")
                 dismiss()
+            }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task {
+                    try? await vm.markAsRead(chatRoomId: chatRoomId)
+                }
             }
         }
         .safeAreaInset(edge: .top) {
