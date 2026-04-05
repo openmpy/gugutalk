@@ -116,4 +116,23 @@ final class AuthService {
         )
         .validateWithErrorHandling()
     }
+
+    func rotateToken(
+        memberId: Int64,
+        refreshToken: String
+    ) async throws -> RotateTokenResponse {
+        let url = "\(baseURL)/v1/auth/rotation"
+        let body = RotateTokenRequest(
+            memberId: memberId,
+            refreshToken: refreshToken
+        )
+
+        return try await AF.request(
+            url,
+            method: .post,
+            parameters: body,
+            encoder: JSONParameterEncoder.default
+        )
+        .decodingWithErrorHandling(RotateTokenResponse.self)
+    }
 }

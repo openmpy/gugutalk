@@ -1,10 +1,8 @@
 package com.pidulgi.server.auth.controller
 
-import com.pidulgi.server.auth.dto.request.ActivateRequest
-import com.pidulgi.server.auth.dto.request.LoginRequest
-import com.pidulgi.server.auth.dto.request.SignupRequest
-import com.pidulgi.server.auth.dto.request.ValidateRequest
+import com.pidulgi.server.auth.dto.request.*
 import com.pidulgi.server.auth.dto.response.LoginResponse
+import com.pidulgi.server.auth.dto.response.RotateTokenResponse
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.service.AuthService
 import com.pidulgi.server.common.auth.Login
@@ -69,5 +67,13 @@ class AuthController(
     ): ResponseEntity<Unit> {
         authService.logout(servletRequest, refreshToken)
         return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/v1/auth/rotation")
+    fun rotateToken(
+        @RequestBody request: RotateTokenRequest
+    ): ResponseEntity<RotateTokenResponse> {
+        val response = authService.rotateToken(request)
+        return ResponseEntity.ok(response)
     }
 }

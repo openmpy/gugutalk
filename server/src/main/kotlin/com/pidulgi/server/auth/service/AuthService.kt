@@ -1,10 +1,8 @@
 package com.pidulgi.server.auth.service
 
-import com.pidulgi.server.auth.dto.request.ActivateRequest
-import com.pidulgi.server.auth.dto.request.LoginRequest
-import com.pidulgi.server.auth.dto.request.SignupRequest
-import com.pidulgi.server.auth.dto.request.ValidateRequest
+import com.pidulgi.server.auth.dto.request.*
 import com.pidulgi.server.auth.dto.response.LoginResponse
+import com.pidulgi.server.auth.dto.response.RotateTokenResponse
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.entity.PhoneVerification
 import com.pidulgi.server.auth.repository.PhoneVerificationRepository
@@ -188,6 +186,30 @@ class AuthService(
             Duration.ofHours(ACCESS_TOKEN_EXPIRE_HOURS)
         )
         redisTemplate.delete(refreshTokenKey)
+    }
+
+    @Transactional
+    fun rotateToken(request: RotateTokenRequest): RotateTokenResponse {
+        val member = getMember(request.memberId)
+
+        val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + request.refreshToken
+        val exists = redisTemplate.hasKey(refreshTokenKey)
+
+        if (exists == false) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "존재하지 않는 리프레시 토큰입니다.")
+        }
+
+        val accessToken = jwtProvider.generateAccessToken(member.id)
+        val refreshToken = jwtProvider.generateRefreshToken(member.id)
+        val newRefreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
+
+        redisTemplate.opsForValue().set(newRefreshTokenKey, member.id.toString())
+        redisTemplate.delete(refreshTokenKey)
+
+        return RotateTokenResponse(
+            accessToken,
+            refreshToken,
+        )
     }
 
     private fun getMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)

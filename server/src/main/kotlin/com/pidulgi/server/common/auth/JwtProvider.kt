@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.*
 
-const val ACCESS_TOKEN_EXPIRE_HOURS: Long = 24
+const val ACCESS_TOKEN_EXPIRE_HOURS: Long = 10
 
 @Component
 class JwtProvider(
@@ -23,7 +23,7 @@ class JwtProvider(
 
     private val log: Logger by lazy { LoggerFactory.getLogger("JwtProvider") }
 
-    private val accessTokenExpiry = Duration.ofHours(ACCESS_TOKEN_EXPIRE_HOURS)
+    private val accessTokenExpiry = Duration.ofSeconds(ACCESS_TOKEN_EXPIRE_HOURS)
     private val refreshTokenExpiry = Duration.ofDays(30)
 
     fun generateAccessToken(memberId: Long): String {
