@@ -7,10 +7,13 @@ class StompManager: NSObject, ObservableObject, SwiftStompDelegate {
     static let shared = StompManager()
 
     private var publishers: [String: PassthroughSubject<String, Never>] = [:]
+    private var activeSubscriptions: [String: [String: String]] = [:]
+    private var currentAccessToken: String = ""
 
     var stomp: SwiftStomp!
 
     func connect(accessToken: String) {
+        currentAccessToken = accessToken
         let url = URL(string: "ws://192.168.0.15:8080/ws")!
         let headers: [String: String] = [
             "Authorization": "Bearer \(accessToken)"
@@ -21,14 +24,24 @@ class StompManager: NSObject, ObservableObject, SwiftStompDelegate {
         stomp.connect()
     }
 
-    func onConnect(swiftStomp : SwiftStomp, connectType : StompConnectType) {
+    func reconnect(accessToken: String) {
+        currentAccessToken = accessToken
+        stomp.disconnect()
+    }
+
+    func onConnect(swiftStomp: SwiftStomp, connectType: StompConnectType) {
         if connectType == .toStomp {
             subscribe(to: "/user/queue/chat-rooms")
+
+            for (destination, headers) in activeSubscriptions {
+                stomp.subscribe(to: destination, headers: headers)
+            }
         }
     }
 
-    func onDisconnect(swiftStomp : SwiftStomp, disconnectType : StompDisconnectType) {
-        if disconnectType == .fromStomp {
+    func onDisconnect(swiftStomp: SwiftStomp, disconnectType: StompDisconnectType) {
+        if disconnectType == .fromSocket {
+            connect(accessToken: currentAccessToken)
         }
     }
 
@@ -37,25 +50,22 @@ class StompManager: NSObject, ObservableObject, SwiftStompDelegate {
         message: Any?,
         messageId: String,
         destination: String,
-        headers : [String : String]
+        headers: [String: String]
     ) {
         guard let body = message as? String else { return }
         publishers[destination]?.send(body)
-
-        print("🔥 message received:", message)
-        print("🔥 destination:", destination)
     }
 
-    func onReceipt(swiftStomp : SwiftStomp, receiptId : String) {
+    func onReceipt(swiftStomp: SwiftStomp, receiptId: String) {
 
     }
 
     func onError(
-        swiftStomp : SwiftStomp,
-        briefDescription : String,
-        fullDescription : String?,
-        receiptId : String?,
-        type : StompErrorType
+        swiftStomp: SwiftStomp,
+        briefDescription: String,
+        fullDescription: String?,
+        receiptId: String?,
+        type: StompErrorType
     ) {
     }
 
@@ -78,11 +88,13 @@ class StompManager: NSObject, ObservableObject, SwiftStompDelegate {
             publishers[destination] = PassthroughSubject<String, Never>()
         }
 
+        activeSubscriptions[destination] = headers
         stomp.subscribe(to: destination, headers: headers)
     }
 
     func unsubscribe(from destination: String, headers: [String: String] = [:]) {
         publishers.removeValue(forKey: destination)
+        activeSubscriptions.removeValue(forKey: destination)
         stomp.unsubscribe(from: destination, headers: headers)
     }
 

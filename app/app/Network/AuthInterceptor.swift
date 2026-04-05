@@ -72,6 +72,7 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
                 // 새 토큰 저장
                 AuthStore.shared.accessToken = response.accessToken
                 AuthStore.shared.refreshToken = response.refreshToken
+                StompManager.shared.reconnect(accessToken: response.accessToken)
                 self.resolvePendingRetries(with: .retry)
             } catch {
                 isLoggedIn = false
