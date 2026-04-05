@@ -78,6 +78,7 @@ class MemberService(
                 s3Service.getPresignedUrl(it.key)
             )
         }
+        val likes = likeRepository.countByLikedId(memberId)
 
         return MemberGetMeResponse(
             member.id,
@@ -88,7 +89,7 @@ class MemberService(
             LocalDate.now().year - member.birthYear,
             member.birthYear,
             member.bio,
-            0
+            likes
         )
     }
 

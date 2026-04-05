@@ -12,5 +12,5 @@ data class MemberGetMeResponse(
     val age: Int,
     val birthYear: Int,
     val bio: String? = null,
-    val likes: Int,
+    val likes: Long,
 )
