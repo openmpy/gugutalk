@@ -256,16 +256,19 @@ struct MessageView: View {
     private func errorSection(message: String) -> some View {
         VStack {
             Spacer()
-            
-            Text(message)
-                .padding(.bottom)
-            
-            Button("다시 시도") {
-                Task {
-                    await vm.gets(chatRoomId: chatRoomId)
+
+            VStack(spacing: 0) {
+                Text(message)
+                    .padding(.bottom)
+
+                Button("다시 시도") {
+                    Task {
+                        await vm.gets(chatRoomId: chatRoomId)
+                    }
                 }
             }
-            
+            .rotationEffect(.degrees(180))
+
             Spacer()
         }
     }

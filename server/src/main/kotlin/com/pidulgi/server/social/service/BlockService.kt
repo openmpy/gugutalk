@@ -1,5 +1,6 @@
 package com.pidulgi.server.social.service
 
+import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.exception.CustomException
@@ -17,6 +18,7 @@ class BlockService(
     @Value("\${s3.endpoint}") private val endpoint: String,
 
     private val blockRepository: BlockRepository,
+    private val chatRoomRepository: ChatRoomRepository,
 ) {
 
     @Transactional
@@ -33,6 +35,10 @@ class BlockService(
             blockedId = blockedId,
         )
         blockRepository.save(block)
+
+        val (member1Id, member2Id) = if (blockerId < blockedId) blockerId to blockedId else blockedId to blockerId
+        val chatRoom = chatRoomRepository.findByMember1IdAndMember2Id(member1Id, member2Id)
+        chatRoom?.delete()
     }
 
     @Transactional

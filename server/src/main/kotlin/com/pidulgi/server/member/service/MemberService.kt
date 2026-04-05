@@ -2,6 +2,7 @@ package com.pidulgi.server.member.service
 
 import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
 import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
+import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.s3.S3Service
@@ -41,6 +42,7 @@ class MemberService(
 
     private val memberRepository: MemberRepository,
     private val memberImageRepository: MemberImageRepository,
+    private val chatRoomRepository: ChatRoomRepository,
     private val likeRepository: LikeRepository,
     private val blockRepository: BlockRepository,
     private val privateImageGrantRepository: PrivateImageGrantRepository,
@@ -145,6 +147,9 @@ class MemberService(
         redisTemplate.delete(refreshTokenKey)
 
         member.withdraw()
+
+        val chatRooms = chatRoomRepository.findByMember1IdOrMember2Id(memberId, memberId)
+        chatRooms.forEach { it.delete() }
     }
 
     @Transactional
