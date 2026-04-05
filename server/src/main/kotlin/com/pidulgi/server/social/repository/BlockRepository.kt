@@ -2,6 +2,7 @@ package com.pidulgi.server.social.repository
 
 import com.pidulgi.server.social.entity.Block
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 interface BlockRepository : JpaRepository<Block, Long>, BlockCustomRepository {
@@ -18,4 +19,14 @@ interface BlockRepository : JpaRepository<Block, Long>, BlockCustomRepository {
         """
     )
     fun findBlock(senderId: Long, targetId: Long): Block?
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+        value = """
+            DELETE FROM blocks
+            WHERE blocker_id IN :memberIds OR blocked_id IN :memberIds
+        """,
+        nativeQuery = true
+    )
+    fun hardDeleteAllByMemberIdIn(memberIds: List<Long>)
 }

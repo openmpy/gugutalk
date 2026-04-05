@@ -37,6 +37,9 @@ dependencies {
     implementation 'com.linecorp.kotlin-jdsl:jpql-render:3.8.0'
     implementation 'com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.8.0'
 
+    // kotlin-log
+    implementation 'io.github.oshai:kotlin-logging-jvm:7.0.3'
+
     // point
     implementation 'org.hibernate.orm:hibernate-spatial:7.2.6.Final'
     implementation 'org.locationtech.jts:jts-core:1.20.0'
