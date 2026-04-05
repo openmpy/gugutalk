@@ -275,19 +275,18 @@ class MemberService(
             }
 
         // 신규 추가
-        val newImages = requestImages
+        val newKeys = requestImages
             .filter { it.imageId == null && it.key != null }
-            .map {
-                MemberImage(
-                    memberId = memberId,
-                    key = it.key!!,
-                    type = type,
-                    sortOrder = it.sortOrder
-                )
-            }
+            .map { it.key!! }
 
-        val savedNewImages = if (newImages.isNotEmpty()) {
-            memberImageRepository.saveAll(newImages)
+        val savedNewImages = if (newKeys.isNotEmpty()) {
+            val pendingImages = memberImageRepository.findAllByKeyIn(newKeys)
+
+            pendingImages.forEach { image ->
+                val matched = requestImages.first { it.key == image.key }
+                image.upload(memberId, matched.sortOrder)
+            }
+            memberImageRepository.saveAll(pendingImages)
         } else emptyList()
 
         return (images + savedNewImages).associateBy { it.id }

@@ -1,5 +1,6 @@
 package com.pidulgi.server.member.entity
 
+import com.pidulgi.server.member.entity.type.ImageStatus
 import com.pidulgi.server.member.entity.type.ImageType
 import jakarta.persistence.*
 import java.time.LocalDateTime
@@ -13,18 +14,29 @@ class MemberImage(
     val id: Long = 0,
 
     @Column(name = "member_id", nullable = false)
-    val memberId: Long,
+    var memberId: Long = 0,
 
     @Column(name = "key", nullable = false)
     val key: String,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    val type: ImageType,
+    var type: ImageType,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    var status: ImageStatus = ImageStatus.PENDING,
 
     @Column(name = "sort_order", nullable = false)
-    var sortOrder: Int,
+    var sortOrder: Int = 0,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) {
+
+    fun upload(memberId: Long, sortOrder: Int) {
+        this.memberId = memberId
+        this.status = ImageStatus.COMPLETE
+        this.sortOrder = sortOrder
+    }
+}

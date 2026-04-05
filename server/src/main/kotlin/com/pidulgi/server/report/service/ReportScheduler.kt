@@ -14,7 +14,7 @@ class ReportScheduler(
     private val s3Service: S3Service,
 ) {
 
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 8 * * *")
     fun cleanUpPendingImages() {
         val expiredBefore = LocalDateTime.now().minusHours(24)
         val pendingImages = reportImageRepository.findByStatusAndCreatedAtBefore(
