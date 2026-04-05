@@ -10,6 +10,7 @@ import com.pidulgi.server.common.auth.AuthenticationExtractor
 import com.pidulgi.server.common.auth.JwtProvider
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.util.ClientIpExtractor
+import com.pidulgi.server.common.util.SmsSender
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
@@ -23,15 +24,19 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
+import java.security.SecureRandom
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
-private const val AUTH_VERIFICATION_CODE_KEY = "auth:phone:code:"
+private const val AUTH_SMS_VERIFICATION_CODE_KEY = "auth:sms:code:"
+private const val AUTH_SMS_IP_DAILY_LIMIT_KEY = "auth:sms:ip:daily:"
 const val AUTH_REFRESH_TOKEN_KEY = "auth:refresh-token:"
 const val AUTH_ACCESS_TOKEN_BLACKLIST_KEY = "auth:access-token:blacklist:"
 
 private const val AUTH_VERIFICATION_CODE_MINUTES: Long = 5
+private const val AUTH_SMS_MAX_DAILY_SEND_COUNT = 3
 
 @Service
 class AuthService(
@@ -43,17 +48,29 @@ class AuthService(
     private val phoneVerificationRepository: PhoneVerificationRepository,
     private val redisTemplate: StringRedisTemplate,
     private val jwtProvider: JwtProvider,
+    private val smsSender: SmsSender,
 ) {
 
     @Transactional
     fun sendVerificationCode(servletRequest: HttpServletRequest, phoneNumber: String) {
-        val key = AUTH_VERIFICATION_CODE_KEY + phoneNumber
+        val clientIp = ClientIpExtractor.extract(servletRequest)
+
+        val ipLimitKey = AUTH_SMS_IP_DAILY_LIMIT_KEY + clientIp
+        val sendCount = redisTemplate.opsForValue().get(ipLimitKey)?.toIntOrNull() ?: 0
+
+        if (sendCount >= AUTH_SMS_MAX_DAILY_SEND_COUNT) {
+            throw CustomException("하루 최대 ${AUTH_SMS_MAX_DAILY_SEND_COUNT}회까지만 전송할 수 있습니다.")
+        }
+
+        val key = AUTH_SMS_VERIFICATION_CODE_KEY + phoneNumber
 
         redisTemplate.opsForValue().get(key)?.let {
             throw CustomException("인증 번호가 이미 전송되었습니다.")
         }
 
-        val verificationCode = "12345"
+        val random = SecureRandom()
+        val verificationCode = (10000 + random.nextInt(90000)).toString()
+
         redisTemplate.opsForValue().set(
             key,
             verificationCode,
@@ -61,21 +78,29 @@ class AuthService(
         )
 
         if (!memberRepository.existsByPhoneNumber(phoneNumber)) {
-            // SMS 인증 번호 전송
+            smsSender.send(phoneNumber, "구구톡 인증 번호는 [${verificationCode}]입니다.")
 
-            // 인증 번호 기록 저장
             val verification = PhoneVerification(
                 phoneNumber = phoneNumber,
                 verificationCode = verificationCode,
-                clientIp = ClientIpExtractor.extract(servletRequest)
+                clientIp = clientIp
             )
             phoneVerificationRepository.save(verification)
+        }
+
+        val midnight = LocalDate.now().plusDays(1).atStartOfDay()
+        val secondsUntilMidnight = Duration.between(LocalDateTime.now(), midnight)
+
+        if (sendCount == 0) {
+            redisTemplate.opsForValue().set(ipLimitKey, "1", secondsUntilMidnight)
+        } else {
+            redisTemplate.opsForValue().increment(ipLimitKey)
         }
     }
 
     @Transactional
     fun signup(request: SignupRequest): SignupResponse {
-        val key = AUTH_VERIFICATION_CODE_KEY + request.phoneNumber
+        val key = AUTH_SMS_VERIFICATION_CODE_KEY + request.phoneNumber
         val value = redisTemplate.opsForValue().get(key)
 
         value ?: throw CustomException("존재하지 않는 인증 번호입니다.")
