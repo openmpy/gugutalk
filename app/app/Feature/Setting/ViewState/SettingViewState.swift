@@ -10,5 +10,6 @@ enum SettingViewState: Equatable {
         case logout
         case withdraw
         case attendance
+        case adReward
     }
 }

@@ -55,4 +55,15 @@ final class SettingViewModel: ObservableObject {
             state = .error(error.localizedDescription)
         }
     }
+
+    func earnByAdReward() async throws {
+        state = .loading
+
+        do {
+            try await pointService.earnByAdReward()
+            state = .success(.adReward)
+        } catch {
+            state = .error(error.localizedDescription)
+        }
+    }
 }

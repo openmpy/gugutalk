@@ -6,6 +6,7 @@ struct SettingView: View {
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
 
     @StateObject private var vm = SettingViewModel()
+    @StateObject private var adManager = RewardedAdManager()
 
     @Environment(\.colorScheme) var colorScheme
 
@@ -28,6 +29,9 @@ struct SettingView: View {
                 if vm.state == .loading {
                     LoadingOverlay()
                 }
+            }
+            .onAppear {
+                adManager.loadAd()
             }
             .background(
                 colorScheme == .light
@@ -61,6 +65,8 @@ struct SettingView: View {
                         isLoggedIn = false
                     case .attendance:
                         ToastManager.shared.show("출석 체크가 완료되었습니다.")
+                    case .adReward:
+                        ToastManager.shared.show("광고 보상이 지급되었습니다.")
                     }
 
                 case .error(let message):
@@ -114,6 +120,7 @@ struct SettingView: View {
             } label: {
                 SettingRow(title: "포인트", icon: "star.circle.fill", color: .yellow)
             }
+
             Button {
                 Task {
                     try? await vm.earnByAttendance()
@@ -121,10 +128,13 @@ struct SettingView: View {
             } label: {
                 SettingRow(title: "출석 체크", icon: "calendar.circle.fill", color: .orange)
             }
+
             Button {
+                showRewardedAd()
             } label: {
-                SettingRow(title: "광고 보상", icon: "gift.fill", color: .pink)
+                SettingRow(title: "광고 보상", icon: "gift.fill", color: !adManager.adLoaded ? .gray : .pink)
             }
+            .disabled(!adManager.adLoaded)
         }
         .cornerRadius(20)
     }
@@ -173,6 +183,23 @@ struct SettingView: View {
                 }
 
                 Button("취소", role: .cancel) {}
+            }
+        }
+    }
+
+    // MARK: - AD
+
+    func showRewardedAd() {
+        guard
+            let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+            let rootVC = windowScene.keyWindow?.rootViewController
+        else { return }
+
+        adManager.showAd(from: rootVC) { rewarded in
+            if rewarded {
+                Task {
+                    try? await vm.earnByAdReward()
+                }
             }
         }
     }

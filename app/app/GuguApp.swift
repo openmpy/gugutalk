@@ -1,6 +1,7 @@
 import SwiftUI
 import FirebaseCore
 import FirebaseMessaging
+import GoogleMobileAds
 import SimpleToast
 
 class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
@@ -38,6 +39,10 @@ struct GuguApp: App {
     @StateObject private var toast = ToastManager.shared
 
     private let toastOptions = SimpleToastOptions(alignment: .top, hideAfter: 5)
+
+    init() {
+        MobileAds.shared.start(completionHandler: nil)
+    }
 
     var body: some Scene {
         WindowGroup {
