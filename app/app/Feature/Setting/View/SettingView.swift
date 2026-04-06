@@ -59,6 +59,8 @@ struct SettingView: View {
                     switch action {
                     case .logout, .withdraw:
                         isLoggedIn = false
+                    case .attendance:
+                        ToastManager.shared.show("출석 체크가 완료되었습니다.")
                     }
 
                 case .error(let message):
@@ -113,6 +115,9 @@ struct SettingView: View {
                 SettingRow(title: "포인트", icon: "star.circle.fill", color: .yellow)
             }
             Button {
+                Task {
+                    try? await vm.earnByAttendance()
+                }
             } label: {
                 SettingRow(title: "출석 체크", icon: "calendar.circle.fill", color: .orange)
             }

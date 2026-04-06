@@ -6,6 +6,7 @@ final class SettingViewModel: ObservableObject {
 
     private let authService = AuthService.shared
     private let memberService = MemberService.shared
+    private let pointService = PointService.shared
 
     @Published var state: SettingViewState = .idle
 
@@ -21,13 +22,6 @@ final class SettingViewModel: ObservableObject {
     }
 
     func withdraw() async {
-        guard case .loading = state else {
-            state = .loading
-            return await performWithdraw()
-        }
-    }
-
-    private func performWithdraw() async {
         guard
             let accessToken = AuthStore.shared.accessToken,
             let refreshToken = AuthStore.shared.refreshToken
@@ -36,14 +30,27 @@ final class SettingViewModel: ObservableObject {
             return
         }
 
+        state = .loading
+
         do {
             try await memberService.withdraw(
                 accessToken: accessToken,
                 refreshToken: refreshToken
             )
-            
+
             AuthStore.shared.clearAll()
             state = .success(.withdraw)
+        } catch {
+            state = .error(error.localizedDescription)
+        }
+    }
+
+    func earnByAttendance() async throws {
+        state = .loading
+
+        do {
+            try await pointService.earnByAttendance()
+            state = .success(.attendance)
         } catch {
             state = .error(error.localizedDescription)
         }

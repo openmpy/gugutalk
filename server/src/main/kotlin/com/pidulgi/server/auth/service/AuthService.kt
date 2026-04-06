@@ -16,6 +16,8 @@ import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.point.entity.Point
+import com.pidulgi.server.point.repository.PointRepository
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -46,6 +48,7 @@ class AuthService(
     private val memberRepository: MemberRepository,
     private val memberImageRepository: MemberImageRepository,
     private val phoneVerificationRepository: PhoneVerificationRepository,
+    private val pointRepository: PointRepository,
     private val redisTemplate: StringRedisTemplate,
     private val jwtProvider: JwtProvider,
     private val smsSender: SmsSender,
@@ -120,6 +123,9 @@ class AuthService(
             gender = request.gender,
         )
         memberRepository.save(member)
+
+        val point = Point(memberId = member.id)
+        pointRepository.save(point)
 
         val accessToken = jwtProvider.generateAccessToken(member.id)
         val refreshToken = jwtProvider.generateRefreshToken(member.id)

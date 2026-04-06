@@ -10,6 +10,8 @@ import com.pidulgi.server.member.entity.PrivateImageGrant
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
+import com.pidulgi.server.point.entity.Point
+import com.pidulgi.server.point.repository.PointRepository
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.BlockRepository
 import com.pidulgi.server.social.repository.LikeRepository
@@ -59,6 +61,7 @@ class DummyDataInit {
     @Bean
     fun init(
         memberRepository: MemberRepository,
+        pointRepository: PointRepository,
         likeRepository: LikeRepository,
         privateImageGrantRepository: PrivateImageGrantRepository,
         blockRepository: BlockRepository,
@@ -89,6 +92,14 @@ class DummyDataInit {
                     ).also { it.bump(location) }
                 }
                 memberRepository.saveAll(members)
+            }
+
+            // 포인트
+            if (pointRepository.count() == 0L) {
+                val points = (1 until DUMMY_MEMBER_COUNT + 1).map { i ->
+                    Point(memberId = i.toLong())
+                }
+                pointRepository.saveAll(points)
             }
 
             // 좋아요
