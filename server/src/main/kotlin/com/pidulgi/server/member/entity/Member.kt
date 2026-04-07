@@ -101,4 +101,8 @@ class Member(
     fun toggleChatEnabled() {
         this.isChatEnabled = !isChatEnabled
     }
+
+    fun updateProfileKey(profileKey: String?) {
+        this.profileKey = profileKey
+    }
 }

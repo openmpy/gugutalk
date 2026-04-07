@@ -66,4 +66,13 @@ class AdminController(
         val response = adminService.searchMembers(keyword, gender, page, size)
         return ResponseEntity.ok(response)
     }
+
+    @DeleteMapping("/v1/admin/members/{memberId}/images/{imageId}")
+    fun deleteMemberImage(
+        @PathVariable memberId: Long,
+        @PathVariable imageId: Long,
+    ): ResponseEntity<Unit> {
+        adminService.deleteMemberImage(memberId, imageId)
+        return ResponseEntity.ok().build()
+    }
 }

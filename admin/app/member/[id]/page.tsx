@@ -1,8 +1,8 @@
+import MemberImageDeleteButton from "@/components/MemberImageDeleteButton";
 import MemberUpdateButtons from "@/components/MemberUpdateButtons";
 import { AdminGetMemberDetailResponse } from "@/types/AdminGetMemberDetailResponse";
 import { AdminGetMemberImageResponse } from "@/types/AdminGetMemberImageResponse";
 import { formatDate } from "@/utils/formatDate";
-import { X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -99,9 +99,10 @@ export default async function MemberDetailPage({
                     />
                   </Link>
 
-                  <button className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-xs shadow">
-                    <X className="w-3 h-3" />
-                  </button>
+                  <MemberImageDeleteButton
+                    memberId={id}
+                    imageId={image.imageId}
+                  />
                 </div>
               ))
             )}
@@ -135,9 +136,10 @@ export default async function MemberDetailPage({
                     />
                   </Link>
 
-                  <button className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-xs shadow">
-                    <X className="w-3 h-3" />
-                  </button>
+                  <MemberImageDeleteButton
+                    memberId={id}
+                    imageId={image.imageId}
+                  />
                 </div>
               ))
             )}

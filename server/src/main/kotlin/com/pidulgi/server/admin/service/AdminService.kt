@@ -10,6 +10,7 @@ import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -156,5 +157,28 @@ class AdminService(
             page = page,
             hasNext = hasNext
         )
+    }
+
+    @Transactional
+    fun deleteMemberImage(memberId: Long, imageId: Long) {
+        val member = (memberRepository.findByIdOrNullNative(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+        val memberImage = (memberImageRepository.findByIdOrNull(imageId)
+            ?: throw CustomException("존재하지 않는 회원 이미지입니다."))
+
+        memberImageRepository.delete(memberImage)
+        s3Service.delete(memberImage.key)
+
+        val memberImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
+            memberId, memberImage.type
+        )
+        memberImages.forEachIndexed { index, image ->
+            image.updateSortOrder(index)
+        }
+
+        if (memberImage.type == ImageType.PUBLIC) {
+            val newProfileKey = memberImages.firstOrNull()?.key
+            member.updateProfileKey(newProfileKey)
+        }
     }
 }

@@ -39,4 +39,8 @@ class MemberImage(
         this.status = ImageStatus.COMPLETE
         this.sortOrder = sortOrder
     }
+
+    fun updateSortOrder(index: Int) {
+        this.sortOrder = index
+    }
 }
