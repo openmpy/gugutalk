@@ -7,8 +7,8 @@ export default function BanListPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">정지 목록</h1>
-        <button className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold">
-          추가
+        <button className="px-4 py-2 rounded-md bg-red-500 text-sm font-semibold text-white">
+          정지
         </button>
       </div>
 
