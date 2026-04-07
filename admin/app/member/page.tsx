@@ -1,8 +1,67 @@
+import { PageResponse } from "@/types/PageResponse";
 import { Search } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
-export default function MemberListPage() {
+type AdminMemberGetResponse = {
+  memberId: number;
+  profileUrl: string | null;
+  nickname: string;
+  age: number;
+  gender: "MALE" | "FEMALE";
+  comment: string | null;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+
+function formatGender(gender: AdminMemberGetResponse["gender"]) {
+  return gender === "MALE" ? "남자" : "여자";
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  });
+}
+
+async function getMembers(page: number, size: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/admin/members?page=${page}&size=${size}`,
+    { cache: "no-store" },
+  );
+
+  if (!response.ok) {
+    throw new Error("회원 목록을 불러오지 못했습니다.");
+  }
+
+  return (await response.json()) as PageResponse<AdminMemberGetResponse>;
+}
+
+export default async function MemberListPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string; size?: string }>;
+}) {
+  const params = await searchParams;
+  const page = Number(params?.page ?? "0");
+  const size = Number(params?.size ?? "20");
+  const currentPage = Number.isNaN(page) || page < 0 ? 0 : page;
+  const currentSize = Number.isNaN(size) || size <= 0 ? 20 : size;
+  const data = await getMembers(currentPage, currentSize);
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* 헤더 */}
@@ -36,32 +95,66 @@ export default function MemberListPage() {
 
       {/* 회원 상세 */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-20 h-20 rounded-full overflow-hidden">
-            <Image
-              width={200}
-              height={200}
-              src="https://picsum.photos/200"
-              alt="profile"
-              className="w-full h-full rounded-full"
-              placeholder="blur"
-              blurDataURL="https://picsum.photos/200"
-              loading="lazy"
-            />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <Link href={`/member/${1}`} className="font-bold">
-                닉네임
-              </Link>
-              <p className="text-sm text-gray-500">최근 접속일</p>
+        {data.payload.length === 0 ? (
+          <p className="text-sm text-gray-500">회원 정보가 없습니다.</p>
+        ) : (
+          data.payload.map((member) => (
+            <div key={member.memberId} className="flex items-center gap-3">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-slate-100">
+                {member.profileUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={member.profileUrl}
+                    alt={member.nickname}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                    이미지 없음
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <Link
+                    href={`/member/${member.memberId}`}
+                    className="font-bold"
+                  >
+                    {member.nickname}
+                  </Link>
+                  <p className="text-sm text-gray-500">
+                    {formatDate(member.updatedAt)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">{member.comment}</p>
+                  <p className="text-sm text-gray-500">
+                    {formatGender(member.gender)} · {member.age}살
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-500">코멘트</p>
-              <p className="text-sm text-gray-500">성별 · 20살 · ♥ 100</p>
-            </div>
-          </div>
-        </div>
+          ))
+        )}
+      </div>
+
+      <div className="flex justify-center gap-2 mt-6">
+        {currentPage > 0 && (
+          <Link
+            href={`/member?page=${currentPage - 1}&size=${currentSize}`}
+            className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold"
+          >
+            이전
+          </Link>
+        )}
+        {data.hasNext && (
+          <Link
+            href={`/member?page=${currentPage + 1}&size=${currentSize}`}
+            className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold"
+          >
+            다음
+          </Link>
+        )}
       </div>
     </div>
   );

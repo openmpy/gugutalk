@@ -10,6 +10,7 @@ data class AdminGetMemberResponse(
     val nickname: String,
     val age: Int,
     val gender: Gender,
+    val comment: String?,
     val updatedAt: LocalDateTime,
     val deletedAt: LocalDateTime?
 )

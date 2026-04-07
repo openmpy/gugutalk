@@ -29,6 +29,7 @@ class AdminService(
                     nickname = it.nickname,
                     age = LocalDate.now().year - it.birthYear,
                     gender = it.gender,
+                    comment = it.comment,
                     updatedAt = it.updatedAt,
                     deletedAt = it.deletedAt
                 )
