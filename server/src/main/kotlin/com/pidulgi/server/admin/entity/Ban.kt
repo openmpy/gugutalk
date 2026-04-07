@@ -12,14 +12,11 @@ class Ban(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @Column(name = "member_id", nullable = false)
-    val memberId: Long,
-
     @Column(name = "uuid", nullable = false)
     val uuid: String,
 
-    @Column(name = "nickname", nullable = false)
-    val nickname: String,
+    @Column(name = "nickname")
+    val nickname: String? = null,
 
     @Column(name = "phoneNumber", nullable = false)
     val phoneNumber: String,
