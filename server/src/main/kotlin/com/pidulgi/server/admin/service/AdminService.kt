@@ -1,8 +1,8 @@
 package com.pidulgi.server.admin.service
 
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
+import com.pidulgi.server.admin.dto.response.AdminMemberResponse
 import com.pidulgi.server.common.exception.CustomException
-import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import org.springframework.data.domain.Page
@@ -20,10 +20,10 @@ class AdminService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getMembers(page: Int, size: Int): Page<Member> {
+    fun getMembers(page: Int, size: Int): Page<AdminMemberResponse> {
         val sort = Sort.by(Sort.Direction.DESC, "updatedAt")
         val pageRequest = PageRequest.of(page, size, sort)
-        return memberRepository.findAll(pageRequest)
+        return memberRepository.findAll(pageRequest).map { AdminMemberResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
@@ -33,6 +33,6 @@ class AdminService(
         val images = memberImageRepository.findAllByMemberIdOrderByTypeAscSortOrderAsc(
             member.id
         )
-        return AdminGetMemberResponse(member, images)
+        return AdminGetMemberResponse.of(member, images)
     }
 }

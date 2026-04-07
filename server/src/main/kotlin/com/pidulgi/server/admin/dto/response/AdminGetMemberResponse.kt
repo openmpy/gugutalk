@@ -5,6 +5,13 @@ import com.pidulgi.server.member.entity.MemberImage
 
 data class AdminGetMemberResponse(
 
-    val member: Member,
-    val images: List<MemberImage>
-)
+    val member: AdminMemberResponse,
+    val images: List<MemberImage>,
+) {
+
+    companion object {
+
+        fun of(member: Member, images: List<MemberImage>): AdminGetMemberResponse =
+            AdminGetMemberResponse(AdminMemberResponse.from(member), images)
+    }
+}

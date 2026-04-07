@@ -3,10 +3,10 @@ package com.pidulgi.server.admin.controller
 import com.pidulgi.server.admin.dto.request.BanAddRequest
 import com.pidulgi.server.admin.dto.request.BanUpdateRequest
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
+import com.pidulgi.server.admin.dto.response.AdminMemberResponse
 import com.pidulgi.server.admin.entity.Ban
 import com.pidulgi.server.admin.service.AdminService
 import com.pidulgi.server.admin.service.BanService
-import com.pidulgi.server.member.entity.Member
 import org.springframework.data.domain.Page
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -23,7 +23,7 @@ class AdminController(
     fun getMembers(
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
-    ): ResponseEntity<Page<Member>> {
+    ): ResponseEntity<Page<AdminMemberResponse>> {
         val response = adminService.getMembers(page, size)
         return ResponseEntity.ok(response)
     }
