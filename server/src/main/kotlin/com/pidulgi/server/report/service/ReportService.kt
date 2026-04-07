@@ -29,10 +29,16 @@ class ReportService(
         val reported = getMember(reportedId)
 
         val report = Report(
-            reporterId = reporterId,
-            reportedId = reportedId,
+            reporterId = reporter.id,
+            reporterUuid = reporter.uuid,
+            reporterPhoneNumber = reporter.phoneNumber,
             reporterNickname = reporter.nickname,
+
+            reportedId = reported.id,
+            reportedUuid = reported.uuid,
+            reportedPhoneNumber = reported.phoneNumber,
             reportedNickname = reported.nickname,
+
             type = request.type,
             reason = request.reason,
         )

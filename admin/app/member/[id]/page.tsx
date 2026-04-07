@@ -18,7 +18,7 @@ export default function MemberDetailPage() {
         <button className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold">
           자기소개
         </button>
-        <button className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold">
+        <button className="px-4 py-2 rounded-md bg-red-500 text-sm font-semibold text-white">
           정지
         </button>
       </div>

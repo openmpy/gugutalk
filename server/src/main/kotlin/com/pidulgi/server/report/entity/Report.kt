@@ -16,11 +16,23 @@ class Report(
     @Column(name = "reporter_id", nullable = false)
     val reporterId: Long,
 
-    @Column(name = "reported_id", nullable = false)
-    val reportedId: Long,
+    @Column(name = "reporter_uuid", nullable = false)
+    val reporterUuid: String,
+
+    @Column(name = "reporter_phone_number", nullable = false)
+    val reporterPhoneNumber: String,
 
     @Column(name = "reporter_nickname", nullable = false)
     val reporterNickname: String,
+
+    @Column(name = "reported_id", nullable = false)
+    val reportedId: Long,
+
+    @Column(name = "reported_uuid", nullable = false)
+    val reportedUuid: String,
+
+    @Column(name = "reported_phone_number", nullable = false)
+    val reportedPhoneNumber: String,
 
     @Column(name = "reported_nickname", nullable = false)
     val reportedNickname: String,
