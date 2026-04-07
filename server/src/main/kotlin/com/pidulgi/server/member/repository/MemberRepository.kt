@@ -23,7 +23,7 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberCustomRepository
         """,
         nativeQuery = true
     )
-    fun findByIdNative(id: Long): Member?
+    fun findByIdOrNullNative(id: Long): Member?
 
     @Query(
         value = """

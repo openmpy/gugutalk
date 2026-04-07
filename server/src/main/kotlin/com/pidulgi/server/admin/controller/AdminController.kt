@@ -31,4 +31,28 @@ class AdminController(
         val response = adminService.getMember(memberId)
         return ResponseEntity.ok(response)
     }
+
+    @PutMapping("/v1/admin/members/{memberId}/nickname")
+    fun updateMemberNickname(
+        @PathVariable memberId: Long,
+    ): ResponseEntity<Unit> {
+        adminService.updateMemberNickname(memberId)
+        return ResponseEntity.ok().build()
+    }
+
+    @PutMapping("/v1/admin/members/{memberId}/comment")
+    fun updateMemberComment(
+        @PathVariable memberId: Long,
+    ): ResponseEntity<Unit> {
+        adminService.updateMemberComment(memberId)
+        return ResponseEntity.ok().build()
+    }
+
+    @PutMapping("/v1/admin/members/{memberId}/bio")
+    fun updateMemberBio(
+        @PathVariable memberId: Long,
+    ): ResponseEntity<Unit> {
+        adminService.updateMemberBio(memberId)
+        return ResponseEntity.ok().build()
+    }
 }

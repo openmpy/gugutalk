@@ -1,3 +1,4 @@
+import MemberUpdateButtons from "@/components/MemberUpdateButtons";
 import { AdminGetMemberDetailResponse } from "@/types/AdminGetMemberDetailResponse";
 import { AdminGetMemberImageResponse } from "@/types/AdminGetMemberImageResponse";
 import { formatDate } from "@/utils/formatDate";
@@ -42,15 +43,7 @@ export default async function MemberDetailPage({
         <h1 className="text-2xl font-bold">{data.nickname}</h1>
       </div>
       <div className="flex items-center gap-2 mb-4">
-        <button className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold">
-          닉네임
-        </button>
-        <button className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold">
-          코멘트
-        </button>
-        <button className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold">
-          자기소개
-        </button>
+        <MemberUpdateButtons memberId={id} />
         <button className="px-4 py-2 rounded-md bg-red-500 text-sm font-semibold text-white">
           정지
         </button>

@@ -75,6 +75,16 @@ class Member(
         this.updatedAt = LocalDateTime.now()
     }
 
+    fun updateNickname(nickname: String) {
+        this.nickname = nickname
+        this.updatedAt = LocalDateTime.now()
+    }
+
+    fun updateBio(string: String) {
+        this.bio = string
+        this.updatedAt = LocalDateTime.now()
+    }
+
     fun updateComment(comment: String) {
         this.comment = comment
         this.updatedAt = LocalDateTime.now()

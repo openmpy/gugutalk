@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
+import java.util.*
 
 @Service
 class AdminService(
@@ -56,7 +57,7 @@ class AdminService(
 
     @Transactional(readOnly = true)
     fun getMember(memberId: Long): AdminGetMemberDetailResponse {
-        val member = (memberRepository.findByIdNative(memberId)
+        val member = (memberRepository.findByIdOrNullNative(memberId)
             ?: throw CustomException("존재하지 않는 회원입니다."))
 
         val publicImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
@@ -98,5 +99,30 @@ class AdminService(
             deletedAt = member.deletedAt,
             images = publicImages + privateImages,
         )
+    }
+
+    @Transactional
+    fun updateMemberNickname(memberId: Long) {
+        val member = (memberRepository.findByIdOrNullNative(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+
+        val nickname = "닉네임_" + UUID.randomUUID().toString().replace("-", "").substring(0, 6)
+        member.updateNickname(nickname)
+    }
+
+    @Transactional
+    fun updateMemberComment(memberId: Long) {
+        val member = (memberRepository.findByIdOrNullNative(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+
+        member.updateComment("부적절한 코멘트 내용입니다.")
+    }
+
+    @Transactional
+    fun updateMemberBio(memberId: Long) {
+        val member = (memberRepository.findByIdOrNullNative(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+
+        member.updateBio("부적절한 자기소개 내용입니다.")
     }
 }
