@@ -19,7 +19,7 @@ export default function RootLayout({
         className={`min-h-full flex flex-col bg-slate-500 ${NotoSansKR.className}`}
       >
         <Header />
-        <main className="flex-1 bg-white">{children}</main>
+        <main className="flex-1 bg-white p-4">{children}</main>
         <Footer />
       </body>
     </html>

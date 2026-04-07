@@ -8,13 +8,13 @@ export default function Header() {
           <h1 className="text-2xl font-bold text-white">구구톡 관리자</h1>
           <div className="flex items-center gap-4">
             <Link
-              href="/"
+              href="/member"
               className="text-white text-lg font-semibold hover:text-slate-300"
             >
               회원 목록
             </Link>
             <Link
-              href="/"
+              href="/ban"
               className="text-white text-lg font-semibold hover:text-slate-300"
             >
               정지 목록
