@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+import Link from "next/link";
 
 export default function ReportListPage() {
   return (
@@ -13,8 +14,9 @@ export default function ReportListPage() {
 
       {/* 신고 분류 */}
       <div className="flex items-center gap-2 text-sm font-medium mb-2">
+        <button className="py-2 rounded-md bg-slate-200 flex-1">접수</button>
         <button className="py-2 rounded-md bg-slate-200 flex-1">보류</button>
-        <button className="py-2 rounded-md bg-slate-200 flex-1">완료</button>
+        <button className="py-2 rounded-md bg-slate-200 flex-1">처리</button>
       </div>
 
       {/* 신고 검색 */}
@@ -40,7 +42,9 @@ export default function ReportListPage() {
       <div className="flex flex-col gap-4">
         <div>
           <div className="flex items-center justify-between">
-            <p className="font-bold">도배</p>
+            <Link href={`/report/1`} className="font-bold">
+              도배
+            </Link>
             <p className="text-sm text-gray-500">신고일</p>
           </div>
           <div>
@@ -51,7 +55,9 @@ export default function ReportListPage() {
         </div>
         <div>
           <div className="flex items-center justify-between">
-            <p className="font-bold">도배</p>
+            <Link href={`/report/1`} className="font-bold">
+              도배
+            </Link>
             <p className="text-sm text-gray-500">신고일</p>
           </div>
           <div>
