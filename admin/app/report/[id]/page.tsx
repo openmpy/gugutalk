@@ -21,8 +21,15 @@ export default function ReportDetailPage() {
         <div>
           <h2 className="text-lg font-medium">정보</h2>
           <p className="text-gray-500">ID: 1</p>
+          <hr className="my-2 border-gray-200" />
+          <p className="text-gray-500">신고자 UUID: 1234567890</p>
           <p className="text-gray-500">신고자: 홍길동</p>
+          <p className="text-gray-500">신고자 휴대폰: 010-0000-0000</p>
+          <hr className="my-2 border-gray-200" />
+          <p className="text-gray-500">피신고자 UUID: 1234567890</p>
           <p className="text-gray-500">피신고자: 박명수</p>
+          <p className="text-gray-500">피신고자 휴대폰: 010-0000-0000</p>
+          <hr className="my-2 border-gray-200" />
           <p className="text-gray-500">신고일자: 2026-01-01 12:00:00</p>
           <p className="text-gray-500">처리일자: 2026-01-01 12:00:00</p>
         </div>

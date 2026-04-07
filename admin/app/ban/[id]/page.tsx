@@ -20,8 +20,8 @@ export default function BanDetailPage() {
           <p className="text-gray-500">닉네임: 홍길동</p>
           <p className="text-gray-500">휴대폰: 010-0000-0000</p>
           <hr className="my-2 border-gray-200" />
-          <p className="text-gray-500">정지 일자: 2026-01-01 12:00:00</p>
-          <p className="text-gray-500">해제 일자: 2026-01-01 12:00:00</p>
+          <p className="text-gray-500">정지일자: 2026-01-01 12:00:00</p>
+          <p className="text-gray-500">해제일자: 2026-01-01 12:00:00</p>
         </div>
 
         <div>
