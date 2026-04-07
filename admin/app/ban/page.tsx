@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+import Link from "next/link";
 
 export default function BanListPage() {
   return (
@@ -35,23 +36,14 @@ export default function BanListPage() {
       <div className="flex flex-col gap-4">
         <div>
           <div className="flex items-center justify-between">
-            <p className="font-bold">도배</p>
+            <Link href={`/ban/1`} className="font-bold">
+              도배
+            </Link>
             <p className="text-sm text-gray-500">해제일</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">UUID: 1234567890</p>
-            <p className="text-sm text-gray-500">닉네임: 박명수</p>
-            <p className="text-sm text-gray-500 line-clamp-2">사유: 내용</p>
-          </div>
-        </div>
-        <div>
-          <div className="flex items-center justify-between">
-            <p className="font-bold">도배</p>
-            <p className="text-sm text-gray-500">해제일</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">UUID: 1234567890</p>
-            <p className="text-sm text-gray-500">닉네임: 박명수</p>
+            <p className="text-sm text-gray-500">닉네임: 홍길동</p>
             <p className="text-sm text-gray-500 line-clamp-2">사유: 내용</p>
           </div>
         </div>
