@@ -2,6 +2,7 @@ package com.pidulgi.server.admin.service
 
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
 import com.pidulgi.server.common.dto.PageResponse
+import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.repository.MemberRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -17,11 +18,12 @@ class AdminService(
 
     @Transactional(readOnly = true)
     fun getMembers(
+        gender: String,
         page: Int,
         size: Int
     ): PageResponse<AdminGetMemberResponse> {
         val offset = page * size
-        val result = memberRepository.findAllByPage(offset, size + 1)
+        val result = memberRepository.findAllByPage(gender, offset, size + 1)
             .map {
                 AdminGetMemberResponse(
                     memberId = it.id,

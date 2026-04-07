@@ -37,11 +37,28 @@ function formatDate(value: string) {
   });
 }
 
-async function getMembers(page: number, size: number) {
-  const response = await fetch(
-    `${API_BASE_URL}/api/v1/admin/members?page=${page}&size=${size}`,
-    { cache: "no-store" },
-  );
+type GenderFilter = "ALL" | "MALE" | "FEMALE";
+
+function parseGender(value: string | undefined): GenderFilter {
+  if (value === "MALE" || value === "FEMALE" || value === "ALL") {
+    return value;
+  }
+  return "ALL";
+}
+
+function memberListQuery(page: number, size: number, gender: GenderFilter) {
+  const sp = new URLSearchParams();
+  sp.set("gender", gender.toUpperCase());
+  sp.set("page", String(page));
+  sp.set("size", String(size));
+  return sp.toString();
+}
+
+async function getMembers(page: number, size: number, gender: GenderFilter) {
+  const qs = memberListQuery(page, size, gender);
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/members?${qs}`, {
+    cache: "no-store",
+  });
 
   if (!response.ok) {
     throw new Error("회원 목록을 불러오지 못했습니다.");
@@ -53,14 +70,15 @@ async function getMembers(page: number, size: number) {
 export default async function MemberListPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ page?: string; size?: string }>;
+  searchParams?: Promise<{ page?: string; size?: string; gender?: string }>;
 }) {
   const params = await searchParams;
   const page = Number(params?.page ?? "0");
   const size = Number(params?.size ?? "20");
   const currentPage = Number.isNaN(page) || page < 0 ? 0 : page;
   const currentSize = Number.isNaN(size) || size <= 0 ? 20 : size;
-  const data = await getMembers(currentPage, currentSize);
+  const currentGender = parseGender(params?.gender);
+  const data = await getMembers(currentPage, currentSize, currentGender);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -74,9 +92,34 @@ export default async function MemberListPage({
 
       {/* 회원 카테고리 */}
       <div className="flex items-center gap-2 text-sm font-medium mb-2">
-        <button className="py-2 rounded-md bg-slate-200 flex-1">전체</button>
-        <button className="py-2 rounded-md bg-slate-200 flex-1">여자</button>
-        <button className="py-2 rounded-md bg-slate-200 flex-1">남자</button>
+        <Link
+          href={`/member?${memberListQuery(0, currentSize, "ALL")}`}
+          className={`py-2 rounded-md flex-1 text-center ${
+            currentGender === "ALL" ? "bg-slate-500 text-white" : "bg-slate-200"
+          }`}
+        >
+          전체
+        </Link>
+        <Link
+          href={`/member?${memberListQuery(0, currentSize, "FEMALE")}`}
+          className={`py-2 rounded-md flex-1 text-center ${
+            currentGender === "FEMALE"
+              ? "bg-slate-500 text-white"
+              : "bg-slate-200"
+          }`}
+        >
+          여자
+        </Link>
+        <Link
+          href={`/member?${memberListQuery(0, currentSize, "MALE")}`}
+          className={`py-2 rounded-md flex-1 text-center ${
+            currentGender === "MALE"
+              ? "bg-slate-500 text-white"
+              : "bg-slate-200"
+          }`}
+        >
+          남자
+        </Link>
       </div>
 
       {/* 회원 검색 */}
@@ -141,7 +184,7 @@ export default async function MemberListPage({
       <div className="flex justify-center gap-2 mt-6">
         {currentPage > 0 && (
           <Link
-            href={`/member?page=${currentPage - 1}&size=${currentSize}`}
+            href={`/member?${memberListQuery(currentPage - 1, currentSize, currentGender)}`}
             className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold"
           >
             이전
@@ -149,7 +192,7 @@ export default async function MemberListPage({
         )}
         {data.hasNext && (
           <Link
-            href={`/member?page=${currentPage + 1}&size=${currentSize}`}
+            href={`/member?${memberListQuery(currentPage + 1, currentSize, currentGender)}`}
             className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold"
           >
             다음

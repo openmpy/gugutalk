@@ -18,10 +18,11 @@ class AdminController(
 
     @GetMapping("/v1/admin/members")
     fun getMembers(
+        @RequestParam(value = "gender", defaultValue = "ALL") gender: String,
         @RequestParam(value = "page", defaultValue = "0") page: Int,
         @RequestParam(value = "size", defaultValue = "20") size: Int,
     ): ResponseEntity<PageResponse<AdminGetMemberResponse>> {
-        val response = adminService.getMembers(page, size)
+        val response = adminService.getMembers(gender, page, size)
         return ResponseEntity.ok(response)
     }
 }

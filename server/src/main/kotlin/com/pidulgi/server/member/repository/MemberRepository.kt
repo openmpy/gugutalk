@@ -1,6 +1,7 @@
 package com.pidulgi.server.member.repository
 
 import com.pidulgi.server.member.entity.Member
+import com.pidulgi.server.member.entity.type.Gender
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -19,12 +20,14 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberCustomRepository
         value = """
             SELECT *
             FROM member m
+            WHERE :gender = 'ALL' OR m.gender = :gender
             ORDER BY m.updated_at DESC, m.id DESC
             LIMIT :size OFFSET :offset
         """,
         nativeQuery = true
     )
     fun findAllByPage(
+        @Param("gender") gender: String,
         @Param("offset") offset: Int,
         @Param("size") size: Int
     ): List<Member>
