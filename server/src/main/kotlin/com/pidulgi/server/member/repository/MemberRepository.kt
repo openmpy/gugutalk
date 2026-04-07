@@ -1,7 +1,6 @@
 package com.pidulgi.server.member.repository
 
 import com.pidulgi.server.member.entity.Member
-import com.pidulgi.server.member.entity.type.Gender
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -15,6 +14,16 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberCustomRepository
     fun existsByNickname(nickname: String): Boolean
 
     fun findByPhoneNumber(phoneNumber: String): Member?
+
+    @Query(
+        value = """
+            SELECT *
+            FROM member m
+            WHERE m.id = :id
+        """,
+        nativeQuery = true
+    )
+    fun findByIdNative(id: Long): Member?
 
     @Query(
         value = """

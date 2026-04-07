@@ -10,7 +10,6 @@ import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -57,7 +56,7 @@ class AdminService(
 
     @Transactional(readOnly = true)
     fun getMember(memberId: Long): AdminGetMemberDetailResponse {
-        val member = (memberRepository.findByIdOrNull(memberId)
+        val member = (memberRepository.findByIdNative(memberId)
             ?: throw CustomException("존재하지 않는 회원입니다."))
 
         val publicImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
