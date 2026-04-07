@@ -1,3 +1,4 @@
+import RefreshButton from "@/components/RefreshButton";
 import { PageResponse } from "@/types/PageResponse";
 import { Search } from "lucide-react";
 import Link from "next/link";
@@ -85,9 +86,7 @@ export default async function MemberListPage({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">회원 목록</h1>
-        <button className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold">
-          새로고침
-        </button>
+        <RefreshButton />
       </div>
 
       {/* 회원 카테고리 */}
@@ -158,14 +157,14 @@ export default async function MemberListPage({
                 )}
               </div>
               <div className="flex-1">
-                <div className="flex items-center justify-between">
+                <div className="flex md:items-center md:justify-between">
                   <Link
                     href={`/member/${member.memberId}`}
                     className="font-bold"
                   >
                     {member.nickname}
                   </Link>
-                  <p className="text-sm text-gray-500">
+                  <p className="hidden text-sm text-gray-500 md:block">
                     {formatDate(member.updatedAt)}
                   </p>
                 </div>
@@ -173,6 +172,9 @@ export default async function MemberListPage({
                   <p className="text-sm text-gray-500">{member.comment}</p>
                   <p className="text-sm text-gray-500">
                     {formatGender(member.gender)} · {member.age}살
+                  </p>
+                  <p className="text-sm text-gray-500 md:hidden">
+                    {formatDate(member.updatedAt)}
                   </p>
                 </div>
               </div>
