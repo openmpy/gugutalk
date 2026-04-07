@@ -1,3 +1,4 @@
+import { Search } from "lucide-react";
 import Image from "next/image";
 
 export default function MemberListPage() {
@@ -12,10 +13,24 @@ export default function MemberListPage() {
       </div>
 
       {/* 회원 카테고리 */}
-      <div className="flex items-center gap-2 text-sm font-medium mb-4">
+      <div className="flex items-center gap-2 text-sm font-medium mb-2">
         <button className="py-2 rounded-md bg-slate-200 flex-1">전체</button>
         <button className="py-2 rounded-md bg-slate-200 flex-1">여자</button>
         <button className="py-2 rounded-md bg-slate-200 flex-1">남자</button>
+      </div>
+
+      {/* 회원 검색 */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="relative w-full">
+          <input
+            type="text"
+            placeholder="닉네임 입력"
+            className="w-full p-2 pr-9 rounded-md border border-gray-300 focus:outline-none"
+          />
+          <button className="absolute right-3 top-1/2 -translate-y-1/2">
+            <Search className="text-gray-400 w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* 회원 상세 */}

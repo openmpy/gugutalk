@@ -1,3 +1,5 @@
+import { Search } from "lucide-react";
+
 export default function BanListPage() {
   return (
     <div className="max-w-7xl mx-auto">
@@ -7,6 +9,26 @@ export default function BanListPage() {
         <button className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold">
           추가
         </button>
+      </div>
+
+      {/* 신고 검색 */}
+      <div className="flex items-center gap-2 mb-4">
+        <select className="p-2 rounded-md border border-gray-300 focus:outline-none appearance-none text-center font-medium">
+          <option value="uuid">UUID</option>
+          <option value="nickname">닉네임</option>
+          <option value="phone">휴대폰</option>
+        </select>
+
+        <div className="relative w-full">
+          <input
+            type="text"
+            placeholder="내용 입력"
+            className="w-full p-2 pr-9 rounded-md border border-gray-300 focus:outline-none"
+          />
+          <button className="absolute right-3 top-1/2 -translate-y-1/2">
+            <Search className="text-gray-400 w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* 정지 상세 */}

@@ -1,3 +1,5 @@
+import { Search } from "lucide-react";
+
 export default function ReportListPage() {
   return (
     <div className="max-w-7xl mx-auto">
@@ -10,9 +12,28 @@ export default function ReportListPage() {
       </div>
 
       {/* 신고 분류 */}
-      <div className="flex items-center gap-2 text-sm font-medium mb-4">
+      <div className="flex items-center gap-2 text-sm font-medium mb-2">
         <button className="py-2 rounded-md bg-slate-200 flex-1">보류</button>
         <button className="py-2 rounded-md bg-slate-200 flex-1">완료</button>
+      </div>
+
+      {/* 신고 검색 */}
+      <div className="flex items-center gap-2 mb-4">
+        <select className="p-2 rounded-md border border-gray-300 focus:outline-none appearance-none text-center font-medium">
+          <option value="reporter">신고자</option>
+          <option value="reported">피신고자</option>
+        </select>
+
+        <div className="relative w-full">
+          <input
+            type="text"
+            placeholder="닉네임 입력"
+            className="w-full p-2 pr-9 rounded-md border border-gray-300 focus:outline-none"
+          />
+          <button className="absolute right-3 top-1/2 -translate-y-1/2">
+            <Search className="text-gray-400 w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* 신고 상세 */}
