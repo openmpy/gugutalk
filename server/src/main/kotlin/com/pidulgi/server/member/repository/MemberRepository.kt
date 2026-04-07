@@ -19,6 +19,20 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberCustomRepository
         value = """
             SELECT *
             FROM member m
+            ORDER BY m.updated_at DESC, m.id DESC
+            LIMIT :size OFFSET :offset
+        """,
+        nativeQuery = true
+    )
+    fun findAllByPage(
+        @Param("offset") offset: Int,
+        @Param("size") size: Int
+    ): List<Member>
+
+    @Query(
+        value = """
+            SELECT *
+            FROM member m
             WHERE m.deleted_at IS NOT NULL
             AND m.deleted_at <= :deletedAt
         """,
