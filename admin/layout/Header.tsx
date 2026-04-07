@@ -11,13 +11,19 @@ export default function Header() {
               href="/member"
               className="text-white text-lg font-semibold hover:text-slate-300"
             >
-              회원 목록
+              회원
+            </Link>
+            <Link
+              href="/report"
+              className="text-white text-lg font-semibold hover:text-slate-300"
+            >
+              신고
             </Link>
             <Link
               href="/ban"
               className="text-white text-lg font-semibold hover:text-slate-300"
             >
-              정지 목록
+              정지
             </Link>
           </div>
         </div>
