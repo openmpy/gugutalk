@@ -11,6 +11,8 @@ import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.point.repository.PointRepository
+import com.pidulgi.server.point.type.PointSource
 import com.pidulgi.server.social.repository.BlockRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
@@ -27,6 +29,7 @@ class ChatRoomService(
     private val chatRoomRepository: ChatRoomRepository,
     private val messageRepository: MessageRepository,
     private val memberRepository: MemberRepository,
+    private val pointRepository: PointRepository,
     private val blockRepository: BlockRepository,
     private val messagingTemplate: SimpMessagingTemplate,
 ) {
@@ -43,9 +46,17 @@ class ChatRoomService(
             throw CustomException("차단된 회원입니다.")
         }
 
+        val point = (pointRepository.findByMemberId(senderId)
+            ?: throw CustomException("존재하지 않는 포인트 정보입니다."))
+
+        if (point.balance < PointSource.SEND_MESSAGE.point) {
+            throw CustomException("포인트가 부족합니다.")
+        }
+
         val chatRoom = findChatRoom(senderId, targetId)
             ?: chatRoomRepository.save(ChatRoom.of(senderId, targetId))
 
+        point.use(PointSource.SEND_MESSAGE.point)
         return ChatRoomCreateResponse(chatRoom.id)
     }
 
