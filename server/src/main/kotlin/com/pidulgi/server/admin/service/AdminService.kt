@@ -1,10 +1,16 @@
 package com.pidulgi.server.admin.service
 
+import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse
+import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse.AdminGetMemberImageResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
 import com.pidulgi.server.common.dto.PageResponse
-import com.pidulgi.server.member.entity.type.Gender
+import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.common.s3.S3Service
+import com.pidulgi.server.member.entity.type.ImageType
+import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -14,6 +20,8 @@ class AdminService(
     @Value("\${s3.endpoint}") private val endpoint: String,
 
     private val memberRepository: MemberRepository,
+    private val memberImageRepository: MemberImageRepository,
+    private val s3Service: S3Service,
 ) {
 
     @Transactional(readOnly = true)
@@ -44,6 +52,52 @@ class AdminService(
             payload = items,
             page = page,
             hasNext = hasNext
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getMember(memberId: Long): AdminGetMemberDetailResponse {
+        val member = (memberRepository.findByIdOrNull(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+
+        val publicImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
+            memberId, ImageType.PUBLIC
+        ).map {
+            AdminGetMemberImageResponse(
+                it.id,
+                url = "$endpoint${it.key}",
+                it.key,
+                it.type,
+                it.sortOrder,
+                it.createdAt
+            )
+        }
+        val privateImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
+            memberId, ImageType.PRIVATE
+        ).map {
+            AdminGetMemberImageResponse(
+                it.id,
+                url = s3Service.getPresignedUrl(it.key),
+                it.key,
+                it.type,
+                it.sortOrder,
+                it.createdAt
+            )
+        }
+
+        return AdminGetMemberDetailResponse(
+            memberId = member.id,
+            uuid = member.uuid,
+            phoneNumber = member.phoneNumber,
+            nickname = member.nickname,
+            birthYear = member.birthYear,
+            gender = member.gender,
+            bio = member.bio,
+            comment = member.comment,
+            createdAt = member.createdAt,
+            updatedAt = member.updatedAt,
+            deletedAt = member.deletedAt,
+            images = publicImages + privateImages,
         )
     }
 }

@@ -1,42 +1,13 @@
 import RefreshButton from "@/components/RefreshButton";
+import { AdminGetMemberResponse } from "@/types/AdminGetMemberResponse";
 import { PageResponse } from "@/types/PageResponse";
-import { Search } from "lucide-react";
+import { formatDate } from "@/utils/formatDate";
+import { Search, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-
-type AdminMemberGetResponse = {
-  memberId: number;
-  profileUrl: string | null;
-  nickname: string;
-  age: number;
-  gender: "MALE" | "FEMALE";
-  comment: string | null;
-  updatedAt: string;
-  deletedAt: string | null;
-};
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
-
-function formatGender(gender: AdminMemberGetResponse["gender"]) {
-  return gender === "MALE" ? "남자" : "여자";
-}
-
-function formatDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "-";
-  }
-
-  return date.toLocaleString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hourCycle: "h23",
-  });
-}
 
 type GenderFilter = "ALL" | "MALE" | "FEMALE";
 
@@ -65,7 +36,7 @@ async function getMembers(page: number, size: number, gender: GenderFilter) {
     throw new Error("회원 목록을 불러오지 못했습니다.");
   }
 
-  return (await response.json()) as PageResponse<AdminMemberGetResponse>;
+  return (await response.json()) as PageResponse<AdminGetMemberResponse>;
 }
 
 export default async function MemberListPage({
@@ -142,17 +113,20 @@ export default async function MemberListPage({
         ) : (
           data.payload.map((member) => (
             <div key={member.memberId} className="flex items-center gap-3">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-slate-100">
+              <div className="shrink-0 w-20 md:w-16 aspect-square relative">
                 {member.profileUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={member.profileUrl}
                     alt={member.nickname}
-                    className="w-full h-full rounded-full object-cover"
+                    fill
+                    sizes="(max-width: 640px) 80px, (max-width: 768px) 112px, 128px"
+                    className="rounded-full object-cover"
+                    placeholder="blur"
+                    blurDataURL={member.profileUrl}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
-                    이미지 없음
+                  <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 bg-slate-100 rounded-full">
+                    <X className="w-4 h-4" />
                   </div>
                 )}
               </div>
@@ -169,9 +143,12 @@ export default async function MemberListPage({
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">{member.comment}</p>
+                  <p className="text-sm text-gray-500 line-clamp-1">
+                    {member.comment}
+                  </p>
                   <p className="text-sm text-gray-500">
-                    {formatGender(member.gender)} · {member.age}살
+                    {member.gender === "MALE" ? "남자" : "여자"} · {member.age}
+                    살
                   </p>
                   <p className="text-sm text-gray-500 md:hidden">
                     {formatDate(member.updatedAt)}

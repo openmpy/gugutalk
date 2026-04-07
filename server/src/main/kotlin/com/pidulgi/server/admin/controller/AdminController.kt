@@ -1,13 +1,11 @@
 package com.pidulgi.server.admin.controller
 
+import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
 import com.pidulgi.server.admin.service.AdminService
 import com.pidulgi.server.common.dto.PageResponse
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RequestMapping("/api")
 @RestController
@@ -23,6 +21,14 @@ class AdminController(
         @RequestParam(value = "size", defaultValue = "20") size: Int,
     ): ResponseEntity<PageResponse<AdminGetMemberResponse>> {
         val response = adminService.getMembers(gender, page, size)
+        return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/v1/admin/members/{memberId}")
+    fun getMember(
+        @PathVariable memberId: Long,
+    ): ResponseEntity<AdminGetMemberDetailResponse> {
+        val response = adminService.getMember(memberId)
         return ResponseEntity.ok(response)
     }
 }
