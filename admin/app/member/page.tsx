@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function MemberListPage() {
   return (
@@ -50,39 +51,13 @@ export default function MemberListPage() {
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <p className="font-bold">닉네임</p>
+              <Link href={`/member/${1}`} className="font-bold">
+                닉네임
+              </Link>
               <p className="text-sm text-gray-500">최근 접속일</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">코멘트</p>
-              <p className="text-sm text-gray-500">성별 · 20살 · ♥ 100</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="w-20 h-20 rounded-full overflow-hidden">
-            <Image
-              width={200}
-              height={200}
-              src="https://picsum.photos/200"
-              alt="profile"
-              className="w-full h-full rounded-full"
-              placeholder="blur"
-              blurDataURL="https://picsum.photos/200"
-              loading="lazy"
-            />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <p className="font-bold">닉네임</p>
-              <p className="text-sm text-gray-500">최근 접속일</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 line-clamp-2">
-                코멘트 코멘트 코멘트 코멘트 코멘트 코멘트 코멘트 코멘트 코멘트
-                코멘트 코멘트 코멘트 코멘트 코멘트 코멘트 코멘트 코멘트 코멘트
-              </p>
               <p className="text-sm text-gray-500">성별 · 20살 · ♥ 100</p>
             </div>
           </div>
