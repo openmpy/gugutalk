@@ -25,7 +25,7 @@ export default function ReportListPage() {
           <div>
             <p className="text-sm text-gray-500">신고자: 유재석</p>
             <p className="text-sm text-gray-500">피신고자: 박명수</p>
-            <p className="text-sm text-gray-500 line-clamp-2">내용: 내용</p>
+            <p className="text-sm text-gray-500 line-clamp-2">사유: 내용</p>
           </div>
         </div>
         <div>
@@ -36,7 +36,7 @@ export default function ReportListPage() {
           <div>
             <p className="text-sm text-gray-500">신고자: 유재석</p>
             <p className="text-sm text-gray-500">피신고자: 박명수</p>
-            <p className="text-sm text-gray-500 line-clamp-2">내용: 내용</p>
+            <p className="text-sm text-gray-500 line-clamp-2">사유: 내용</p>
           </div>
         </div>
       </div>
