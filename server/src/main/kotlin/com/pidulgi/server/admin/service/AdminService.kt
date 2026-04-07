@@ -125,4 +125,36 @@ class AdminService(
 
         member.updateBio("부적절한 자기소개 내용입니다.")
     }
+
+    @Transactional(readOnly = true)
+    fun searchMembers(
+        keyword: String,
+        gender: String,
+        page: Int,
+        size: Int
+    ): PageResponse<AdminGetMemberResponse> {
+        val offset = page * size
+        val result = memberRepository.findAllByNicknamePage(keyword, gender, offset, size + 1)
+            .map {
+                AdminGetMemberResponse(
+                    memberId = it.id,
+                    profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
+                    nickname = it.nickname,
+                    age = LocalDate.now().year - it.birthYear,
+                    gender = it.gender,
+                    comment = it.comment,
+                    updatedAt = it.updatedAt,
+                    deletedAt = it.deletedAt
+                )
+            }
+
+        val hasNext = result.size > size
+        val items = if (hasNext) result.dropLast(1) else result
+
+        return PageResponse(
+            payload = items,
+            page = page,
+            hasNext = hasNext
+        )
+    }
 }

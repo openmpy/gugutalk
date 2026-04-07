@@ -18,17 +18,35 @@ function parseGender(value: string | undefined): GenderFilter {
   return "ALL";
 }
 
-function memberListQuery(page: number, size: number, gender: GenderFilter) {
+function memberListQuery(
+  page: number,
+  size: number,
+  gender: GenderFilter,
+  keyword?: string,
+) {
   const sp = new URLSearchParams();
   sp.set("gender", gender.toUpperCase());
   sp.set("page", String(page));
   sp.set("size", String(size));
+  const trimmed = keyword?.trim();
+  if (trimmed) {
+    sp.set("keyword", trimmed);
+  }
   return sp.toString();
 }
 
-async function getMembers(page: number, size: number, gender: GenderFilter) {
-  const qs = memberListQuery(page, size, gender);
-  const response = await fetch(`${API_BASE_URL}/api/v1/admin/members?${qs}`, {
+async function getMembers(
+  page: number,
+  size: number,
+  gender: GenderFilter,
+  keyword?: string,
+) {
+  const trimmed = keyword?.trim();
+  const qs = memberListQuery(page, size, gender, keyword);
+  const path = trimmed
+    ? `${API_BASE_URL}/api/v1/admin/members/search`
+    : `${API_BASE_URL}/api/v1/admin/members`;
+  const response = await fetch(`${path}?${qs}`, {
     cache: "no-store",
   });
 
@@ -42,7 +60,12 @@ async function getMembers(page: number, size: number, gender: GenderFilter) {
 export default async function MemberListPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ page?: string; size?: string; gender?: string }>;
+  searchParams?: Promise<{
+    page?: string;
+    size?: string;
+    gender?: string;
+    keyword?: string;
+  }>;
 }) {
   const params = await searchParams;
   const page = Number(params?.page ?? "0");
@@ -50,7 +73,13 @@ export default async function MemberListPage({
   const currentPage = Number.isNaN(page) || page < 0 ? 0 : page;
   const currentSize = Number.isNaN(size) || size <= 0 ? 20 : size;
   const currentGender = parseGender(params?.gender);
-  const data = await getMembers(currentPage, currentSize, currentGender);
+  const currentKeyword = params?.keyword?.trim() ?? "";
+  const data = await getMembers(
+    currentPage,
+    currentSize,
+    currentGender,
+    currentKeyword || undefined,
+  );
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -63,7 +92,7 @@ export default async function MemberListPage({
       {/* 회원 카테고리 */}
       <div className="flex items-center gap-2 text-sm font-medium mb-2">
         <Link
-          href={`/member?${memberListQuery(0, currentSize, "ALL")}`}
+          href={`/member?${memberListQuery(0, currentSize, "ALL", currentKeyword)}`}
           className={`py-2 rounded-md flex-1 text-center ${
             currentGender === "ALL" ? "bg-slate-500 text-white" : "bg-slate-200"
           }`}
@@ -71,7 +100,7 @@ export default async function MemberListPage({
           전체
         </Link>
         <Link
-          href={`/member?${memberListQuery(0, currentSize, "FEMALE")}`}
+          href={`/member?${memberListQuery(0, currentSize, "FEMALE", currentKeyword)}`}
           className={`py-2 rounded-md flex-1 text-center ${
             currentGender === "FEMALE"
               ? "bg-slate-500 text-white"
@@ -81,7 +110,7 @@ export default async function MemberListPage({
           여자
         </Link>
         <Link
-          href={`/member?${memberListQuery(0, currentSize, "MALE")}`}
+          href={`/member?${memberListQuery(0, currentSize, "MALE", currentKeyword)}`}
           className={`py-2 rounded-md flex-1 text-center ${
             currentGender === "MALE"
               ? "bg-slate-500 text-white"
@@ -93,18 +122,26 @@ export default async function MemberListPage({
       </div>
 
       {/* 회원 검색 */}
-      <div className="flex items-center gap-2 mb-4">
+      <form method="get" action="/member" className="mb-4">
         <div className="relative w-full">
           <input
             type="text"
+            name="keyword"
+            defaultValue={currentKeyword}
             placeholder="닉네임 입력"
             className="w-full p-2 pr-9 rounded-md border border-gray-300 focus:outline-none"
           />
-          <button className="absolute right-3 top-1/2 -translate-y-1/2">
+          <input type="hidden" name="gender" value={currentGender} />
+          <input type="hidden" name="size" value={String(currentSize)} />
+          <button
+            type="submit"
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+            aria-label="검색"
+          >
             <Search className="text-gray-400 w-4 h-4" />
           </button>
         </div>
-      </div>
+      </form>
 
       {/* 회원 상세 */}
       <div className="flex flex-col gap-4">
@@ -163,7 +200,7 @@ export default async function MemberListPage({
       <div className="flex justify-center gap-2 mt-6">
         {currentPage > 0 && (
           <Link
-            href={`/member?${memberListQuery(currentPage - 1, currentSize, currentGender)}`}
+            href={`/member?${memberListQuery(currentPage - 1, currentSize, currentGender, currentKeyword)}`}
             className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold"
           >
             이전
@@ -171,7 +208,7 @@ export default async function MemberListPage({
         )}
         {data.hasNext && (
           <Link
-            href={`/member?${memberListQuery(currentPage + 1, currentSize, currentGender)}`}
+            href={`/member?${memberListQuery(currentPage + 1, currentSize, currentGender, currentKeyword)}`}
             className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold"
           >
             다음

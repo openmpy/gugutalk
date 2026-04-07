@@ -45,6 +45,24 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberCustomRepository
         value = """
             SELECT *
             FROM member m
+            WHERE m.nickname ILIKE '%' || :keyword || '%'
+                AND (:gender = 'ALL' OR m.gender = :gender)
+            ORDER BY m.updated_at DESC, m.id DESC
+            LIMIT :size OFFSET :offset
+        """,
+        nativeQuery = true
+    )
+    fun findAllByNicknamePage(
+        @Param("keyword") keyword: String,
+        @Param("gender") gender: String,
+        @Param("offset") offset: Int,
+        @Param("size") size: Int
+    ): List<Member>
+
+    @Query(
+        value = """
+            SELECT *
+            FROM member m
             WHERE m.deleted_at IS NOT NULL
             AND m.deleted_at <= :deletedAt
         """,

@@ -55,4 +55,15 @@ class AdminController(
         adminService.updateMemberBio(memberId)
         return ResponseEntity.ok().build()
     }
+
+    @GetMapping("/v1/admin/members/search")
+    fun searchMembers(
+        @RequestParam(value = "keyword", required = true) keyword: String,
+        @RequestParam(value = "gender", defaultValue = "ALL") gender: String,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+    ): ResponseEntity<PageResponse<AdminGetMemberResponse>> {
+        val response = adminService.searchMembers(keyword, gender, page, size)
+        return ResponseEntity.ok(response)
+    }
 }
