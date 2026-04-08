@@ -89,7 +89,7 @@ class DummyDataInit {
                         gender = if (i % 2 == 0) Gender.MALE else Gender.FEMALE,
                         birthYear = MemberBirthYear(1993 + (i % 12)),
                         bio = MemberBio("자기소개$i"),
-                        comment = "코멘트$i",
+                        comment = MemberComment("코멘트$i"),
                     ).also { it.bump(location) }
                 }
                 memberRepository.saveAll(members)

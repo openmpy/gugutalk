@@ -66,8 +66,12 @@ class Member(
     )
     var bio: MemberBio? = null,
 
-    @Column(name = "comment", length = 100, nullable = false)
-    var comment: String = "반갑습니다.",
+    @Embedded
+    @AttributeOverride(
+        name = "value",
+        column = Column(name = "comment", length = 100, nullable = true)
+    )
+    var comment: MemberComment = MemberComment("반갑습니다."),
 
     @Column(columnDefinition = "geography(Point,4326)")
     var location: Point? = null,
@@ -116,7 +120,7 @@ class Member(
     }
 
     fun updateComment(comment: String) {
-        this.comment = comment
+        this.comment = MemberComment(comment)
         this.updatedAt = LocalDateTime.now()
     }
 

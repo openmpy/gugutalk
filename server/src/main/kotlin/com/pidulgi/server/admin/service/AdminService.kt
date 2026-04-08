@@ -48,7 +48,7 @@ class AdminService(
                     nickname = it.nickname.value,
                     age = LocalDate.now().year - it.birthYear.value,
                     gender = it.gender,
-                    comment = it.comment,
+                    comment = it.comment.value,
                     updatedAt = it.updatedAt,
                     deletedAt = it.deletedAt
                 )
@@ -102,7 +102,7 @@ class AdminService(
             birthYear = member.birthYear.value,
             gender = member.gender,
             bio = member.bio?.value,
-            comment = member.comment,
+            comment = member.comment.value,
             createdAt = member.createdAt,
             updatedAt = member.updatedAt,
             deletedAt = member.deletedAt,
@@ -151,7 +151,7 @@ class AdminService(
                     nickname = it.nickname.value,
                     age = LocalDate.now().year - it.birthYear.value,
                     gender = it.gender,
-                    comment = it.comment,
+                    comment = it.comment.value,
                     updatedAt = it.updatedAt,
                     deletedAt = it.deletedAt
                 )
