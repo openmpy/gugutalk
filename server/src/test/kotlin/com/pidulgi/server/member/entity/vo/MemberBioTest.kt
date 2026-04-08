@@ -10,7 +10,7 @@ class MemberBioTest : ShouldSpec({
         MemberBio("반갑습니다.").value shouldBe "반갑습니다."
     }
 
-    should("자기소개가 1000자 이상이면 예외가 발생한다.") {
+    should("자기소개가 1000자 초과이면 예외가 발생한다.") {
         shouldThrow<IllegalArgumentException> {
             MemberBio("가".repeat(1001))
         }.message shouldBe "자기소개는 최대 1000자 이하여야 합니다."
