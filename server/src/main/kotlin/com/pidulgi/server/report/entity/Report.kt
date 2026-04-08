@@ -39,7 +39,7 @@ class Report(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    val status: ReportStatus = ReportStatus.PENDING,
+    var status: ReportStatus = ReportStatus.PENDING,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
@@ -50,4 +50,9 @@ class Report(
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) {
+
+    fun updateStatus(reportStatus: ReportStatus) {
+        this.status = reportStatus
+    }
+}

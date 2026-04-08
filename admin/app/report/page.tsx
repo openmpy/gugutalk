@@ -3,12 +3,15 @@ import { AdminGetReportResponse } from "@/types/AdminGetReportResponse";
 import { PageResponse } from "@/types/PageResponse";
 import { formatDate } from "@/utils/formatDate";
 import { reportTypeLabel } from "@/utils/reportTypeLabel";
+import { Search } from "lucide-react";
 import Link from "next/link";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
 type ReportStatusFilter = "PENDING" | "REJECT" | "RESOLVE";
+
+type ReportNickTarget = "reporter" | "reported";
 
 function parseStatus(value: string | undefined): ReportStatusFilter {
   if (value === "REJECT" || value === "RESOLVE") {
@@ -17,15 +20,31 @@ function parseStatus(value: string | undefined): ReportStatusFilter {
   return "PENDING";
 }
 
+function parseNickTarget(value: string | undefined): ReportNickTarget {
+  if (value === "reported") {
+    return "reported";
+  }
+  return "reporter";
+}
+
 function reportListQuery(
   page: number,
   size: number,
   status: ReportStatusFilter,
+  keyword?: string,
+  nickTarget?: ReportNickTarget,
 ) {
   const sp = new URLSearchParams();
   sp.set("status", status);
   sp.set("page", String(page));
   sp.set("size", String(size));
+  const trimmed = keyword?.trim();
+  if (trimmed) {
+    sp.set("keyword", trimmed);
+  }
+  if (nickTarget === "reported") {
+    sp.set("nickTarget", "reported");
+  }
   return sp.toString();
 }
 
@@ -53,6 +72,8 @@ export default async function ReportListPage({
     page?: string;
     size?: string;
     status?: string;
+    keyword?: string;
+    nickTarget?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -61,6 +82,8 @@ export default async function ReportListPage({
   const currentPage = Number.isNaN(page) || page < 0 ? 0 : page;
   const currentSize = Number.isNaN(size) || size <= 0 ? 20 : size;
   const currentStatus = parseStatus(params?.status);
+  const currentKeyword = params?.keyword?.trim() ?? "";
+  const currentNickTarget = parseNickTarget(params?.nickTarget);
   const data = await getReports(currentPage, currentSize, currentStatus);
 
   return (
@@ -72,9 +95,9 @@ export default async function ReportListPage({
       </div>
 
       {/* 신고 분류 */}
-      <div className="flex items-center gap-2 text-sm font-medium mb-4">
+      <div className="flex items-center gap-2 text-sm font-medium mb-2">
         <Link
-          href={`/report?${reportListQuery(0, currentSize, "PENDING")}`}
+          href={`/report?${reportListQuery(0, currentSize, "PENDING", currentKeyword, currentNickTarget)}`}
           className={`py-2 rounded-md flex-1 text-center ${
             currentStatus === "PENDING"
               ? "bg-slate-500 text-white"
@@ -84,17 +107,17 @@ export default async function ReportListPage({
           접수
         </Link>
         <Link
-          href={`/report?${reportListQuery(0, currentSize, "REJECT")}`}
+          href={`/report?${reportListQuery(0, currentSize, "REJECT", currentKeyword, currentNickTarget)}`}
           className={`py-2 rounded-md flex-1 text-center ${
             currentStatus === "REJECT"
               ? "bg-slate-500 text-white"
               : "bg-slate-200"
           }`}
         >
-          보류
+          반려
         </Link>
         <Link
-          href={`/report?${reportListQuery(0, currentSize, "RESOLVE")}`}
+          href={`/report?${reportListQuery(0, currentSize, "RESOLVE", currentKeyword, currentNickTarget)}`}
           className={`py-2 rounded-md flex-1 text-center ${
             currentStatus === "RESOLVE"
               ? "bg-slate-500 text-white"
@@ -104,6 +127,39 @@ export default async function ReportListPage({
           처리
         </Link>
       </div>
+
+      {/* 신고 검색 */}
+      <form method="get" action="/report" className="mb-4">
+        <div className="flex items-center gap-2">
+          <select
+            name="nickTarget"
+            defaultValue={currentNickTarget}
+            className="p-2 rounded-md border border-gray-300 focus:outline-none appearance-none text-center font-medium shrink-0"
+          >
+            <option value="reporter">신고자</option>
+            <option value="reported">피신고자</option>
+          </select>
+
+          <div className="relative w-full min-w-0">
+            <input
+              type="text"
+              name="keyword"
+              defaultValue={currentKeyword}
+              placeholder="닉네임 입력"
+              className="w-full p-2 pr-9 rounded-md border border-gray-300 focus:outline-none"
+            />
+            <input type="hidden" name="status" value={currentStatus} />
+            <input type="hidden" name="size" value={String(currentSize)} />
+            <button
+              type="submit"
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              aria-label="검색"
+            >
+              <Search className="text-gray-400 w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </form>
 
       {/* 신고 상세 */}
       <div className="flex flex-col gap-4">
@@ -139,7 +195,7 @@ export default async function ReportListPage({
       <div className="flex justify-center gap-2 mt-6">
         {currentPage > 0 && (
           <Link
-            href={`/report?${reportListQuery(currentPage - 1, currentSize, currentStatus)}`}
+            href={`/report?${reportListQuery(currentPage - 1, currentSize, currentStatus, currentKeyword, currentNickTarget)}`}
             className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold"
           >
             이전
@@ -147,7 +203,7 @@ export default async function ReportListPage({
         )}
         {data.hasNext && (
           <Link
-            href={`/report?${reportListQuery(currentPage + 1, currentSize, currentStatus)}`}
+            href={`/report?${reportListQuery(currentPage + 1, currentSize, currentStatus, currentKeyword, currentNickTarget)}`}
             className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold"
           >
             다음

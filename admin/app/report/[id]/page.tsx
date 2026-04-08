@@ -1,3 +1,4 @@
+import ReportStatusButtons from "@/components/ReportStatusButtons";
 import { AdminGetReportDetailResponse } from "@/types/AdminGetReportDetailResponse";
 import { formatDate } from "@/utils/formatDate";
 import { reportTypeLabel } from "@/utils/reportTypeLabel";
@@ -20,6 +21,19 @@ async function getReportDetail(reportId: string) {
   return (await response.json()) as AdminGetReportDetailResponse;
 }
 
+function reportStatusLabel(status: AdminGetReportDetailResponse["status"]) {
+  switch (status) {
+    case "PENDING":
+      return "접수";
+    case "REJECT":
+      return "반려";
+    case "RESOLVE":
+      return "처리";
+    default:
+      return status;
+  }
+}
+
 export default async function ReportDetailPage({
   params,
 }: {
@@ -36,12 +50,7 @@ export default async function ReportDetailPage({
         <h1 className="text-2xl font-bold">{reportTypeLabel(data.type)}</h1>
       </div>
       <div className="flex items-center gap-2 mb-4">
-        <button className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold">
-          보류
-        </button>
-        <button className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold">
-          처리
-        </button>
+        <ReportStatusButtons reportId={id} currentStatus={data.status} />
         <button className="px-4 py-2 rounded-md bg-red-500 text-sm font-semibold text-white">
           정지
         </button>
@@ -52,6 +61,9 @@ export default async function ReportDetailPage({
         <div>
           <h2 className="text-lg font-medium">정보</h2>
           <p className="text-gray-500">ID: {data.reportId}</p>
+          <p className="text-gray-500">
+            상태: {reportStatusLabel(data.status)}
+          </p>
           <hr className="my-2 border-gray-200" />
           <p className="text-gray-500">신고자 ID: {data.reporterId}</p>
           <p className="text-gray-500">신고자 UUID: {data.reporterUuid}</p>

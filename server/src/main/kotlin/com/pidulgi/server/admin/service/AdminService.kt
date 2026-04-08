@@ -12,6 +12,7 @@ import com.pidulgi.server.common.s3.S3Service
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.report.entity.type.ReportStatus
 import com.pidulgi.server.report.repository.ReportImageRepository
 import com.pidulgi.server.report.repository.ReportRepository
 import org.springframework.beans.factory.annotation.Value
@@ -234,6 +235,7 @@ class AdminService(
 
         return AdminGetReportDetailResponse(
             reportId = reportId,
+            status = report.status,
             type = report.type,
             reporterId = report.reporterId,
             reporterUuid = report.reporterUuid,
@@ -247,5 +249,13 @@ class AdminService(
             createdAt = report.createdAt,
             images = reportImages
         )
+    }
+
+    @Transactional
+    fun updateReport(reportId: Long, reportStatus: String) {
+        val report = (reportRepository.findByIdOrNull(reportId)
+            ?: throw CustomException("존재하지 않는 신고입니다."))
+
+        report.updateStatus(ReportStatus.valueOf(reportStatus))
     }
 }

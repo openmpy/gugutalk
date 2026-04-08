@@ -1,5 +1,7 @@
 import type { ReportType } from "./AdminGetReportResponse";
 
+export type ReportStatus = "PENDING" | "REJECT" | "RESOLVE";
+
 export type AdminGetReportImageResponse = {
   imageId: number;
   url: string;
@@ -10,6 +12,7 @@ export type AdminGetReportImageResponse = {
 
 export type AdminGetReportDetailResponse = {
   reportId: number;
+  status: ReportStatus;
   type: ReportType;
   reporterId: number;
   reporterUuid: string;
