@@ -2,10 +2,7 @@ package com.pidulgi.server.member.entity
 
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.type.MemberRole
-import com.pidulgi.server.member.entity.vo.MemberNickname
-import com.pidulgi.server.member.entity.vo.MemberPassword
-import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
-import com.pidulgi.server.member.entity.vo.MemberUuid
+import com.pidulgi.server.member.entity.vo.*
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
 import org.locationtech.jts.geom.Point
@@ -51,8 +48,12 @@ class Member(
     )
     var nickname: MemberNickname,
 
-    @Column(name = "birth_year", nullable = false)
-    var birthYear: Int = 2000,
+    @Embedded
+    @AttributeOverride(
+        name = "value",
+        column = Column(name = "birth_year", nullable = false)
+    )
+    var birthYear: MemberBirthYear = MemberBirthYear(2000),
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", nullable = false)
@@ -87,7 +88,7 @@ class Member(
     fun activate(profileKey: String?, nickname: String, birthYear: Int, bio: String?) {
         this.profileKey = profileKey
         this.nickname = MemberNickname(nickname)
-        this.birthYear = birthYear
+        this.birthYear = MemberBirthYear(birthYear)
         this.bio = bio
     }
 
@@ -118,7 +119,7 @@ class Member(
     fun updateProfile(profileKey: String?, nickname: String, birthYear: Int, bio: String?) {
         this.profileKey = profileKey
         this.nickname = MemberNickname(nickname)
-        this.birthYear = birthYear
+        this.birthYear = MemberBirthYear(birthYear)
         this.bio = bio
         this.updatedAt = LocalDateTime.now()
     }

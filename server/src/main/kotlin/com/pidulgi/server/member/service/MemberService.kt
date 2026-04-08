@@ -86,8 +86,8 @@ class MemberService(
             privateImagesResponse,
             member.nickname.value,
             member.gender,
-            LocalDate.now().year - member.birthYear,
-            member.birthYear,
+            LocalDate.now().year - member.birthYear.value,
+            member.birthYear.value,
             member.bio,
             likes
         )
@@ -119,7 +119,7 @@ class MemberService(
             images = images,
             nickname = member.nickname.value,
             gender = member.gender,
-            age = LocalDate.now().year - member.birthYear,
+            age = LocalDate.now().year - member.birthYear.value,
             bio = member.bio,
             likes = likes,
             distance = distance,
