@@ -97,7 +97,7 @@ class AdminService(
         return AdminGetMemberDetailResponse(
             memberId = member.id,
             uuid = member.uuid.value,
-            phoneNumber = member.phoneNumber,
+            phoneNumber = member.phoneNumber.value,
             nickname = member.nickname,
             birthYear = member.birthYear,
             gender = member.gender,

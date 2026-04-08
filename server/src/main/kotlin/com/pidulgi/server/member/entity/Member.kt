@@ -2,6 +2,7 @@ package com.pidulgi.server.member.entity
 
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.type.MemberRole
+import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import com.pidulgi.server.member.entity.vo.MemberUuid
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
@@ -24,8 +25,12 @@ class Member(
     )
     val uuid: MemberUuid,
 
-    @Column(name = "phone_number", nullable = false)
-    val phoneNumber: String,
+    @Embedded
+    @AttributeOverride(
+        name = "value",
+        column = Column(name = "phone_number", nullable = false)
+    )
+    val phoneNumber: MemberPhoneNumber,
 
     @Column(name = "password", nullable = false)
     val password: String,

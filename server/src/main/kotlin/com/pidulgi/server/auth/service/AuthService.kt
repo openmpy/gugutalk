@@ -14,6 +14,7 @@ import com.pidulgi.server.common.util.SmsSender
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
+import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import com.pidulgi.server.member.entity.vo.MemberUuid
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
@@ -118,7 +119,7 @@ class AuthService(
 
         val member = Member(
             uuid = MemberUuid(request.uuid),
-            phoneNumber = request.phoneNumber,
+            phoneNumber = MemberPhoneNumber(request.phoneNumber),
             password = request.password,
             nickname = UUID.randomUUID().toString().replace("-", "").substring(0, 10),
             gender = request.gender,

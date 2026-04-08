@@ -31,12 +31,12 @@ class ReportService(
         val report = Report(
             reporterId = reporter.id,
             reporterUuid = reporter.uuid.value,
-            reporterPhoneNumber = reporter.phoneNumber,
+            reporterPhoneNumber = reporter.phoneNumber.value,
             reporterNickname = reporter.nickname,
 
             reportedId = reported.id,
             reportedUuid = reported.uuid.value,
-            reportedPhoneNumber = reported.phoneNumber,
+            reportedPhoneNumber = reported.phoneNumber.value,
             reportedNickname = reported.nickname,
 
             type = request.type,

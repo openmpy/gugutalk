@@ -91,7 +91,7 @@ class BanService(
         return member?.let { m ->
             BanGetMemberResponse(
                 nickname = m.nickname,
-                phoneNumber = m.phoneNumber,
+                phoneNumber = m.phoneNumber.value,
             )
         } ?: BanGetMemberResponse(
             nickname = null,
