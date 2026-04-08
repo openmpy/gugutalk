@@ -18,7 +18,12 @@ function parseSearchField(value: string | undefined): BanSearchField {
   return "uuid";
 }
 
-function banListQuery(page: number, size: number, field: BanSearchField, keyword: string) {
+function banListQuery(
+  page: number,
+  size: number,
+  field: BanSearchField,
+  keyword: string,
+) {
   const sp = new URLSearchParams();
   sp.set("page", String(page));
   sp.set("size", String(size));
@@ -90,11 +95,7 @@ export default async function BanListPage({
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">정지 목록</h1>
         <div className="flex items-center gap-2">
-          <SuspendModalButton
-            uuid=""
-            nickname=""
-            phoneNumber=""
-          />
+          <SuspendModalButton uuid="" nickname="" phoneNumber="" />
         </div>
       </div>
 
@@ -107,7 +108,6 @@ export default async function BanListPage({
           >
             <option value="uuid">UUID</option>
             <option value="nickname">닉네임</option>
-            <option value="reason">사유</option>
           </select>
 
           <div className="relative w-full min-w-0">
