@@ -104,4 +104,16 @@ class AdminController(
         adminService.updateReport(reportId, status)
         return ResponseEntity.ok().build()
     }
+
+    @GetMapping("/v1/admin/reports/search")
+    fun searchReports(
+        @RequestParam(value = "type", defaultValue = "REPORTER") type: String,
+        @RequestParam(value = "keyword", required = true) keyword: String,
+        @RequestParam(value = "status", defaultValue = "PENDING") status: String,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+    ): ResponseEntity<PageResponse<AdminGetReportResponse>> {
+        val response = adminService.searchReports(type, keyword, status, page, size)
+        return ResponseEntity.ok(response)
+    }
 }

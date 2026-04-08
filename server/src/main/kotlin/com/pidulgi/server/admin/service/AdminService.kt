@@ -258,4 +258,38 @@ class AdminService(
 
         report.updateStatus(ReportStatus.valueOf(reportStatus))
     }
+
+    @Transactional(readOnly = true)
+    fun searchReports(
+        type: String,
+        keyword: String,
+        status: String,
+        page: Int,
+        size: Int
+    ): PageResponse<AdminGetReportResponse> {
+        val offset = page * size
+        val result = if (type.equals("reporter", ignoreCase = true)) {
+            reportRepository.findAllByReporterNicknamePage(keyword, status, offset, size + 1)
+        } else {
+            reportRepository.findAllByReportedNicknamePage(keyword, status, offset, size + 1)
+        }.map {
+            AdminGetReportResponse(
+                reportId = it.id,
+                type = it.type,
+                reporterNickname = it.reporterNickname,
+                reportedNickname = it.reportedNickname,
+                reason = it.reason,
+                createdAt = it.createdAt,
+            )
+        }
+
+        val hasNext = result.size > size
+        val items = if (hasNext) result.dropLast(1) else result
+
+        return PageResponse(
+            payload = items,
+            page = page,
+            hasNext = hasNext
+        )
+    }
 }

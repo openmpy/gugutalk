@@ -69,7 +69,7 @@ export default function ReportStatusButtons({
         type="button"
         onClick={onReject}
         disabled={busy || currentStatus === "REJECT"}
-        className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold disabled:opacity-50"
+        className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold disabled:bg-slate-500 disabled:text-white"
       >
         {pending === "REJECT" ? "처리중" : "반려"}
       </button>
@@ -77,7 +77,7 @@ export default function ReportStatusButtons({
         type="button"
         onClick={onResolve}
         disabled={busy || currentStatus === "RESOLVE"}
-        className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold disabled:opacity-50"
+        className="px-4 py-2 rounded-md bg-slate-200 text-sm font-semibold disabled:bg-slate-500 disabled:text-white"
       >
         {pending === "RESOLVE" ? "처리중" : "처리"}
       </button>

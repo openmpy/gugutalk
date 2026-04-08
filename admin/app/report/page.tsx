@@ -48,13 +48,35 @@ function reportListQuery(
   return sp.toString();
 }
 
+function reportSearchQuery(
+  page: number,
+  size: number,
+  status: ReportStatusFilter,
+  keyword: string,
+  nickTarget: ReportNickTarget,
+) {
+  const sp = new URLSearchParams();
+  sp.set("type", nickTarget === "reported" ? "reported" : "reporter");
+  sp.set("keyword", keyword);
+  sp.set("status", status);
+  sp.set("page", String(page));
+  sp.set("size", String(size));
+  return sp.toString();
+}
+
 async function getReports(
   page: number,
   size: number,
   status: ReportStatusFilter,
+  keyword: string,
+  nickTarget: ReportNickTarget,
 ) {
-  const qs = reportListQuery(page, size, status);
-  const response = await fetch(`${API_BASE_URL}/api/v1/admin/reports?${qs}`, {
+  const trimmed = keyword.trim();
+  const path = trimmed
+    ? `/api/v1/admin/reports/search?${reportSearchQuery(page, size, status, trimmed, nickTarget)}`
+    : `/api/v1/admin/reports?${reportListQuery(page, size, status)}`;
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
     cache: "no-store",
   });
 
@@ -84,7 +106,13 @@ export default async function ReportListPage({
   const currentStatus = parseStatus(params?.status);
   const currentKeyword = params?.keyword?.trim() ?? "";
   const currentNickTarget = parseNickTarget(params?.nickTarget);
-  const data = await getReports(currentPage, currentSize, currentStatus);
+  const data = await getReports(
+    currentPage,
+    currentSize,
+    currentStatus,
+    currentKeyword,
+    currentNickTarget,
+  );
 
   return (
     <div className="max-w-7xl mx-auto">
