@@ -1,5 +1,6 @@
 import MemberImageDeleteButton from "@/components/MemberImageDeleteButton";
 import MemberUpdateButtons from "@/components/MemberUpdateButtons";
+import SuspendModalButton from "@/components/SuspendModalButton";
 import { AdminGetMemberDetailResponse } from "@/types/AdminGetMemberDetailResponse";
 import { AdminGetMemberImageResponse } from "@/types/AdminGetMemberImageResponse";
 import { formatDate } from "@/utils/formatDate";
@@ -44,9 +45,11 @@ export default async function MemberDetailPage({
       </div>
       <div className="flex items-center gap-2 mb-4">
         <MemberUpdateButtons memberId={id} />
-        <button className="px-4 py-2 rounded-md bg-red-500 text-sm font-semibold text-white">
-          정지
-        </button>
+        <SuspendModalButton
+          uuid={data.uuid}
+          nickname={data.nickname}
+          phoneNumber={data.phoneNumber}
+        />
       </div>
 
       {/* 회원 정보 */}

@@ -1,4 +1,5 @@
 import ReportStatusButtons from "@/components/ReportStatusButtons";
+import SuspendModalButton from "@/components/SuspendModalButton";
 import { AdminGetReportDetailResponse } from "@/types/AdminGetReportDetailResponse";
 import { formatDate } from "@/utils/formatDate";
 import { reportTypeLabel } from "@/utils/reportTypeLabel";
@@ -51,9 +52,12 @@ export default async function ReportDetailPage({
       </div>
       <div className="flex items-center gap-2 mb-4">
         <ReportStatusButtons reportId={id} currentStatus={data.status} />
-        <button className="px-4 py-2 rounded-md bg-red-500 text-sm font-semibold text-white">
-          정지
-        </button>
+        <SuspendModalButton
+          uuid={data.reportedUuid}
+          nickname={data.reportedNickname}
+          phoneNumber={data.reportedPhone}
+          initialSuspendType={data.type}
+        />
       </div>
 
       {/* 신고 정보 */}

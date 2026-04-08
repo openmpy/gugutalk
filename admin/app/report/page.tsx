@@ -174,7 +174,7 @@ export default async function ReportListPage({
               name="keyword"
               defaultValue={currentKeyword}
               placeholder="닉네임 입력"
-              className="w-full p-2 pr-9 rounded-md border border-gray-300 focus:outline-none"
+              className="w-full px-3 py-2 pr-9 rounded-md border border-gray-300 focus:outline-none"
             />
             <input type="hidden" name="status" value={currentStatus} />
             <input type="hidden" name="size" value={String(currentSize)} />
