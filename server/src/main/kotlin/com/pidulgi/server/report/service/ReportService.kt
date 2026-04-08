@@ -32,12 +32,12 @@ class ReportService(
             reporterId = reporter.id,
             reporterUuid = reporter.uuid.value,
             reporterPhoneNumber = reporter.phoneNumber.value,
-            reporterNickname = reporter.nickname,
+            reporterNickname = reporter.nickname.value,
 
             reportedId = reported.id,
             reportedUuid = reported.uuid.value,
             reportedPhoneNumber = reported.phoneNumber.value,
-            reportedNickname = reported.nickname,
+            reportedNickname = reported.nickname.value,
 
             type = request.type,
             reason = request.reason,

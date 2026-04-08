@@ -2,6 +2,7 @@ package com.pidulgi.server.member.entity
 
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.type.MemberRole
+import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.entity.vo.MemberPassword
 import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import com.pidulgi.server.member.entity.vo.MemberUuid
@@ -43,8 +44,12 @@ class Member(
     @Column(name = "profile_key", nullable = true)
     var profileKey: String? = null,
 
-    @Column(name = "nickname", nullable = false)
-    var nickname: String,
+    @Embedded
+    @AttributeOverride(
+        name = "value",
+        column = Column(name = "nickname", nullable = false)
+    )
+    var nickname: MemberNickname,
 
     @Column(name = "birth_year", nullable = false)
     var birthYear: Int = 2000,
@@ -81,7 +86,7 @@ class Member(
 
     fun activate(profileKey: String?, nickname: String, birthYear: Int, bio: String?) {
         this.profileKey = profileKey
-        this.nickname = nickname
+        this.nickname = MemberNickname(nickname)
         this.birthYear = birthYear
         this.bio = bio
     }
@@ -96,7 +101,7 @@ class Member(
     }
 
     fun updateNickname(nickname: String) {
-        this.nickname = nickname
+        this.nickname = MemberNickname(nickname)
         this.updatedAt = LocalDateTime.now()
     }
 
@@ -112,7 +117,7 @@ class Member(
 
     fun updateProfile(profileKey: String?, nickname: String, birthYear: Int, bio: String?) {
         this.profileKey = profileKey
-        this.nickname = nickname
+        this.nickname = MemberNickname(nickname)
         this.birthYear = birthYear
         this.bio = bio
         this.updatedAt = LocalDateTime.now()

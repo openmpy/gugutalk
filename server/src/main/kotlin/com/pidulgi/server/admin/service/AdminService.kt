@@ -45,7 +45,7 @@ class AdminService(
                 AdminGetMemberResponse(
                     memberId = it.id,
                     profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
-                    nickname = it.nickname,
+                    nickname = it.nickname.value,
                     age = LocalDate.now().year - it.birthYear,
                     gender = it.gender,
                     comment = it.comment,
@@ -98,7 +98,7 @@ class AdminService(
             memberId = member.id,
             uuid = member.uuid.value,
             phoneNumber = member.phoneNumber.value,
-            nickname = member.nickname,
+            nickname = member.nickname.value,
             birthYear = member.birthYear,
             gender = member.gender,
             bio = member.bio,
@@ -148,7 +148,7 @@ class AdminService(
                 AdminGetMemberResponse(
                     memberId = it.id,
                     profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
-                    nickname = it.nickname,
+                    nickname = it.nickname.value,
                     age = LocalDate.now().year - it.birthYear,
                     gender = it.gender,
                     comment = it.comment,

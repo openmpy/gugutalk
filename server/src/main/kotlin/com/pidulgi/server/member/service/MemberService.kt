@@ -84,7 +84,7 @@ class MemberService(
             member.id,
             publicImagesResponse,
             privateImagesResponse,
-            member.nickname,
+            member.nickname.value,
             member.gender,
             LocalDate.now().year - member.birthYear,
             member.birthYear,
@@ -117,7 +117,7 @@ class MemberService(
         return MemberGetResponse(
             memberId = member.id,
             images = images,
-            nickname = member.nickname,
+            nickname = member.nickname.value,
             gender = member.gender,
             age = LocalDate.now().year - member.birthYear,
             bio = member.bio,
@@ -183,7 +183,7 @@ class MemberService(
     fun updateProfile(memberId: Long, request: MemberUpdateProfileRequest) {
         val member = getMember(memberId)
 
-        if (member.nickname != request.nickname && memberRepository.existsByNickname(request.nickname)) {
+        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(request.nickname)) {
             throw CustomException("이미 사용 중인 닉네임입니다.")
         }
         if (LocalDate.now().year - request.birthYear !in 19..60) {

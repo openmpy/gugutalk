@@ -8,6 +8,7 @@ import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.PrivateImageGrant
 import com.pidulgi.server.member.entity.type.Gender
+import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.entity.vo.MemberPassword
 import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import com.pidulgi.server.member.entity.vo.MemberUuid
@@ -87,7 +88,7 @@ class DummyDataInit {
                         uuid = MemberUuid(UUID.randomUUID().toString()),
                         phoneNumber = MemberPhoneNumber("0100000%04d".format(i)),
                         password = MemberPassword("1234"),
-                        nickname = "닉네임$i",
+                        nickname = MemberNickname("닉네임$i"),
                         gender = if (i % 2 == 0) Gender.MALE else Gender.FEMALE,
                         birthYear = 1993 + (i % 12),
                         bio = "자기소개$i",

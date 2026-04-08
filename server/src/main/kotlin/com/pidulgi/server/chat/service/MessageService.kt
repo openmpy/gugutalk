@@ -103,7 +103,7 @@ class MessageService(
                 chatRoomId,
                 senderId,
                 sender.profileKey?.let { key -> "$endpoint$key" },
-                sender.nickname,
+                sender.nickname.value,
                 chatRoom.lastMessage,
                 message.type,
                 chatRoom.lastMessageAt,
@@ -176,7 +176,7 @@ class MessageService(
                         chatRoomId,
                         senderId,
                         sender.profileKey?.let { "$endpoint$it" },
-                        sender.nickname,
+                        sender.nickname.value,
                         "이미지",
                         MessageType.IMAGE,
                         message.createdAt,
@@ -224,7 +224,7 @@ class MessageService(
                         chatRoomId,
                         senderId,
                         sender.profileKey?.let { "$endpoint$it" },
-                        sender.nickname,
+                        sender.nickname.value,
                         "동영상",
                         MessageType.VIDEO,
                         message.createdAt,
@@ -299,7 +299,7 @@ class MessageService(
         return MessageGetMemberResponse(
             target.id,
             target.profileKey?.let { key -> "$endpoint$key" },
-            target.nickname,
+            target.nickname.value,
         )
     }
 

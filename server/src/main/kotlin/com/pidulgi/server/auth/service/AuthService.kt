@@ -14,6 +14,7 @@ import com.pidulgi.server.common.util.SmsSender
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
+import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.entity.vo.MemberPassword
 import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import com.pidulgi.server.member.entity.vo.MemberUuid
@@ -122,7 +123,7 @@ class AuthService(
             uuid = MemberUuid(request.uuid),
             phoneNumber = MemberPhoneNumber(request.phoneNumber),
             password = MemberPassword(request.password),
-            nickname = UUID.randomUUID().toString().replace("-", "").substring(0, 10),
+            nickname = MemberNickname(UUID.randomUUID().toString().replace("-", "").substring(0, 10)),
             gender = request.gender,
         )
         memberRepository.save(member)
@@ -148,7 +149,7 @@ class AuthService(
     fun activate(memberId: Long, request: ActivateRequest) {
         val member = getMember(memberId)
 
-        if (member.nickname != request.nickname && memberRepository.existsByNickname(request.nickname)) {
+        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(request.nickname)) {
             throw CustomException("이미 사용 중인 닉네임입니다.")
         }
         if (LocalDate.now().year - request.birthYear !in 19..60) {
@@ -178,7 +179,7 @@ class AuthService(
     fun validate(memberId: Long, request: ValidateRequest) {
         val member = getMember(memberId)
 
-        if (member.nickname != request.nickname && memberRepository.existsByNickname(request.nickname)) {
+        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(request.nickname)) {
             throw CustomException("이미 사용 중인 닉네임입니다.")
         }
         if (LocalDate.now().year - request.birthYear !in 19..60) {
