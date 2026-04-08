@@ -14,6 +14,7 @@ import com.pidulgi.server.common.util.SmsSender
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
+import com.pidulgi.server.member.entity.vo.MemberPassword
 import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import com.pidulgi.server.member.entity.vo.MemberUuid
 import com.pidulgi.server.member.repository.MemberImageRepository
@@ -120,7 +121,7 @@ class AuthService(
         val member = Member(
             uuid = MemberUuid(request.uuid),
             phoneNumber = MemberPhoneNumber(request.phoneNumber),
-            password = request.password,
+            password = MemberPassword(request.password),
             nickname = UUID.randomUUID().toString().replace("-", "").substring(0, 10),
             gender = request.gender,
         )
@@ -190,7 +191,7 @@ class AuthService(
         val member = (memberRepository.findByPhoneNumber(request.phoneNumber)
             ?: throw CustomException("다시 한번 확인해주시길 바랍니다."))
 
-        if (member.password != request.password) {
+        if (member.password.value != request.password) {
             throw CustomException("다시 한번 확인해주시길 바랍니다.")
         }
 

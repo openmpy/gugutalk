@@ -2,6 +2,7 @@ package com.pidulgi.server.member.entity
 
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.type.MemberRole
+import com.pidulgi.server.member.entity.vo.MemberPassword
 import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import com.pidulgi.server.member.entity.vo.MemberUuid
 import jakarta.persistence.*
@@ -32,8 +33,12 @@ class Member(
     )
     val phoneNumber: MemberPhoneNumber,
 
-    @Column(name = "password", nullable = false)
-    val password: String,
+    @Embedded
+    @AttributeOverride(
+        name = "value",
+        column = Column(name = "password", nullable = false)
+    )
+    val password: MemberPassword,
 
     @Column(name = "profile_key", nullable = true)
     var profileKey: String? = null,
