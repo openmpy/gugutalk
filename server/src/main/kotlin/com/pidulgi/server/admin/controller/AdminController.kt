@@ -2,6 +2,7 @@ package com.pidulgi.server.admin.controller
 
 import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
+import com.pidulgi.server.admin.dto.response.AdminGetReportResponse
 import com.pidulgi.server.admin.service.AdminService
 import com.pidulgi.server.common.dto.PageResponse
 import org.springframework.http.ResponseEntity
@@ -74,5 +75,15 @@ class AdminController(
     ): ResponseEntity<Unit> {
         adminService.deleteMemberImage(memberId, imageId)
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/v1/admin/reports")
+    fun getReports(
+        @RequestParam(value = "status", defaultValue = "PENDING") status: String,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+    ): ResponseEntity<PageResponse<AdminGetReportResponse>> {
+        val response = adminService.getReports(status, page, size)
+        return ResponseEntity.ok(response)
     }
 }

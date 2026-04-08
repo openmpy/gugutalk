@@ -3,12 +3,14 @@ package com.pidulgi.server.admin.service
 import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse.AdminGetMemberImageResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
+import com.pidulgi.server.admin.dto.response.AdminGetReportResponse
 import com.pidulgi.server.common.dto.PageResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.s3.S3Service
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.report.repository.ReportRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -22,6 +24,7 @@ class AdminService(
 
     private val memberRepository: MemberRepository,
     private val memberImageRepository: MemberImageRepository,
+    private val reportRepository: ReportRepository,
     private val s3Service: S3Service,
 ) {
 
@@ -180,5 +183,34 @@ class AdminService(
             val newProfileKey = memberImages.firstOrNull()?.key
             member.updateProfileKey(newProfileKey)
         }
+    }
+
+    @Transactional(readOnly = true)
+    fun getReports(
+        status: String,
+        page: Int,
+        size: Int
+    ): PageResponse<AdminGetReportResponse> {
+        val offset = page * size
+        val result = reportRepository.findAllByPage(status, offset, size + 1)
+            .map {
+                AdminGetReportResponse(
+                    reportId = it.id,
+                    type = it.type,
+                    reporterNickname = it.reporterNickname,
+                    reportedNickname = it.reportedNickname,
+                    reason = it.reason,
+                    createdAt = it.createdAt,
+                )
+            }
+
+        val hasNext = result.size > size
+        val items = if (hasNext) result.dropLast(1) else result
+
+        return PageResponse(
+            payload = items,
+            page = page,
+            hasNext = hasNext
+        )
     }
 }
