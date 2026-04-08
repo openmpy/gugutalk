@@ -9,10 +9,10 @@ import Link from "next/link";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
-type BanSearchField = "uuid" | "nickname" | "reason";
+type BanSearchField = "uuid" | "nickname";
 
 function parseSearchField(value: string | undefined): BanSearchField {
-  if (value === "nickname" || value === "reason") {
+  if (value === "nickname") {
     return value;
   }
   return "uuid";
@@ -35,32 +35,27 @@ function banListQuery(
   return sp.toString();
 }
 
-function matchesSearch(
-  ban: AdminBanGetResponse,
+async function getBans(
+  page: number,
+  size: number,
   field: BanSearchField,
   keyword: string,
-): boolean {
-  const k = keyword.trim().toLowerCase();
-  if (!k) {
-    return true;
-  }
-  if (field === "uuid") {
-    return ban.uuid.toLowerCase().includes(k);
-  }
-  if (field === "nickname") {
-    return (ban.nickname ?? "").toLowerCase().includes(k);
-  }
-  return (ban.reason ?? "").toLowerCase().includes(k);
-}
-
-async function getBans(page: number, size: number) {
+) {
+  const trimmed = keyword.trim();
   const sp = new URLSearchParams();
   sp.set("page", String(page));
   sp.set("size", String(size));
-  const response = await fetch(
-    `${API_BASE_URL}/api/v1/admin/bans?${sp.toString()}`,
-    { cache: "no-store" },
-  );
+  if (trimmed) {
+    sp.set("type", field);
+    sp.set("keyword", trimmed);
+  }
+
+  const path = trimmed
+    ? "/api/v1/admin/bans/search"
+    : "/api/v1/admin/bans";
+  const response = await fetch(`${API_BASE_URL}${path}?${sp.toString()}`, {
+    cache: "no-store",
+  });
   if (!response.ok) {
     throw new Error("정지 목록을 불러오지 못했습니다.");
   }
@@ -85,9 +80,11 @@ export default async function BanListPage({
   const currentKeyword = params?.keyword?.trim() ?? "";
   const currentField = parseSearchField(params?.field);
 
-  const data = await getBans(currentPage, currentSize);
-  const filtered = data.payload.filter((b) =>
-    matchesSearch(b, currentField, currentKeyword),
+  const data = await getBans(
+    currentPage,
+    currentSize,
+    currentField,
+    currentKeyword,
   );
 
   return (
@@ -115,7 +112,7 @@ export default async function BanListPage({
               type="text"
               name="keyword"
               defaultValue={currentKeyword}
-              placeholder="검색어 입력 (현재 페이지 내)"
+              placeholder="검색어 입력"
               className="w-full px-3 py-2 pr-9 rounded-md border border-gray-300 focus:outline-none"
             />
             <input type="hidden" name="page" value="0" />
@@ -132,14 +129,14 @@ export default async function BanListPage({
       </form>
 
       <div className="flex flex-col gap-4">
-        {filtered.length === 0 ? (
+        {data.payload.length === 0 ? (
           <p className="text-sm text-gray-500">
-            {data.payload.length === 0
-              ? "정지 내역이 없습니다."
-              : "검색 결과가 없습니다."}
+            {currentKeyword
+              ? "검색 결과가 없습니다."
+              : "정지 내역이 없습니다."}
           </p>
         ) : (
-          filtered.map((ban) => (
+          data.payload.map((ban) => (
             <div key={ban.banId}>
               <div className="flex items-center justify-between">
                 <Link href={`/ban/${ban.banId}`} className="font-bold">

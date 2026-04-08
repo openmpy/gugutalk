@@ -20,4 +20,36 @@ interface BanRepository : JpaRepository<Ban, Long> {
         @Param("offset") offset: Int,
         @Param("size") size: Int
     ): List<Ban>
+
+    @Query(
+        value = """
+            SELECT *
+            FROM ban b
+            WHERE b.uuid ILIKE '%' || :keyword || '%'
+            ORDER BY b.updated_at DESC, b.id DESC
+            LIMIT :size OFFSET :offset
+        """,
+        nativeQuery = true
+    )
+    fun findAllByUuidPage(
+        @Param("keyword") keyword: String,
+        @Param("offset") offset: Int,
+        @Param("size") size: Int
+    ): List<Ban>
+
+    @Query(
+        value = """
+            SELECT *
+            FROM ban b
+            WHERE b.nickname ILIKE '%' || :keyword || '%'
+            ORDER BY b.updated_at DESC, b.id DESC
+            LIMIT :size OFFSET :offset
+        """,
+        nativeQuery = true
+    )
+    fun findAllByNicknamePage(
+        @Param("keyword") keyword: String,
+        @Param("offset") offset: Int,
+        @Param("size") size: Int
+    ): List<Ban>
 }

@@ -56,4 +56,15 @@ class BanController(
         val response = banService.getMemberByUuid(uuid)
         return ResponseEntity.ok(response)
     }
+
+    @GetMapping("/v1/admin/bans/search")
+    fun search(
+        @RequestParam(value = "type", defaultValue = "UUID") type: String,
+        @RequestParam(value = "keyword", required = true) keyword: String,
+        @RequestParam(value = "page", defaultValue = "0") page: Int,
+        @RequestParam(value = "size", defaultValue = "20") size: Int,
+    ): ResponseEntity<PageResponse<BanGetResponse>> {
+        val response = banService.search(type, keyword, page, size)
+        return ResponseEntity.ok(response)
+    }
 }

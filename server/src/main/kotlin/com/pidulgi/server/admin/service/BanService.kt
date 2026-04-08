@@ -98,4 +98,37 @@ class BanService(
             phoneNumber = null,
         )
     }
+
+    @Transactional(readOnly = true)
+    fun search(
+        type: String,
+        keyword: String,
+        page: Int,
+        size: Int
+    ): PageResponse<BanGetResponse> {
+        val offset = page * size
+        val result = if (type.equals("uuid", ignoreCase = true)) {
+            banRepository.findAllByUuidPage(keyword, offset, size + 1)
+        } else {
+            banRepository.findAllByNicknamePage(keyword, offset, size + 1)
+        }.map {
+            BanGetResponse(
+                banId = it.id,
+                type = it.type,
+                uuid = it.uuid,
+                nickname = it.nickname,
+                reason = it.reason,
+                expiredAt = it.expiredAt
+            )
+        }
+
+        val hasNext = result.size > size
+        val items = if (hasNext) result.dropLast(1) else result
+
+        return PageResponse(
+            payload = items,
+            page = page,
+            hasNext = hasNext
+        )
+    }
 }
