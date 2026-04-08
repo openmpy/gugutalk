@@ -2,6 +2,7 @@ package com.pidulgi.server.member.entity
 
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.type.MemberRole
+import com.pidulgi.server.member.entity.vo.MemberUuid
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
 import org.locationtech.jts.geom.Point
@@ -16,8 +17,12 @@ class Member(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @Column(name = "uuid", nullable = false)
-    val uuid: String,
+    @Embedded
+    @AttributeOverride(
+        name = "value",
+        column = Column(name = "uuid", nullable = false)
+    )
+    val uuid: MemberUuid,
 
     @Column(name = "phone_number", nullable = false)
     val phoneNumber: String,
@@ -38,10 +43,10 @@ class Member(
     @Column(name = "gender", nullable = false)
     val gender: Gender,
 
-    @Column(name = "bio", nullable = true)
+    @Column(name = "bio", length = 1000, nullable = true)
     var bio: String? = null,
 
-    @Column(name = "comment", nullable = true)
+    @Column(name = "comment", length = 100, nullable = true)
     var comment: String? = "반갑습니다.",
 
     @Column(columnDefinition = "geography(Point,4326)")
