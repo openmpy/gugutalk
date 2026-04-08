@@ -3,6 +3,8 @@ package com.pidulgi.server.admin.service
 import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse.AdminGetMemberImageResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
+import com.pidulgi.server.admin.dto.response.AdminGetReportDetailResponse
+import com.pidulgi.server.admin.dto.response.AdminGetReportDetailResponse.AdminGetReportImageResponse
 import com.pidulgi.server.admin.dto.response.AdminGetReportResponse
 import com.pidulgi.server.common.dto.PageResponse
 import com.pidulgi.server.common.exception.CustomException
@@ -10,6 +12,7 @@ import com.pidulgi.server.common.s3.S3Service
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.report.repository.ReportImageRepository
 import com.pidulgi.server.report.repository.ReportRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
@@ -25,6 +28,7 @@ class AdminService(
     private val memberRepository: MemberRepository,
     private val memberImageRepository: MemberImageRepository,
     private val reportRepository: ReportRepository,
+    private val reportImageRepository: ReportImageRepository,
     private val s3Service: S3Service,
 ) {
 
@@ -211,6 +215,37 @@ class AdminService(
             payload = items,
             page = page,
             hasNext = hasNext
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getReport(reportId: Long): AdminGetReportDetailResponse {
+        val report = (reportRepository.findByIdOrNull(reportId)
+            ?: throw CustomException("존재하지 않는 신고입니다."))
+        val reportImages = reportImageRepository.findAllByReportId(reportId).map {
+            AdminGetReportImageResponse(
+                imageId = it.id,
+                url = s3Service.getPresignedUrl(it.key),
+                key = it.key,
+                sortOrder = it.sortOrder,
+                createdAt = it.createdAt,
+            )
+        }
+
+        return AdminGetReportDetailResponse(
+            reportId = reportId,
+            type = report.type,
+            reporterId = report.reporterId,
+            reporterUuid = report.reporterUuid,
+            reporterPhone = report.reporterPhoneNumber,
+            reporterNickname = report.reporterNickname,
+            reportedId = report.reportedId,
+            reportedUuid = report.reportedUuid,
+            reportedPhone = report.reportedPhoneNumber,
+            reportedNickname = report.reportedNickname,
+            reason = report.reason,
+            createdAt = report.createdAt,
+            images = reportImages
         )
     }
 }

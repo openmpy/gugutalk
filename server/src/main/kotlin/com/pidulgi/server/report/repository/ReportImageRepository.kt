@@ -7,6 +7,8 @@ import java.time.LocalDateTime
 
 interface ReportImageRepository : JpaRepository<ReportImage, Long> {
 
+    fun findAllByReportId(reportId: Long): List<ReportImage>
+
     fun findAllByKeyIn(keys: Collection<String>): List<ReportImage>
 
     fun findByStatusAndCreatedAtBefore(
