@@ -1,8 +1,44 @@
 "use client";
 
 import type { ReportType } from "@/types/AdminGetReportResponse";
+import type { AdminBanGetMemberResponse } from "@/types/AdminBanGetMemberResponse";
 import { reportTypeLabel } from "@/utils/reportTypeLabel";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+
+async function fetchMemberByUuid(
+  uuid: string,
+): Promise<AdminBanGetMemberResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/admin/bans/members?uuid=${encodeURIComponent(uuid.trim())}`,
+    { cache: "no-store" },
+  );
+  if (!response.ok) {
+    throw new Error("회원 정보를 불러오지 못했습니다.");
+  }
+  return (await response.json()) as AdminBanGetMemberResponse;
+}
+
+async function addBan(body: {
+  uuid: string;
+  nickname: string | null;
+  phoneNumber: string;
+  day: number;
+  type: ReportType;
+  reason: string | null;
+}) {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/bans`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw new Error(`정지 요청에 실패했습니다. (${response.status})`);
+  }
+}
 
 const SUSPEND_TYPES: ReportType[] = [
   "ABUSE",
@@ -24,18 +60,6 @@ type MemberSuspendModalProps = {
   initialSuspendType?: ReportType;
 };
 
-/** 디자인·UX용: 실제 API 연동 전 조회 시 닉네임·휴대폰을 채우는 목 동작 */
-function mockLookupByUuid(uuid: string): { nickname: string; phone: string } {
-  const trimmed = uuid.trim();
-  if (!trimmed) {
-    return { nickname: "", phone: "" };
-  }
-  return {
-    nickname: `회원_${trimmed.slice(0, 8)}`,
-    phone: "010-0000-0000",
-  };
-}
-
 export default function MemberSuspendModal({
   open,
   onClose,
@@ -44,6 +68,7 @@ export default function MemberSuspendModal({
   initialPhone = "",
   initialSuspendType,
 }: MemberSuspendModalProps) {
+  const router = useRouter();
   const [uuid, setUuid] = useState(initialUuid);
   const [nickname, setNickname] = useState(initialNickname);
   const [phone, setPhone] = useState(initialPhone);
@@ -53,6 +78,7 @@ export default function MemberSuspendModal({
   );
   const [suspendReason, setSuspendReason] = useState("");
   const [lookupBusy, setLookupBusy] = useState(false);
+  const [submitBusy, setSubmitBusy] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -82,14 +108,63 @@ export default function MemberSuspendModal({
     return null;
   }
 
-  const onLookup = () => {
+  const onLookup = async () => {
+    const trimmedUuid = uuid.trim();
+    if (!trimmedUuid) {
+      return;
+    }
     setLookupBusy(true);
-    window.setTimeout(() => {
-      const { nickname: n, phone: p } = mockLookupByUuid(uuid);
-      setNickname(n);
-      setPhone(p);
+    try {
+      const data = await fetchMemberByUuid(trimmedUuid);
+      setNickname(data.nickname ?? "");
+      setPhone(data.phoneNumber ?? "");
+      if (!data.nickname && !data.phoneNumber) {
+        alert("해당 UUID의 회원을 찾을 수 없습니다.");
+      }
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "조회 중 오류가 발생했습니다.");
+    } finally {
       setLookupBusy(false);
-    }, 280);
+    }
+  };
+
+  const onSubmit = async () => {
+    const trimmedUuid = uuid.trim();
+    const trimmedPhone = phone.replace(/\D/g, "");
+    const days = Number.parseInt(suspendDays, 10);
+    if (!trimmedUuid) {
+      alert("UUID를 입력해 주세요.");
+      return;
+    }
+    if (!trimmedPhone) {
+      alert("휴대폰 번호를 입력해 주세요.");
+      return;
+    }
+    if (!Number.isFinite(days) || days < 1 || days > 365) {
+      alert("정지 일수는 1~365 사이로 입력해 주세요.");
+      return;
+    }
+    if (!suspendType) {
+      alert("정지 타입을 선택해 주세요.");
+      return;
+    }
+    setSubmitBusy(true);
+    try {
+      await addBan({
+        uuid: trimmedUuid,
+        nickname: nickname.trim() ? nickname.trim() : null,
+        phoneNumber: trimmedPhone,
+        day: days,
+        type: suspendType,
+        reason: suspendReason.trim() ? suspendReason.trim() : null,
+      });
+      onClose();
+      router.refresh();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "오류가 발생했습니다.");
+    } finally {
+      setSubmitBusy(false);
+    }
   };
 
   const inputClass =
@@ -251,15 +326,18 @@ export default function MemberSuspendModal({
           <button
             type="button"
             onClick={onClose}
-            className={`${btnMd} w-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 md:w-auto`}
+            disabled={submitBusy}
+            className={`${btnMd} w-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 md:w-auto disabled:opacity-60`}
           >
             취소
           </button>
           <button
             type="button"
-            className={`${btnMd} w-full bg-red-500 text-white hover:bg-red-600 md:w-auto`}
+            onClick={onSubmit}
+            disabled={submitBusy}
+            className={`${btnMd} w-full bg-red-500 text-white hover:bg-red-600 md:w-auto disabled:opacity-60`}
           >
-            정지
+            {submitBusy ? "처리중" : "정지"}
           </button>
         </div>
       </div>

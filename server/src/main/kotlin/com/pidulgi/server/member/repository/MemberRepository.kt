@@ -9,6 +9,8 @@ import java.time.LocalDateTime
 
 interface MemberRepository : JpaRepository<Member, Long>, MemberCustomRepository {
 
+    fun findByUuid(uuid: String): Member?
+
     fun existsByPhoneNumber(phoneNumber: String): Boolean
 
     fun existsByNickname(nickname: String): Boolean
