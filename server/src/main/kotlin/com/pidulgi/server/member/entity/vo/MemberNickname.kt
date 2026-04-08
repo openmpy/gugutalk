@@ -30,7 +30,7 @@ class MemberNickname(
             "닉네임은 최소 ${NICKNAME_MIN_LENGTH}자 이상이어야 합니다."
         }
         require(value.length <= NICKNAME_MAX_LENGTH) {
-            "닉네임은 최대 ${NICKNAME_MAX_LENGTH}자 이하이어야 합니다."
+            "닉네임은 최대 ${NICKNAME_MAX_LENGTH}자 이하여야 합니다."
         }
     }
 
