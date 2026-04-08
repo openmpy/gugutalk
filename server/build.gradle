@@ -27,8 +27,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
     runtimeOnly 'org.postgresql:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -40,9 +40,16 @@ dependencies {
     // kotlin-log
     implementation 'io.github.oshai:kotlin-logging-jvm:7.0.3'
 
+    // kotest
+    testImplementation 'io.kotest:kotest-assertions-core:6.1.11'
+    testImplementation 'io.kotest:kotest-runner-junit5:6.1.11'
+
     // point
     implementation 'org.hibernate.orm:hibernate-spatial:7.2.6.Final'
     implementation 'org.locationtech.jts:jts-core:1.20.0'
+
+    // flyway
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql:12.0.0'
 
     // jwt
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
