@@ -7,6 +7,7 @@ import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
 import org.locationtech.jts.geom.Point
 import java.time.LocalDateTime
+import java.util.*
 
 @SQLRestriction("deleted_at IS NULL")
 @Entity
@@ -46,7 +47,9 @@ class Member(
         name = "value",
         column = Column(name = "nickname", nullable = false)
     )
-    var nickname: MemberNickname,
+    var nickname: MemberNickname = MemberNickname(
+        "닉네임_" + UUID.randomUUID().toString().replace("-", "").substring(0, 6)
+    ),
 
     @Embedded
     @AttributeOverride(
@@ -132,11 +135,11 @@ class Member(
         this.updatedAt = LocalDateTime.now()
     }
 
-    fun toggleChatEnabled() {
-        this.isChatEnabled = !isChatEnabled
-    }
-
     fun updateProfileKey(profileKey: String?) {
         this.profileKey = profileKey
+    }
+
+    fun toggleChatEnabled() {
+        this.isChatEnabled = !isChatEnabled
     }
 }
