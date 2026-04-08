@@ -4,7 +4,6 @@ import jakarta.persistence.Embeddable
 
 @Embeddable
 class MemberPassword(
-
     value: String,
 ) {
 
