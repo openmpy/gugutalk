@@ -127,7 +127,7 @@ class AuthService(
         val point = Point(memberId = member.id)
         pointRepository.save(point)
 
-        val accessToken = jwtProvider.generateAccessToken(member.id)
+        val accessToken = jwtProvider.generateAccessToken(member.id, member.role)
         val refreshToken = jwtProvider.generateRefreshToken(member.id)
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
 
@@ -192,7 +192,7 @@ class AuthService(
             throw CustomException("다시 한번 확인해주시길 바랍니다.")
         }
 
-        val accessToken = jwtProvider.generateAccessToken(member.id)
+        val accessToken = jwtProvider.generateAccessToken(member.id, member.role)
         val refreshToken = jwtProvider.generateRefreshToken(member.id)
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
 
@@ -232,7 +232,7 @@ class AuthService(
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "존재하지 않는 리프레시 토큰입니다.")
         }
 
-        val accessToken = jwtProvider.generateAccessToken(member.id)
+        val accessToken = jwtProvider.generateAccessToken(member.id, member.role)
         val refreshToken = jwtProvider.generateRefreshToken(member.id)
         val newRefreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
 

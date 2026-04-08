@@ -1,6 +1,7 @@
 package com.pidulgi.server.member.entity
 
 import com.pidulgi.server.member.entity.type.Gender
+import com.pidulgi.server.member.entity.type.MemberRole
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
 import org.locationtech.jts.geom.Point
@@ -48,6 +49,10 @@ class Member(
 
     @Column
     var isChatEnabled: Boolean = true,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    var role: MemberRole = MemberRole.MEMBER,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
