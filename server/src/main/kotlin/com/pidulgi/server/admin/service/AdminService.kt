@@ -101,7 +101,7 @@ class AdminService(
             nickname = member.nickname.value,
             birthYear = member.birthYear.value,
             gender = member.gender,
-            bio = member.bio,
+            bio = member.bio?.value,
             comment = member.comment,
             createdAt = member.createdAt,
             updatedAt = member.updatedAt,

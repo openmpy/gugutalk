@@ -88,7 +88,7 @@ class DummyDataInit {
                         nickname = MemberNickname("닉네임$i"),
                         gender = if (i % 2 == 0) Gender.MALE else Gender.FEMALE,
                         birthYear = MemberBirthYear(1993 + (i % 12)),
-                        bio = "자기소개$i",
+                        bio = MemberBio("자기소개$i"),
                         comment = "코멘트$i",
                     ).also { it.bump(location) }
                 }

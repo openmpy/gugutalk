@@ -88,7 +88,7 @@ class MemberService(
             member.gender,
             LocalDate.now().year - member.birthYear.value,
             member.birthYear.value,
-            member.bio,
+            member.bio?.value,
             likes
         )
     }
@@ -120,7 +120,7 @@ class MemberService(
             nickname = member.nickname.value,
             gender = member.gender,
             age = LocalDate.now().year - member.birthYear.value,
-            bio = member.bio,
+            bio = member.bio?.value,
             likes = likes,
             distance = distance,
             updatedAt = member.updatedAt,

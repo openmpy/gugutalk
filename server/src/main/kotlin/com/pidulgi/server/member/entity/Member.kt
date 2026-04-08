@@ -59,11 +59,15 @@ class Member(
     @Column(name = "gender", nullable = false)
     val gender: Gender,
 
-    @Column(name = "bio", length = 1000, nullable = true)
-    var bio: String? = null,
+    @Embedded
+    @AttributeOverride(
+        name = "value",
+        column = Column(name = "bio", length = 1000, nullable = true)
+    )
+    var bio: MemberBio? = null,
 
-    @Column(name = "comment", length = 100, nullable = true)
-    var comment: String? = "반갑습니다.",
+    @Column(name = "comment", length = 100, nullable = false)
+    var comment: String = "반갑습니다.",
 
     @Column(columnDefinition = "geography(Point,4326)")
     var location: Point? = null,
@@ -89,7 +93,7 @@ class Member(
         this.profileKey = profileKey
         this.nickname = MemberNickname(nickname)
         this.birthYear = MemberBirthYear(birthYear)
-        this.bio = bio
+        this.bio = bio?.let { MemberBio(it) }
     }
 
     fun withdraw() {
@@ -107,7 +111,7 @@ class Member(
     }
 
     fun updateBio(string: String) {
-        this.bio = string
+        this.bio = MemberBio(string)
         this.updatedAt = LocalDateTime.now()
     }
 
@@ -120,7 +124,7 @@ class Member(
         this.profileKey = profileKey
         this.nickname = MemberNickname(nickname)
         this.birthYear = MemberBirthYear(birthYear)
-        this.bio = bio
+        this.bio = bio?.let { MemberBio(it) }
         this.updatedAt = LocalDateTime.now()
     }
 
