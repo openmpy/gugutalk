@@ -196,17 +196,19 @@ class AuthService(
 
     @Transactional(readOnly = true)
     fun login(request: LoginRequest): LoginResponse {
-        val member = (memberRepository.findByPhoneNumber(request.phoneNumber)
-            ?: throw CustomException("다시 한번 확인해주시길 바랍니다."))
+        val memberPhoneNumber = MemberPhoneNumber(request.phoneNumber)
+        MemberPassword(request.password)
 
+        val member = (memberRepository.findByPhoneNumber(memberPhoneNumber)
+            ?: throw CustomException("다시 한번 확인해주시길 바랍니다."))
         if (member.password.value != request.password) {
             throw CustomException("다시 한번 확인해주시길 바랍니다.")
         }
 
         val accessToken = jwtProvider.generateAccessToken(member.id, member.role)
         val refreshToken = jwtProvider.generateRefreshToken(member.id)
-        val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
 
+        val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
         redisTemplate.opsForValue().set(refreshTokenKey, member.id.toString())
 
         return LoginResponse(

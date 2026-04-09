@@ -17,7 +17,7 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberCustomRepository
 
     fun existsByNickname(nickname: MemberNickname): Boolean
 
-    fun findByPhoneNumber(phoneNumber: String): Member?
+    fun findByPhoneNumber(phoneNumber: MemberPhoneNumber): Member?
 
     @Query(
         value = """

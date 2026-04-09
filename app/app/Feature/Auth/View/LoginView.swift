@@ -63,6 +63,7 @@ struct LoginView: View {
                 .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 20))
                 .textInputAutocapitalization(.never)
                 .disableAutocorrection(true)
+                .textContentType(.oneTimeCode)
         }
     }
 
