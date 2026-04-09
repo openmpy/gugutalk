@@ -67,7 +67,6 @@ final class SocialService {
     
     func getBlockedMember(
         cursorId: Int64?,
-        cursorDateAt: String?,
         size: Int = 20
     ) async throws -> CursorResponse<SettingResponse> {
         let url = "\(baseURL)/v1/social/blocks"
@@ -75,9 +74,8 @@ final class SocialService {
         var params: Parameters = [
             "size": size
         ]
-        if cursorId != nil && cursorDateAt != nil {
+        if cursorId != nil {
             params["cursorId"] = cursorId
-            params["cursorDate"] = cursorDateAt
         }
         
         return try await session.request(

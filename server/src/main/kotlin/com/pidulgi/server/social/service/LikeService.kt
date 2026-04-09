@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class LikeService(
-
     @Value("\${s3.endpoint}") private val endpoint: String,
 
     private val likeRepository: LikeRepository,

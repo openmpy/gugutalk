@@ -9,7 +9,6 @@ import com.pidulgi.server.social.repository.BlockCustomRepository
 import com.pidulgi.server.social.repository.dto.BlockItemResponse
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
-import java.time.LocalDateTime
 
 @Repository
 class BlockCustomRepositoryImpl(
@@ -23,18 +22,11 @@ class BlockCustomRepositoryImpl(
     override fun findBlocksByCursor(
         blockerId: Long,
         cursorId: Long?,
-        cursorDate: LocalDateTime?,
         size: Int
     ): List<BlockItemResponse> {
         val query = jpql {
-            val cursorCondition = if (cursorId != null && cursorDate != null) {
-                or(
-                    path(Block::createdAt).lt(cursorDate),
-                    and(
-                        path(Block::createdAt).eq(cursorDate),
-                        path(Block::id).lt(cursorId)
-                    )
-                )
+            val cursorCondition = if (cursorId != null) {
+                path(Block::id).lt(cursorId)
             } else null
 
             selectNew<BlockItemResponse>(
@@ -52,7 +44,6 @@ class BlockCustomRepositoryImpl(
                 path(Block::blockerId).eq(blockerId),
                 cursorCondition
             ).orderBy(
-                path(Block::createdAt).desc(),
                 path(Block::id).desc()
             )
         }

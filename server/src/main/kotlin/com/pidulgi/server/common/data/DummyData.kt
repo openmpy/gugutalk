@@ -9,6 +9,7 @@ import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
 import com.pidulgi.server.point.entity.Point
 import com.pidulgi.server.point.repository.PointRepository
+import com.pidulgi.server.social.entity.Block
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.BlockRepository
 import com.pidulgi.server.social.repository.LikeRepository
@@ -111,10 +112,22 @@ class DummyDataInit {
                 likeRepository.saveAll(likes)
             }
 
+            // 차단
+            if (blockRepository.count() == 0L) {
+                val blocks = (2 until DUMMY_MEMBER_COUNT + 1).map { i ->
+                    Block(
+                        blockerId = 1,
+                        blockedId = i.toLong()
+                    )
+                }
+                blockRepository.saveAll(blocks)
+            }
+
             // 로그
             log.info { "회원 더미 데이터 (${memberRepository.count()})개" }
             log.info { "포인트 더미 데이터 (${pointRepository.count()})개" }
             log.info { "좋아요 더미 데이터 (${likeRepository.count()})개" }
+            log.info { "차단 더미 데이터 (${blockRepository.count()})개" }
         }
     }
 }

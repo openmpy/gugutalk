@@ -6,7 +6,6 @@ import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.social.service.BlockService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDateTime
 
 @RequestMapping("/api")
 @RestController
@@ -37,10 +36,9 @@ class BlockController(
     fun getBlockedMembers(
         @Login blockerId: Long,
         @RequestParam(required = false) cursorId: Long?,
-        @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<SettingResponse>> {
-        val response = blockService.getBlockedMembers(blockerId, cursorId, cursorDate, size)
+        val response = blockService.getBlockedMembers(blockerId, cursorId, size)
         return ResponseEntity.ok(response)
     }
 }
