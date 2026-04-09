@@ -11,7 +11,6 @@ import java.time.LocalDateTime
 
 @Service
 class RecentService(
-
     @Value("\${s3.endpoint}") private val endpoint: String,
 
     private val memberRepository: MemberRepository,
@@ -47,11 +46,12 @@ class RecentService(
 
         val hasNext = result.size > size
         val items = if (hasNext) result.dropLast(1) else result
+        val last = items.lastOrNull()
 
         return CursorResponse(
             payload = items,
-            nextId = if (hasNext) items.last().memberId else null,
-            nextDateAt = if (hasNext) items.last().updatedAt else null,
+            nextId = last?.memberId,
+            nextDateAt = last?.updatedAt,
             hasNext = hasNext
         )
     }

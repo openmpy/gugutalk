@@ -30,20 +30,24 @@ class MemberCustomRepositoryImpl(
         } else ""
 
         val sql = """
-            SELECT m.id, m.nickname, m.gender, m.birth_year, m.bio, m.comment, m.profile_key, m.updated_at,
-                CASE WHEN m.location IS NOT NULL AND req.location IS NOT NULL
-                    THEN ST_Distance(m.location, req.location) / 1000.0
-                END AS distance,
-                (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
+            SELECT m.id, m.nickname, m.gender, m.birth_year, m.bio,
+                   m.comment, m.profile_key, m.updated_at,
+                   CASE WHEN m.location IS NOT NULL AND req.location IS NOT NULL
+                       THEN ST_Distance(m.location, req.location) / 1000.0
+                   END AS distance,
+                   lc.cnt AS likes
             FROM member m
             CROSS JOIN (SELECT location FROM member WHERE id = :requesterId) req
+            LEFT JOIN LATERAL (
+                SELECT COUNT(*) AS cnt FROM likes WHERE liked_id = m.id
+            ) lc ON true
             WHERE m.deleted_at IS NULL
                 AND m.id != :requesterId
                 AND (:gender = 'ALL' OR m.gender = :gender)
-                AND m.id NOT IN (
-                    SELECT blocked_id FROM blocks WHERE blocker_id = :requesterId
-                    UNION
-                    SELECT blocker_id FROM blocks WHERE blocked_id = :requesterId
+                AND NOT EXISTS (
+                    SELECT 1 FROM blocks
+                    WHERE (blocker_id = :requesterId AND blocked_id = m.id)
+                       OR (blocked_id = :requesterId AND blocker_id = m.id)
                 )
                 $cursorCondition
             ORDER BY m.updated_at DESC, m.id DESC
@@ -60,6 +64,7 @@ class MemberCustomRepositoryImpl(
                 setParameter("cursorId", cursorId)
             }
         }
+
         @Suppress("UNCHECKED_CAST")
         return (query.resultList as List<Array<Any?>>).map(::toMemberItemResponse)
     }
