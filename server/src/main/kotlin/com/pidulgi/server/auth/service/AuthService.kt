@@ -14,8 +14,8 @@ import com.pidulgi.server.common.util.ClientIpExtractor
 import com.pidulgi.server.common.util.NumberGenerator
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.MemberImage
+import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.type.ImageType
-import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.entity.vo.MemberPassword
 import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import com.pidulgi.server.member.entity.vo.MemberUuid
@@ -34,7 +34,6 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
 
 const val AUTH_REFRESH_TOKEN_KEY = "auth:refresh-token:"
 const val AUTH_ACCESS_TOKEN_BLACKLIST_KEY = "auth:access-token:blacklist:"
@@ -110,36 +109,42 @@ class AuthService(
 
     @Transactional
     fun signup(request: SignupRequest): SignupResponse {
-        val key = AUTH_SMS_VERIFICATION_CODE_KEY + request.phoneNumber
-        val value = redisTemplate.opsForValue().get(key)
+        val memberPhoneNumber = MemberPhoneNumber(request.phoneNumber)
+        val gender = Gender.from(request.gender)
 
-        value ?: throw CustomException("존재하지 않는 인증 번호입니다.")
-
-        if (value != request.verificationCode) {
+        // 인증 번호 검증
+        val verificationCodeKey = AUTH_SMS_VERIFICATION_CODE_KEY + request.phoneNumber
+        val verificationCode = redisTemplate.opsForValue().get(verificationCodeKey)
+            ?: throw CustomException("존재하지 않는 인증 번호입니다.")
+        if (verificationCode != request.verificationCode) {
             throw CustomException("인증 번호가 일치하지 않습니다.")
         }
-        if (memberRepository.existsByPhoneNumber(MemberPhoneNumber(request.phoneNumber))) {
+
+        // 회원 가입 검증
+        if (memberRepository.existsByPhoneNumber(memberPhoneNumber)) {
             throw CustomException("이미 가입된 휴대폰 번호입니다.")
         }
 
+        // 회원 계정 생성
         val member = Member(
             uuid = MemberUuid(request.uuid),
-            phoneNumber = MemberPhoneNumber(request.phoneNumber),
+            phoneNumber = memberPhoneNumber,
             password = MemberPassword(request.password),
-            nickname = MemberNickname(UUID.randomUUID().toString().replace("-", "").substring(0, 10)),
-            gender = request.gender,
+            gender = gender,
         )
         memberRepository.save(member)
 
+        // 포인트 정보 생성
         val point = Point(memberId = member.id)
         pointRepository.save(point)
 
+        // 토큰 발급
         val accessToken = jwtProvider.generateAccessToken(member.id, member.role)
         val refreshToken = jwtProvider.generateRefreshToken(member.id)
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
 
         redisTemplate.opsForValue().set(refreshTokenKey, member.id.toString())
-        redisTemplate.delete(key)
+        redisTemplate.delete(verificationCodeKey)
 
         return SignupResponse(
             member.id,
