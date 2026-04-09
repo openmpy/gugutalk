@@ -4,6 +4,7 @@ import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.util.AgeCalculator
+import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.social.dto.response.LikeCountResponse
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.LikeRepository
@@ -17,10 +18,14 @@ class LikeService(
     @Value("\${s3.endpoint}") private val endpoint: String,
 
     private val likeRepository: LikeRepository,
+    private val memberRepository: MemberRepository,
 ) {
 
     @Transactional
     fun like(likerId: Long, likedId: Long): LikeCountResponse {
+        if (!memberRepository.existsById(likedId)) {
+            throw CustomException("존재하지 않는 회원입니다.")
+        }
         if (likedId == likerId) {
             throw CustomException("자기 자신에게 좋아요를 누를 수 없습니다.")
         }
@@ -28,17 +33,15 @@ class LikeService(
             throw CustomException("이미 좋아요를 눌렀습니다.")
         }
 
-        val like = Like(
-            likerId = likerId,
-            likedId = likedId,
-        )
-        likeRepository.save(like)
-
+        likeRepository.save(Like(likerId = likerId, likedId = likedId))
         return LikeCountResponse(likeRepository.countByLikedId(likedId))
     }
 
     @Transactional
     fun unlike(likerId: Long, likedId: Long): LikeCountResponse {
+        if (!memberRepository.existsById(likedId)) {
+            throw CustomException("존재하지 않는 회원입니다.")
+        }
         val like = (likeRepository.findByLikerIdAndLikedId(likerId, likedId)
             ?: throw CustomException("좋아요를 누른 적이 없습니다."))
 

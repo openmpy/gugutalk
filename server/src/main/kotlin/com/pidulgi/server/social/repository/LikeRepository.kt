@@ -7,11 +7,11 @@ import org.springframework.data.jpa.repository.Query
 
 interface LikeRepository : JpaRepository<Like, Long>, LikeCustomRepository {
 
-    fun existsByLikerIdAndLikedId(likerId: Long, liked: Long): Boolean
+    fun existsByLikerIdAndLikedId(likerId: Long, likedId: Long): Boolean
 
-    fun findByLikerIdAndLikedId(likerId: Long, liked: Long): Like?
+    fun findByLikerIdAndLikedId(likerId: Long, likedId: Long): Like?
 
-    fun countByLikedId(liked: Long): Long
+    fun countByLikedId(likedId: Long): Long
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(
