@@ -34,7 +34,7 @@ class SmsSender(
         } catch (e: Exception) {
             when (e) {
                 is SolapiMessageNotReceivedException, is SolapiUnknownException -> {
-                    log.error { e.message }
+                    log.error(e) { e.message }
                     throw CustomException("문자 전송에 실패했습니다.")
                 }
 
