@@ -9,8 +9,9 @@ import com.pidulgi.server.auth.repository.PhoneVerificationRepository
 import com.pidulgi.server.common.auth.AuthenticationExtractor
 import com.pidulgi.server.common.auth.JwtProvider
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.common.sms.SmsSender
 import com.pidulgi.server.common.util.ClientIpExtractor
-import com.pidulgi.server.common.util.SmsSender
+import com.pidulgi.server.common.util.NumberGenerator
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
@@ -30,23 +31,16 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
-import java.security.SecureRandom
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-private const val AUTH_SMS_VERIFICATION_CODE_KEY = "auth:sms:code:"
-private const val AUTH_SMS_IP_DAILY_LIMIT_KEY = "auth:sms:ip:daily:"
 const val AUTH_REFRESH_TOKEN_KEY = "auth:refresh-token:"
 const val AUTH_ACCESS_TOKEN_BLACKLIST_KEY = "auth:access-token:blacklist:"
 
-private const val AUTH_VERIFICATION_CODE_MINUTES: Long = 5
-private const val AUTH_SMS_MAX_DAILY_SEND_COUNT = 3
-
 @Service
 class AuthService(
-
     @Value("\${jwt.access-token-expire-seconds}") private val accessTokenExpireSeconds: Long,
 
     private val memberRepository: MemberRepository,
@@ -58,10 +52,20 @@ class AuthService(
     private val smsSender: SmsSender,
 ) {
 
+    companion object {
+        private const val AUTH_SMS_IP_DAILY_LIMIT_KEY = "auth:sms:ip:daily:"
+        private const val AUTH_SMS_VERIFICATION_CODE_KEY = "auth:sms:code:"
+
+        private const val AUTH_SMS_MAX_DAILY_SEND_COUNT = 3
+        private const val AUTH_VERIFICATION_CODE_MINUTES = 5L
+    }
+
     @Transactional
     fun sendVerificationCode(servletRequest: HttpServletRequest, phoneNumber: String) {
         val clientIp = ClientIpExtractor.extract(servletRequest)
+        val memberPhoneNumber = MemberPhoneNumber(phoneNumber)
 
+        // 인증 번호 전송 횟수 검사
         val ipLimitKey = AUTH_SMS_IP_DAILY_LIMIT_KEY + clientIp
         val sendCount = redisTemplate.opsForValue().get(ipLimitKey)?.toIntOrNull() ?: 0
 
@@ -69,39 +73,38 @@ class AuthService(
             throw CustomException("하루 최대 ${AUTH_SMS_MAX_DAILY_SEND_COUNT}회까지만 전송할 수 있습니다.")
         }
 
-        val key = AUTH_SMS_VERIFICATION_CODE_KEY + phoneNumber
-
-        redisTemplate.opsForValue().get(key)?.let {
+        // 인증 번호 생성
+        val verificationCodeKey = AUTH_SMS_VERIFICATION_CODE_KEY + memberPhoneNumber.value
+        redisTemplate.opsForValue().get(verificationCodeKey)?.let {
             throw CustomException("인증 번호가 이미 전송되었습니다.")
         }
 
-        val random = SecureRandom()
-        val verificationCode = (10000 + random.nextInt(90000)).toString()
-
+        val verificationCode = NumberGenerator.generate()
         redisTemplate.opsForValue().set(
-            key,
+            verificationCodeKey,
             verificationCode,
             Duration.ofMinutes(AUTH_VERIFICATION_CODE_MINUTES)
         )
 
-        if (!memberRepository.existsByPhoneNumber(phoneNumber)) {
+        // 인증 번호 전송
+        if (!memberRepository.existsByPhoneNumber(memberPhoneNumber)) {
             smsSender.send(phoneNumber, "구구톡 인증 번호는 [${verificationCode}]입니다.")
 
             val verification = PhoneVerification(
-                phoneNumber = phoneNumber,
+                phoneNumber = memberPhoneNumber,
                 verificationCode = verificationCode,
                 clientIp = clientIp
             )
             phoneVerificationRepository.save(verification)
         }
 
+        // 인증 번호 전송 횟수 카운트
         val midnight = LocalDate.now().plusDays(1).atStartOfDay()
         val secondsUntilMidnight = Duration.between(LocalDateTime.now(), midnight)
+        val count = redisTemplate.opsForValue().increment(ipLimitKey)
 
-        if (sendCount == 0) {
-            redisTemplate.opsForValue().set(ipLimitKey, "1", secondsUntilMidnight)
-        } else {
-            redisTemplate.opsForValue().increment(ipLimitKey)
+        if (count == 1L) {
+            redisTemplate.expire(ipLimitKey, secondsUntilMidnight)
         }
     }
 
@@ -115,7 +118,7 @@ class AuthService(
         if (value != request.verificationCode) {
             throw CustomException("인증 번호가 일치하지 않습니다.")
         }
-        if (memberRepository.existsByPhoneNumber(request.phoneNumber)) {
+        if (memberRepository.existsByPhoneNumber(MemberPhoneNumber(request.phoneNumber))) {
             throw CustomException("이미 가입된 휴대폰 번호입니다.")
         }
 

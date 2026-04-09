@@ -1,5 +1,6 @@
 package com.pidulgi.server.auth.entity
 
+import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -11,8 +12,12 @@ class PhoneVerification(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @Column(name = "phone_number", nullable = false)
-    val phoneNumber: String,
+    @Embedded
+    @AttributeOverride(
+        name = "value",
+        column = Column(name = "phone_number", nullable = false)
+    )
+    val phoneNumber: MemberPhoneNumber,
 
     @Column(name = "verification_code", nullable = false)
     val verificationCode: String,

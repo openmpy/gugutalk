@@ -1,7 +1,7 @@
-package com.pidulgi.server.common.util
+package com.pidulgi.server.common.sms
 
 import com.pidulgi.server.common.exception.CustomException
-import com.solapi.sdk.SolapiClient.createInstance
+import com.solapi.sdk.SolapiClient
 import com.solapi.sdk.message.exception.SolapiMessageNotReceivedException
 import com.solapi.sdk.message.model.Message
 import org.springframework.beans.factory.annotation.Value
@@ -9,14 +9,13 @@ import org.springframework.stereotype.Component
 
 @Component
 class SmsSender(
-
     @Value("\${sms.api-key}") private val apiKey: String,
     @Value("\${sms.secret-key}") private val secretKey: String,
     @Value("\${sms.phone}") private val phone: String,
 ) {
 
     private val messageService by lazy {
-        createInstance(apiKey, secretKey)
+        SolapiClient.createInstance(apiKey, secretKey)
     }
 
     fun send(to: String, text: String) {
