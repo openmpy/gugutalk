@@ -72,9 +72,6 @@ class BlockService(
 
     @Transactional
     fun remove(blockerId: Long, blockedId: Long) {
-        if (!memberRepository.existsById(blockedId)) {
-            throw CustomException("존재하지 않는 회원입니다.")
-        }
         val block = (blockRepository.findByBlockerIdAndBlockedId(blockerId, blockedId)
             ?: throw CustomException("차단을 한 적이 없습니다."))
 

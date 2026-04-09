@@ -11,7 +11,7 @@ interface ChatRoomRepository : JpaRepository<ChatRoom, Long>, ChatRoomCustomRepo
 
     fun findByMember1IdAndMember2Id(memberId: Long, member2Id: Long): ChatRoom?
 
-    fun findByMember1IdOrMember2Id(member1Id: Long, member2Id: Long): List<ChatRoom>
+    fun findAllByMember1IdOrMember2Id(member1Id: Long, member2Id: Long): List<ChatRoom>
 
     @Modifying
     @Query(

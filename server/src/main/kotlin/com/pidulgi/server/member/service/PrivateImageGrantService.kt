@@ -40,9 +40,6 @@ class PrivateImageGrantService(
 
     @Transactional
     fun close(granterId: Long, granteeId: Long) {
-        if (!memberRepository.existsById(granteeId)) {
-            throw CustomException("존재하지 않는 회원입니다.")
-        }
         val privateImageGrant = (privateImageGrantRepository.findByGranterIdAndGranteeId(
             granterId, granteeId
         ) ?: throw CustomException("공개 한 적이 없습니다."))

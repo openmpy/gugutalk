@@ -38,9 +38,6 @@ class LikeService(
 
     @Transactional
     fun unlike(likerId: Long, likedId: Long): LikeCountResponse {
-        if (!memberRepository.existsById(likedId)) {
-            throw CustomException("존재하지 않는 회원입니다.")
-        }
         val like = (likeRepository.findByLikerIdAndLikedId(likerId, likedId)
             ?: throw CustomException("좋아요를 누른 적이 없습니다."))
 

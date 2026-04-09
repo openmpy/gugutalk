@@ -124,16 +124,16 @@ class MemberService(
     fun withdraw(memberId: Long, request: MemberWithdrawRequest) {
         val member = getMember(memberId)
 
-        val accessTokenBlacklist = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + request.accessToken
+        val accessTokenBlacklistKey = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + request.accessToken
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + request.refreshToken
-        val exists = redisTemplate.hasKey(refreshTokenKey)
+        val refreshTokenKeyExists = redisTemplate.hasKey(refreshTokenKey)
 
-        if (exists != true) {
+        if (refreshTokenKeyExists == false) {
             throw CustomException("존재하지 않는 리프레시 토큰입니다.")
         }
 
         redisTemplate.opsForValue().set(
-            accessTokenBlacklist,
+            accessTokenBlacklistKey,
             memberId.toString(),
             Duration.ofSeconds(accessTokenExpireSeconds)
         )
@@ -141,18 +141,18 @@ class MemberService(
 
         member.withdraw()
 
-        val chatRooms = chatRoomRepository.findByMember1IdOrMember2Id(memberId, memberId)
+        // 채팅방 삭제
+        val chatRooms = chatRoomRepository.findAllByMember1IdOrMember2Id(memberId, memberId)
         chatRooms.forEach {
-            it.delete()
-
-            val event = ChatEvent(
+            val chatEvent = ChatEvent(
                 DELETE_CHAT_ROOM,
                 null
             )
             messagingTemplate.convertAndSend(
                 "/topic/chat-rooms/${it.id}",
-                event
+                chatEvent
             )
+            it.delete()
         }
     }
 
