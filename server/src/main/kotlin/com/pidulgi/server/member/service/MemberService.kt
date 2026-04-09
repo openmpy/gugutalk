@@ -231,10 +231,11 @@ class MemberService(
 
         val hasNext = result.size > size
         val items = if (hasNext) result.dropLast(1) else result
+        val last = items.lastOrNull()
 
         return CursorResponse(
             payload = items,
-            nextId = if (hasNext) items.last().memberId else null,
+            nextId = last?.memberId,
             nextDateAt = null,
             hasNext = hasNext,
         )

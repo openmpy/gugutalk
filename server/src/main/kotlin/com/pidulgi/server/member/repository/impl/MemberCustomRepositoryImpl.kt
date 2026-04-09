@@ -107,7 +107,9 @@ class MemberCustomRepositoryImpl(
         cursorId: Long?,
         size: Int
     ): List<MemberItemResponse> {
-        val cursorCondition = if (cursorId != null) "AND m.id < :cursorId" else ""
+        val cursorCondition = if (cursorId != null) {
+            "AND m.id < :cursorId"
+        } else ""
 
         val sql = """
             SELECT m.id, m.nickname, m.gender, m.birth_year, m.bio, m.comment, m.profile_key, m.updated_at,
