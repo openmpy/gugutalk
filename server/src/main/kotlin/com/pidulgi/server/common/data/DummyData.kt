@@ -10,6 +10,9 @@ import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
 import com.pidulgi.server.point.entity.Point
 import com.pidulgi.server.point.repository.PointRepository
+import com.pidulgi.server.report.entity.Report
+import com.pidulgi.server.report.entity.type.ReportType
+import com.pidulgi.server.report.repository.ReportRepository
 import com.pidulgi.server.social.entity.Block
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.BlockRepository
@@ -21,6 +24,7 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 import java.util.*
 
 @ConditionalOnProperty(name = ["app.dummy-data.init"], havingValue = "true")
@@ -28,7 +32,7 @@ import java.util.*
 class DummyDataInit {
 
     private companion object {
-        const val DUMMY_MEMBER_COUNT = 10000
+        const val DUMMY_MEMBER_COUNT = 1000
     }
 
     private val log = KotlinLogging.logger {}
@@ -65,6 +69,7 @@ class DummyDataInit {
         blockRepository: BlockRepository,
         chatRoomRepository: ChatRoomRepository,
         messageRepository: MessageRepository,
+        reportRepository: ReportRepository,
     ): CommandLineRunner {
         return CommandLineRunner {
             // 회원
@@ -135,12 +140,32 @@ class DummyDataInit {
                 blockRepository.saveAll(blocks)
             }
 
+            // 신고
+            if (reportRepository.count() == 0L) {
+                val reports = (2 until DUMMY_MEMBER_COUNT + 1).map { i ->
+                    Report(
+                        reporterId = 1,
+                        reporterUuid = "uuid",
+                        reporterPhoneNumber = "010",
+                        reporterNickname = "nickname",
+                        reportedId = i.toLong(),
+                        reportedUuid = "uuid",
+                        reportedPhoneNumber = "010",
+                        reportedNickname = "nickname",
+                        type = ReportType.ETC,
+                        createdAt = LocalDateTime.now().minusYears(2),
+                    )
+                }
+                reportRepository.saveAll(reports)
+            }
+
             // 로그
             log.info { "회원 더미 데이터 (${memberRepository.count()})개" }
             log.info { "포인트 더미 데이터 (${pointRepository.count()})개" }
             log.info { "좋아요 더미 데이터 (${likeRepository.count()})개" }
             log.info { "비밀 사진 권한 더미 데이터 (${privateImageGrantRepository.count()})개" }
             log.info { "차단 더미 데이터 (${blockRepository.count()})개" }
+            log.info { "신고 더미 데이터 (${reportRepository.count()})개" }
         }
     }
 }
