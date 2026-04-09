@@ -21,6 +21,7 @@ import com.pidulgi.server.member.dto.response.MemberImageResponse
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
+import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
@@ -183,7 +184,7 @@ class MemberService(
     fun updateProfile(memberId: Long, request: MemberUpdateProfileRequest) {
         val member = getMember(memberId)
 
-        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(request.nickname)) {
+        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(MemberNickname(request.nickname))) {
             throw CustomException("이미 사용 중인 닉네임입니다.")
         }
         if (LocalDate.now().year - request.birthYear !in 19..60) {

@@ -1,6 +1,7 @@
 package com.pidulgi.server.member.repository
 
 import com.pidulgi.server.member.entity.Member
+import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -14,7 +15,7 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberCustomRepository
 
     fun existsByPhoneNumber(phoneNumber: MemberPhoneNumber): Boolean
 
-    fun existsByNickname(nickname: String): Boolean
+    fun existsByNickname(nickname: MemberNickname): Boolean
 
     fun findByPhoneNumber(phoneNumber: String): Member?
 

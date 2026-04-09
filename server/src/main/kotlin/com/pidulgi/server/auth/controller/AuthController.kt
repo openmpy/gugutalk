@@ -34,21 +34,21 @@ class AuthController(
         return ResponseEntity.ok(response)
     }
 
-    @PutMapping("/v1/auth/activate")
-    fun activate(
-        @Login memberId: Long,
-        @RequestBody request: ActivateRequest
-    ): ResponseEntity<Unit> {
-        authService.activate(memberId, request)
-        return ResponseEntity.ok().build()
-    }
-
     @PostMapping("/v1/auth/validate")
     fun validate(
         @Login memberId: Long,
         @RequestBody request: ValidateRequest
     ): ResponseEntity<Unit> {
         authService.validate(memberId, request)
+        return ResponseEntity.ok().build()
+    }
+
+    @PutMapping("/v1/auth/activate")
+    fun activate(
+        @Login memberId: Long,
+        @RequestBody request: ActivateRequest
+    ): ResponseEntity<Unit> {
+        authService.activate(memberId, request)
         return ResponseEntity.ok().build()
     }
 

@@ -77,15 +77,16 @@ class AuthService(
         }
 
         val verificationCode = NumberGenerator.generate()
-        redisTemplate.opsForValue().set(
-            verificationCodeKey,
-            verificationCode,
-            Duration.ofMinutes(AUTH_VERIFICATION_CODE_MINUTES)
-        )
 
         // 인증 번호 전송
         if (!memberRepository.existsByPhoneNumber(memberPhoneNumber)) {
             smsSender.send(phoneNumber, "구구톡 인증 번호는 [${verificationCode}]입니다.")
+
+            redisTemplate.opsForValue().set(
+                verificationCodeKey,
+                verificationCode,
+                Duration.ofMinutes(AUTH_VERIFICATION_CODE_MINUTES)
+            )
 
             val verification = PhoneVerification(
                 phoneNumber = memberPhoneNumber,
@@ -151,6 +152,17 @@ class AuthService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun validate(memberId: Long, request: ValidateRequest) {
+        val memberNickname = MemberNickname(request.nickname)
+        MemberBirthYear(request.birthYear)
+
+        val member = getMember(memberId)
+        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(memberNickname)) {
+            throw CustomException("이미 사용 중인 닉네임입니다.")
+        }
+    }
+
     @Transactional
     fun activate(memberId: Long, request: ActivateRequest) {
         val memberNickname = MemberNickname(request.nickname)
@@ -158,8 +170,7 @@ class AuthService(
         request.bio?.let { MemberBio(it) }
 
         val member = getMember(memberId)
-
-        if (memberNickname.value != request.nickname && memberRepository.existsByNickname(request.nickname)) {
+        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(memberNickname)) {
             throw CustomException("이미 사용 중인 닉네임입니다.")
         }
 
@@ -181,18 +192,6 @@ class AuthService(
             request.birthYear,
             request.bio
         )
-    }
-
-    @Transactional(readOnly = true)
-    fun validate(memberId: Long, request: ValidateRequest) {
-        val member = getMember(memberId)
-
-        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(request.nickname)) {
-            throw CustomException("이미 사용 중인 닉네임입니다.")
-        }
-        if (LocalDate.now().year - request.birthYear !in 19..60) {
-            throw CustomException("만 19세 이상 60세 이하만 가입할 수 있습니다.")
-        }
     }
 
     @Transactional(readOnly = true)

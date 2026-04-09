@@ -23,8 +23,14 @@ final class ActivateViewModel: ObservableObject {
 
     func activate() async throws {
         guard !isLoading else { return }
-        guard let birthYear = birthYear, (19...60).contains(Calendar.current.component(.year, from: Date()) - birthYear) else {
-            throw AppError("만 19세 이상 60세 이하만 가입할 수 있습니다.")
+        guard !nickname.trimmingCharacters(in: .whitespaces).isEmpty else {
+            throw AppError("닉네임이 빈 값일 수 없습니다.")
+        }
+        guard nickname.count <= 10 else {
+            throw AppError("닉네임은 10자 이하여야 합니다.")
+        }
+        guard let birthYear = birthYear, (20...60).contains(Calendar.current.component(.year, from: Date()) - birthYear) else {
+            throw AppError("20세 이상 60세 이하만 가입할 수 있습니다.")
         }
 
         isLoading = true
