@@ -15,6 +15,8 @@ interface MemberImageRepository : JpaRepository<MemberImage, Long> {
 
     fun findAllByMemberId(memberId: Long): List<MemberImage>
 
+    fun findAllByMemberIdIn(memberIds: Collection<Long>): List<MemberImage>
+
     fun findAllByKeyIn(keys: Collection<String>): List<MemberImage>
 
     fun deleteAllByIdIn(ids: List<Long>)

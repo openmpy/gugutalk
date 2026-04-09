@@ -4,6 +4,7 @@ import com.pidulgi.server.social.entity.Like
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 
 interface LikeRepository : JpaRepository<Like, Long>, LikeCustomRepository {
 
@@ -13,13 +14,7 @@ interface LikeRepository : JpaRepository<Like, Long>, LikeCustomRepository {
 
     fun countByLikedId(likedId: Long): Long
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(
-        value = """
-            DELETE FROM likes
-            WHERE liker_id IN :memberIds OR liked_id IN :memberIds
-        """,
-        nativeQuery = true
-    )
-    fun hardDeleteAllByMemberIdIn(memberIds: List<Long>)
+    @Modifying
+    @Query("DELETE FROM Like l WHERE l.likerId IN :memberIds OR l.likedId IN :memberIds")
+    fun deleteAllByMemberIds(@Param("memberIds") memberIds: List<Long>)
 }

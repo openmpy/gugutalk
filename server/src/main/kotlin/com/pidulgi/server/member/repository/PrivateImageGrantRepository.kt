@@ -4,6 +4,7 @@ import com.pidulgi.server.member.entity.PrivateImageGrant
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 
 interface PrivateImageGrantRepository :
     JpaRepository<PrivateImageGrant, Long>,
@@ -13,13 +14,7 @@ interface PrivateImageGrantRepository :
 
     fun findByGranterIdAndGranteeId(granterId: Long, granteeId: Long): PrivateImageGrant?
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(
-        value = """
-            DELETE FROM private_image_grants
-            WHERE granter_id IN :memberIds OR grantee_id IN :memberIds
-        """,
-        nativeQuery = true
-    )
-    fun hardDeleteAllByMemberIdIn(memberIds: List<Long>)
+    @Modifying
+    @Query("DELETE FROM PrivateImageGrant p WHERE p.granterId IN :memberIds OR p.granteeId IN :memberIds")
+    fun deleteAllByMemberIds(@Param("memberIds") memberIds: List<Long>)
 }
