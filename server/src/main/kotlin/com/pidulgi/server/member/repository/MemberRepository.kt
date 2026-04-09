@@ -72,7 +72,7 @@ interface MemberRepository : JpaRepository<Member, Long>, MemberCustomRepository
         """,
         nativeQuery = true
     )
-    fun findAllDeleted(@Param("deletedAt") deletedAt: LocalDateTime): List<Member>
+    fun findAllByDeleted(@Param("deletedAt") deletedAt: LocalDateTime): List<Member>
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(

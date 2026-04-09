@@ -39,7 +39,7 @@ class MemberScheduler(
     @Scheduled(cron = "0 0 9 * * *")
     fun cleanUpMembers() {
         val expiredBefore = LocalDateTime.now().minusDays(7)
-        val deletedMembers = memberRepository.findAllDeleted(expiredBefore)
+        val deletedMembers = memberRepository.findAllByDeleted(expiredBefore)
 
         if (deletedMembers.isEmpty()) {
             return
