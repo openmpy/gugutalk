@@ -16,9 +16,7 @@ import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.type.ImageType
-import com.pidulgi.server.member.entity.vo.MemberPassword
-import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
-import com.pidulgi.server.member.entity.vo.MemberUuid
+import com.pidulgi.server.member.entity.vo.*
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.point.entity.Point
@@ -155,15 +153,17 @@ class AuthService(
 
     @Transactional
     fun activate(memberId: Long, request: ActivateRequest) {
+        val memberNickname = MemberNickname(request.nickname)
+        MemberBirthYear(request.birthYear)
+        request.bio?.let { MemberBio(it) }
+
         val member = getMember(memberId)
 
-        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(request.nickname)) {
+        if (memberNickname.value != request.nickname && memberRepository.existsByNickname(request.nickname)) {
             throw CustomException("이미 사용 중인 닉네임입니다.")
         }
-        if (LocalDate.now().year - request.birthYear !in 19..60) {
-            throw CustomException("만 19세 이상 60세 이하만 가입할 수 있습니다.")
-        }
 
+        // 회원 프로필 이미지 저장
         val memberImages = request.images.map {
             MemberImage(
                 memberId = member.id,
