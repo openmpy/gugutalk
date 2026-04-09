@@ -87,10 +87,10 @@ class MemberCustomRepositoryImpl(
                 AND req.location IS NOT NULL
                 AND m.updated_at >= NOW() - INTERVAL '24 hours'
                 AND (:gender = 'ALL' OR m.gender = :gender)
-                AND m.id NOT IN (
-                    SELECT blocked_id FROM blocks WHERE blocker_id = :requesterId
-                    UNION
-                    SELECT blocker_id FROM blocks WHERE blocked_id = :requesterId
+                AND NOT EXISTS (
+                    SELECT 1 FROM blocks
+                    WHERE (blocker_id = :requesterId AND blocked_id = m.id)
+                       OR (blocked_id = :requesterId AND blocker_id = m.id)
                 )
             ORDER BY ST_Distance(m.location, req.location), m.id
             LIMIT :size OFFSET :offset
@@ -127,10 +127,10 @@ class MemberCustomRepositoryImpl(
             WHERE m.deleted_at IS NULL
                 AND m.id != :requesterId
                 AND m.nickname ILIKE '%' || :keyword || '%'
-                AND m.id NOT IN (
-                    SELECT blocked_id FROM blocks WHERE blocker_id = :requesterId
-                    UNION
-                    SELECT blocker_id FROM blocks WHERE blocked_id = :requesterId
+                AND NOT EXISTS (
+                    SELECT 1 FROM blocks
+                    WHERE (blocker_id = :requesterId AND blocked_id = m.id)
+                       OR (blocked_id = :requesterId AND blocker_id = m.id)
                 )
                 $cursorCondition
             ORDER BY m.id DESC
