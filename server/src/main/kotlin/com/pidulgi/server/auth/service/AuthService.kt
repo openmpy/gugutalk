@@ -223,11 +223,11 @@ class AuthService(
         val accessToken = AuthenticationExtractor.extract(servletRequest)
             ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
-        val accessTokenBlacklist = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + accessToken
+        val accessTokenBlacklistKey = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + accessToken
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
 
         redisTemplate.opsForValue().set(
-            accessTokenBlacklist,
+            accessTokenBlacklistKey,
             "1",
             Duration.ofSeconds(accessTokenExpireSeconds)
         )
@@ -239,9 +239,8 @@ class AuthService(
         val member = getMember(request.memberId)
 
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + request.refreshToken
-        val exists = redisTemplate.hasKey(refreshTokenKey)
-
-        if (exists == false) {
+        val refreshTokenKeyExists = redisTemplate.hasKey(refreshTokenKey)
+        if (refreshTokenKeyExists == false) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "존재하지 않는 리프레시 토큰입니다.")
         }
 
