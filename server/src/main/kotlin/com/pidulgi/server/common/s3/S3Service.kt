@@ -1,6 +1,7 @@
 package com.pidulgi.server.common.s3
 
 import com.pidulgi.server.common.s3.PresignedUrlsResponse.PresignedUrlResponse
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.services.s3.S3Client
@@ -18,6 +19,8 @@ class S3Service(
     private val s3Client: S3Client,
     private val s3Presigner: S3Presigner,
 ) {
+
+    private val log = KotlinLogging.logger {}
 
     fun createPresignedUrl(key: String, contentType: String): PresignedUrlResponse {
         val presignRequest = PutObjectPresignRequest.builder()
@@ -76,9 +79,16 @@ class S3Service(
                 .build()
 
             try {
-                s3Client.deleteObjects(request)
+                val response = s3Client.deleteObjects(request)
+
+                if (response.hasErrors()) {
+                    val errors = response.errors()
+                    log.error { "S3 삭제 부분 실패 - ${errors.map { "${it.key()}: ${it.message()}" }}" }
+                    throw RuntimeException("S3 삭제 실패 키 존재: ${errors.map { it.key() }}")
+                }
             } catch (e: Exception) {
-                throw RuntimeException("S3 배치 삭제 실패 - keys: $chunk", e)
+                log.error(e) { "S3 삭제 배치 작업 실패 - $chunk" }
+                throw e
             }
         }
     }
