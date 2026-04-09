@@ -159,12 +159,11 @@ class MemberService(
     @Transactional
     fun bump(memberId: Long, request: MemberBumpRequest) {
         val member = getMember(memberId)
-        val point = request.longitude?.let { longitude ->
-            request.latitude?.let { latitude ->
-                GeometryFactory().createPoint(Coordinate(longitude, latitude))
-            }
+
+        if (request.longitude != null && request.latitude != null) {
+            val point = GeometryFactory().createPoint(Coordinate(request.longitude, request.latitude))
+            member.bump(point)
         }
-        member.bump(point)
     }
 
     @Transactional

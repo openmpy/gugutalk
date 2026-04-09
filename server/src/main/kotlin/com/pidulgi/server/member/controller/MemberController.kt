@@ -46,6 +46,15 @@ class MemberController(
         return ResponseEntity.ok().build()
     }
 
+    @PutMapping("/v1/members/me/bump")
+    fun bump(
+        @Login memberId: Long,
+        @RequestBody request: MemberBumpRequest,
+    ): ResponseEntity<Unit> {
+        memberService.bump(memberId, request)
+        return ResponseEntity.ok().build()
+    }
+
     @PutMapping("/v1/members/me/profile")
     fun updateProfile(
         @Login memberId: Long,
@@ -61,15 +70,6 @@ class MemberController(
         @RequestBody request: MemberUpdateCommentRequest,
     ): ResponseEntity<Unit> {
         memberService.updateComment(memberId, request)
-        return ResponseEntity.ok().build()
-    }
-
-    @PutMapping("/v1/members/me/bump")
-    fun bump(
-        @Login memberId: Long,
-        @RequestBody request: MemberBumpRequest,
-    ): ResponseEntity<Unit> {
-        memberService.bump(memberId, request)
         return ResponseEntity.ok().build()
     }
 
