@@ -10,6 +10,9 @@ import com.pidulgi.server.common.dto.PageResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.s3.S3Service
 import com.pidulgi.server.member.entity.type.ImageType
+import com.pidulgi.server.member.entity.vo.MemberBio
+import com.pidulgi.server.member.entity.vo.MemberComment
+import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.report.entity.type.ReportStatus
@@ -116,7 +119,7 @@ class AdminService(
             ?: throw CustomException("존재하지 않는 회원입니다."))
 
         val nickname = "닉네임_" + UUID.randomUUID().toString().replace("-", "").substring(0, 6)
-        member.updateNickname(nickname)
+        member.updateNickname(MemberNickname(nickname))
     }
 
     @Transactional
@@ -124,7 +127,7 @@ class AdminService(
         val member = (memberRepository.findByIdOrNullNative(memberId)
             ?: throw CustomException("존재하지 않는 회원입니다."))
 
-        member.updateComment("부적절한 코멘트 내용입니다.")
+        member.updateComment(MemberComment("부적절한 코멘트 내용입니다."))
     }
 
     @Transactional
@@ -132,7 +135,7 @@ class AdminService(
         val member = (memberRepository.findByIdOrNullNative(memberId)
             ?: throw CustomException("존재하지 않는 회원입니다."))
 
-        member.updateBio("부적절한 자기소개 내용입니다.")
+        member.updateBio(MemberBio("부적절한 자기소개 내용입니다."))
     }
 
     @Transactional(readOnly = true)

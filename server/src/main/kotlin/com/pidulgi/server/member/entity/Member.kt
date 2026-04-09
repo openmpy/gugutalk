@@ -96,11 +96,11 @@ class Member(
     var deletedAt: LocalDateTime? = null
 ) {
 
-    fun activate(profileKey: String?, nickname: String, birthYear: Int, bio: String?) {
+    fun activate(profileKey: String?, nickname: MemberNickname, birthYear: MemberBirthYear, bio: MemberBio?) {
         this.profileKey = profileKey
-        this.nickname = MemberNickname(nickname)
-        this.birthYear = MemberBirthYear(birthYear)
-        this.bio = bio?.let { MemberBio(it) }
+        this.nickname = nickname
+        this.birthYear = birthYear
+        this.bio = bio
     }
 
     fun withdraw() {
@@ -112,26 +112,26 @@ class Member(
         this.updatedAt = LocalDateTime.now()
     }
 
-    fun updateNickname(nickname: String) {
-        this.nickname = MemberNickname(nickname)
+    fun updateNickname(nickname: MemberNickname) {
+        this.nickname = nickname
         this.updatedAt = LocalDateTime.now()
     }
 
-    fun updateBio(string: String) {
-        this.bio = MemberBio(string)
+    fun updateBio(bio: MemberBio?) {
+        this.bio = bio
         this.updatedAt = LocalDateTime.now()
     }
 
-    fun updateComment(comment: String) {
-        this.comment = MemberComment(comment)
+    fun updateComment(comment: MemberComment) {
+        this.comment = comment
         this.updatedAt = LocalDateTime.now()
     }
 
-    fun updateProfile(profileKey: String?, nickname: String, birthYear: Int, bio: String?) {
+    fun updateProfile(profileKey: String?, nickname: MemberNickname, birthYear: MemberBirthYear, bio: MemberBio?) {
         this.profileKey = profileKey
-        this.nickname = MemberNickname(nickname)
-        this.birthYear = MemberBirthYear(birthYear)
-        this.bio = bio?.let { MemberBio(it) }
+        this.nickname = nickname
+        this.birthYear = birthYear
+        this.bio = bio
         this.updatedAt = LocalDateTime.now()
     }
 

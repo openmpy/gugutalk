@@ -24,6 +24,7 @@ import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.entity.vo.MemberBio
 import com.pidulgi.server.member.entity.vo.MemberBirthYear
+import com.pidulgi.server.member.entity.vo.MemberComment
 import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
@@ -170,13 +171,13 @@ class MemberService(
 
     @Transactional
     fun updateProfile(memberId: Long, request: MemberUpdateProfileRequest) {
-        MemberNickname(request.nickname)
-        MemberBirthYear(request.birthYear)
-        request.bio?.let { MemberBio(it) }
+        val memberNickname = MemberNickname(request.nickname)
+        val memberBirthYear = MemberBirthYear(request.birthYear)
+        val memberBio = request.bio?.let { MemberBio(it) }
 
         val member = getMember(memberId)
 
-        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(MemberNickname(request.nickname))) {
+        if (member.nickname.value != request.nickname && memberRepository.existsByNickname(memberNickname)) {
             throw CustomException("이미 사용 중인 닉네임입니다.")
         }
 
@@ -190,13 +191,15 @@ class MemberService(
             else -> firstImage.key
         }
 
-        member.updateProfile(profileKey, request.nickname, request.birthYear, request.bio)
+        member.updateProfile(profileKey, memberNickname, memberBirthYear, memberBio)
     }
 
     @Transactional
     fun updateComment(memberId: Long, request: MemberUpdateCommentRequest) {
         val member = getMember(memberId)
-        member.updateComment(request.comment)
+        val memberComment = MemberComment(request.comment)
+
+        member.updateComment(memberComment)
     }
 
     @Transactional(readOnly = true)

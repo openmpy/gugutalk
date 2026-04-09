@@ -10,6 +10,7 @@ import com.pidulgi.server.common.auth.AuthenticationExtractor
 import com.pidulgi.server.common.auth.JwtProvider
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.sms.SmsSender
+import com.pidulgi.server.common.util.AgeCalculator
 import com.pidulgi.server.common.util.ClientIpExtractor
 import com.pidulgi.server.common.util.NumberGenerator
 import com.pidulgi.server.member.entity.Member
@@ -155,7 +156,9 @@ class AuthService(
     @Transactional(readOnly = true)
     fun validate(memberId: Long, request: ValidateRequest) {
         val memberNickname = MemberNickname(request.nickname)
-        MemberBirthYear(request.birthYear)
+        if (AgeCalculator.calculate(request.birthYear) !in 20..60) {
+            throw CustomException("20세 이상 60세 이하만 가입할 수 있습니다.")
+        }
 
         val member = getMember(memberId)
         if (member.nickname.value != request.nickname && memberRepository.existsByNickname(memberNickname)) {
@@ -166,8 +169,8 @@ class AuthService(
     @Transactional
     fun activate(memberId: Long, request: ActivateRequest) {
         val memberNickname = MemberNickname(request.nickname)
-        MemberBirthYear(request.birthYear)
-        request.bio?.let { MemberBio(it) }
+        val memberBirthYear = MemberBirthYear(request.birthYear)
+        val memberBio = request.bio?.let { MemberBio(it) }
 
         val member = getMember(memberId)
         if (member.nickname.value != request.nickname && memberRepository.existsByNickname(memberNickname)) {
@@ -188,9 +191,9 @@ class AuthService(
         val profileKey = request.images.minByOrNull { it.index }?.key
         member.activate(
             profileKey,
-            request.nickname,
-            request.birthYear,
-            request.bio
+            memberNickname,
+            memberBirthYear,
+            memberBio
         )
     }
 
