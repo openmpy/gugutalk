@@ -22,6 +22,8 @@ import com.pidulgi.server.member.dto.response.MemberImageResponse
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
+import com.pidulgi.server.member.entity.vo.MemberBio
+import com.pidulgi.server.member.entity.vo.MemberBirthYear
 import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
@@ -168,20 +170,20 @@ class MemberService(
 
     @Transactional
     fun updateProfile(memberId: Long, request: MemberUpdateProfileRequest) {
+        MemberNickname(request.nickname)
+        MemberBirthYear(request.birthYear)
+        request.bio?.let { MemberBio(it) }
+
         val member = getMember(memberId)
 
         if (member.nickname.value != request.nickname && memberRepository.existsByNickname(MemberNickname(request.nickname))) {
             throw CustomException("이미 사용 중인 닉네임입니다.")
-        }
-        if (LocalDate.now().year - request.birthYear !in 19..60) {
-            throw CustomException("만 19세 이상 60세 이하만 가입할 수 있습니다.")
         }
 
         val publicImages = updateImages(member.id, request.publicImages, ImageType.PUBLIC)
         updateImages(member.id, request.privateImages, ImageType.PRIVATE)
 
         val firstImage = request.publicImages.minByOrNull { it.sortOrder }
-
         val profileKey = when {
             firstImage == null -> null
             firstImage.imageId != null -> publicImages[firstImage.imageId]?.key
