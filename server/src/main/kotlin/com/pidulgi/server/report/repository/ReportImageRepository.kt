@@ -15,4 +15,6 @@ interface ReportImageRepository : JpaRepository<ReportImage, Long> {
         status: ReportImageStatus,
         createdAt: LocalDateTime
     ): List<ReportImage>
+
+    fun findAllByReportIdIn(reportIds: Collection<Long>): List<ReportImage>
 }

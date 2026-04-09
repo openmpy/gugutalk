@@ -41,4 +41,5 @@ out/
 
 ### Others ###
 application-local.yaml
+application-test.yaml
 *firebase-adminsdk*.json
