@@ -221,7 +221,7 @@ class AuthService(
     @Transactional
     fun logout(servletRequest: HttpServletRequest, refreshToken: String) {
         val accessToken = AuthenticationExtractor.extract(servletRequest)
-            ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
+            ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "액세스 토큰을 찾을 수 없습니다.")
 
         val accessTokenBlacklistKey = AUTH_ACCESS_TOKEN_BLACKLIST_KEY + accessToken
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
