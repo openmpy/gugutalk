@@ -6,7 +6,6 @@ import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.member.service.PrivateImageGrantService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDateTime
 
 @RequestMapping("/api")
 @RestController
@@ -37,11 +36,10 @@ class PrivateImageGrantController(
     fun getGrantedMembers(
         @Login granterId: Long,
         @RequestParam(required = false) cursorId: Long?,
-        @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<SettingResponse>> {
         val response = privateImageGrantService.getGrantedMembers(
-            granterId, cursorId, cursorDate, size
+            granterId, cursorId, size
         )
         return ResponseEntity.ok(response)
     }

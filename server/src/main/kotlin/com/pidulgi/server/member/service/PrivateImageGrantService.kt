@@ -3,13 +3,13 @@ package com.pidulgi.server.member.service
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.common.util.AgeCalculator
 import com.pidulgi.server.member.entity.PrivateImageGrant
+import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Service
 class PrivateImageGrantService(
@@ -17,10 +17,14 @@ class PrivateImageGrantService(
     @Value("\${s3.endpoint}") private val endpoint: String,
 
     private val privateImageGrantRepository: PrivateImageGrantRepository,
+    private val memberRepository: MemberRepository,
 ) {
 
     @Transactional
     fun open(granterId: Long, granteeId: Long) {
+        if (!memberRepository.existsById(granteeId)) {
+            throw CustomException("존재하지 않는 회원입니다.")
+        }
         if (granteeId == granterId) {
             throw CustomException("자기 자신에게 공개할 수 없습니다.")
         }
@@ -37,6 +41,9 @@ class PrivateImageGrantService(
 
     @Transactional
     fun close(granterId: Long, granteeId: Long) {
+        if (!memberRepository.existsById(granteeId)) {
+            throw CustomException("존재하지 않는 회원입니다.")
+        }
         val privateImageGrant = (privateImageGrantRepository.findByGranterIdAndGranteeId(
             granterId, granteeId
         ) ?: throw CustomException("공개 한 적이 없습니다."))
@@ -48,32 +55,31 @@ class PrivateImageGrantService(
     fun getGrantedMembers(
         granterId: Long,
         cursorId: Long?,
-        cursorDate: LocalDateTime?,
         size: Int = 20
     ): CursorResponse<SettingResponse> {
         val result = privateImageGrantRepository.findGrantsByCursor(
             granterId,
             cursorId,
-            cursorDate,
             size + 1
         ).map {
             SettingResponse(
                 id = it.grantId,
                 memberId = it.memberId,
-                nickname = it.nickname,
+                nickname = it.nickname.value,
                 gender = it.gender,
-                age = LocalDate.now().year - it.birthYear,
+                age = AgeCalculator.calculate(it.birthYear.value),
                 profileUrl = it.profileKey?.let { "$endpoint$it" },
                 createdAt = it.createdAt,
             )
         }
         val hasNext = result.size > size
         val items = if (hasNext) result.dropLast(1) else result
+        val last = items.lastOrNull()
 
         return CursorResponse(
             payload = items,
-            nextId = if (hasNext) items.last().id else null,
-            nextDateAt = if (hasNext) items.last().createdAt else null,
+            nextId = last?.id,
+            nextDateAt = null,
             hasNext = hasNext
         )
     }

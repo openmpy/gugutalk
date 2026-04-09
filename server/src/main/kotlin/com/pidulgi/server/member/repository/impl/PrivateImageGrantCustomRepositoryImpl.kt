@@ -9,7 +9,6 @@ import com.pidulgi.server.member.repository.PrivateImageGrantCustomRepository
 import com.pidulgi.server.member.repository.dto.PrivateImageGrantItemResponse
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
-import java.time.LocalDateTime
 
 @Repository
 class PrivateImageGrantCustomRepositoryImpl(
@@ -23,18 +22,11 @@ class PrivateImageGrantCustomRepositoryImpl(
     override fun findGrantsByCursor(
         granterId: Long,
         cursorId: Long?,
-        cursorDate: LocalDateTime?,
         size: Int
     ): List<PrivateImageGrantItemResponse> {
         val query = jpql {
-            val cursorCondition = if (cursorId != null && cursorDate != null) {
-                or(
-                    path(PrivateImageGrant::createdAt).lt(cursorDate),
-                    and(
-                        path(PrivateImageGrant::createdAt).eq(cursorDate),
-                        path(PrivateImageGrant::id).lt(cursorId)
-                    )
-                )
+            val cursorCondition = if (cursorId != null) {
+                path(PrivateImageGrant::id).lt(cursorId)
             } else null
 
             selectNew<PrivateImageGrantItemResponse>(
@@ -52,14 +44,14 @@ class PrivateImageGrantCustomRepositoryImpl(
                 path(PrivateImageGrant::granterId).eq(granterId),
                 cursorCondition
             ).orderBy(
-                path(PrivateImageGrant::createdAt).desc(),
                 path(PrivateImageGrant::id).desc()
             )
         }
 
         val rendered = renderer.render(query, jpqlRenderContext)
-        val jpaQuery =
-            entityManager.createQuery(rendered.query, PrivateImageGrantItemResponse::class.java)
+        val jpaQuery = entityManager.createQuery(
+            rendered.query, PrivateImageGrantItemResponse::class.java
+        )
 
         rendered.params.forEach { (name, value) ->
             jpaQuery.setParameter(name, value)

@@ -3,6 +3,7 @@ package com.pidulgi.server.common.data
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.member.entity.Member
+import com.pidulgi.server.member.entity.PrivateImageGrant
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.vo.*
 import com.pidulgi.server.member.repository.MemberRepository
@@ -112,6 +113,17 @@ class DummyDataInit {
                 likeRepository.saveAll(likes)
             }
 
+            // 비밀 사진 권한
+            if (privateImageGrantRepository.count() == 0L) {
+                val privateImageGrants = (2 until DUMMY_MEMBER_COUNT + 1).map { i ->
+                    PrivateImageGrant(
+                        granterId = 1,
+                        granteeId = i.toLong()
+                    )
+                }
+                privateImageGrantRepository.saveAll(privateImageGrants)
+            }
+
             // 차단
             if (blockRepository.count() == 0L) {
                 val blocks = (2 until DUMMY_MEMBER_COUNT + 1).map { i ->
@@ -127,6 +139,7 @@ class DummyDataInit {
             log.info { "회원 더미 데이터 (${memberRepository.count()})개" }
             log.info { "포인트 더미 데이터 (${pointRepository.count()})개" }
             log.info { "좋아요 더미 데이터 (${likeRepository.count()})개" }
+            log.info { "비밀 사진 권한 더미 데이터 (${privateImageGrantRepository.count()})개" }
             log.info { "차단 더미 데이터 (${blockRepository.count()})개" }
         }
     }
