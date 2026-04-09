@@ -27,7 +27,6 @@ final class PrivateImageGrantService {
 
     func getGrantedMember(
         cursorId: Int64?,
-        cursorDateAt: String?,
         size: Int = 20
     ) async throws -> CursorResponse<SettingResponse> {
         let url = "\(baseURL)/v1/members/private-image-grants"
@@ -35,9 +34,8 @@ final class PrivateImageGrantService {
         var params: Parameters = [
             "size": size
         ]
-        if cursorId != nil && cursorDateAt != nil {
+        if cursorId != nil {
             params["cursorId"] = cursorId
-            params["cursorDate"] = cursorDateAt
         }
 
         return try await session.request(

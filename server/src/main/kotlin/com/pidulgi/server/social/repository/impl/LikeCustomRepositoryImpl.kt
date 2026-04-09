@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class LikeCustomRepositoryImpl(
-
     private val entityManager: EntityManager,
     private val jpqlRenderContext: JpqlRenderContext,
 ) : LikeCustomRepository {

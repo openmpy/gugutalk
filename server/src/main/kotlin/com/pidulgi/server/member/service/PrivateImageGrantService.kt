@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class PrivateImageGrantService(
-
     @Value("\${s3.endpoint}") private val endpoint: String,
 
     private val privateImageGrantRepository: PrivateImageGrantRepository,

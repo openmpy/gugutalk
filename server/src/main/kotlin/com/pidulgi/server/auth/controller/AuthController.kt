@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api")
 @RestController
 class AuthController(
-
     private val authService: AuthService,
 ) {
 

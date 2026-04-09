@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api")
 @RestController
 class LikeController(
-
     private val likeService: LikeService,
 ) {
 

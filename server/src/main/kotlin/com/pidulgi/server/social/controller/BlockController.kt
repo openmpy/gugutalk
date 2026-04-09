@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api")
 @RestController
 class BlockController(
-
     private val blockService: BlockService,
 ) {
 

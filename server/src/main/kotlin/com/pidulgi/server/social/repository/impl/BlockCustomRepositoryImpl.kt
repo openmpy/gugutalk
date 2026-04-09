@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class BlockCustomRepositoryImpl(
-
     private val entityManager: EntityManager,
     private val jpqlRenderContext: JpqlRenderContext,
 ) : BlockCustomRepository {
