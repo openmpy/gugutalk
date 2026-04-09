@@ -17,9 +17,16 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api")
 @RestController
 class MemberController(
-
     private val memberService: MemberService,
 ) {
+
+    @GetMapping("/v1/members/me")
+    fun getMe(
+        @Login memberId: Long
+    ): ResponseEntity<MemberGetMeResponse> {
+        val response = memberService.getMe(memberId)
+        return ResponseEntity.ok(response)
+    }
 
     @GetMapping("/v1/members/{targetId}")
     fun getMember(
@@ -27,14 +34,6 @@ class MemberController(
         @PathVariable targetId: Long,
     ): ResponseEntity<MemberGetResponse> {
         val response = memberService.getMember(memberId, targetId)
-        return ResponseEntity.ok(response)
-    }
-
-    @GetMapping("/v1/members/me")
-    fun getMe(
-        @Login memberId: Long
-    ): ResponseEntity<MemberGetMeResponse> {
-        val response = memberService.getMe(memberId)
         return ResponseEntity.ok(response)
     }
 

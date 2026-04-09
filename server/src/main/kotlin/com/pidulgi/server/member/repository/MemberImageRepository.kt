@@ -13,7 +13,7 @@ interface MemberImageRepository : JpaRepository<MemberImage, Long> {
         type: ImageType
     ): List<MemberImage>
 
-    fun findAllByMemberIdOrderByTypeAscSortOrderAsc(memberId: Long): List<MemberImage>
+    fun findAllByMemberId(memberId: Long): List<MemberImage>
 
     fun findAllByKeyIn(keys: Collection<String>): List<MemberImage>
 

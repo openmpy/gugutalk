@@ -8,6 +8,7 @@ import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.s3.S3Service
+import com.pidulgi.server.common.util.AgeCalculator
 import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateCommentRequest
@@ -40,7 +41,6 @@ import java.time.LocalDate
 
 @Service
 class MemberService(
-
     @Value("\${s3.endpoint}") private val endpoint: String,
     @Value("\${jwt.access-token-expire-seconds}") private val accessTokenExpireSeconds: Long,
 
@@ -58,27 +58,16 @@ class MemberService(
     @Transactional(readOnly = true)
     fun getMe(memberId: Long): MemberGetMeResponse {
         val member = getMember(memberId)
-        val images = memberImageRepository.findAllByMemberIdOrderByTypeAscSortOrderAsc(
-            member.id
-        )
+        val memberImages = memberImageRepository.findAllByMemberId(memberId).sortedBy { it.sortOrder }
 
-        val (publicImages, privateImages) = images.partition {
-            it.type == ImageType.PUBLIC
-        }
+        val (publicImages, privateImages) = memberImages.partition { it.type == ImageType.PUBLIC }
         val publicImagesResponse = publicImages.map {
-            MemberImageResponse(
-                it.id,
-                it.sortOrder,
-                "$endpoint${it.key}"
-            )
+            MemberImageResponse(it.id, it.sortOrder, "$endpoint${it.key}")
         }
         val privateImagesResponse = privateImages.map {
-            MemberImageResponse(
-                it.id,
-                it.sortOrder,
-                s3Service.getPresignedUrl(it.key)
-            )
+            MemberImageResponse(it.id, it.sortOrder, s3Service.getPresignedUrl(it.key))
         }
+
         val likes = likeRepository.countByLikedId(memberId)
 
         return MemberGetMeResponse(
@@ -87,7 +76,7 @@ class MemberService(
             privateImagesResponse,
             member.nickname.value,
             member.gender,
-            LocalDate.now().year - member.birthYear.value,
+            AgeCalculator.calculate(member.birthYear.value),
             member.birthYear.value,
             member.bio?.value,
             likes
