@@ -152,14 +152,11 @@ class MemberCustomRepositoryImpl(
               AND a.location IS NOT NULL AND b.location IS NOT NULL
         """.trimIndent()
 
-        return try {
-            (entityManager.createNativeQuery(sql)
-                .setParameter("fromId", fromId)
-                .setParameter("toId", toId)
-                .singleResult as? Number)?.toDouble()
-        } catch (_: Exception) {
-            null
-        }
+        return (entityManager.createNativeQuery(sql)
+            .setParameter("fromId", fromId)
+            .setParameter("toId", toId)
+            .resultList
+            .firstOrNull() as? Number)?.toDouble()
     }
 
     private fun toMemberItemResponse(row: Array<Any?>) = MemberItemResponse(

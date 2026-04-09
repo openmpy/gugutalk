@@ -85,36 +85,34 @@ class MemberService(
 
     @Transactional(readOnly = true)
     fun getMember(memberId: Long, targetId: Long): MemberGetResponse {
-        val member = (memberRepository.findByIdOrNull(targetId)
+        val target = (memberRepository.findByIdOrNull(targetId)
             ?: throw CustomException("존재하지 않는 회원입니다."))
-
-        val images = memberImageRepository
-            .findByMemberIdAndTypeOrderBySortOrder(member.id, ImageType.PUBLIC)
-            .map { MemberImageResponse(it.id, it.sortOrder, endpoint + it.key) }
+        val memberImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
+            target.id, ImageType.PUBLIC
+        ).map {
+            MemberImageResponse(it.id, it.sortOrder, endpoint + it.key)
+        }
 
         val isLiked = likeRepository.existsByLikerIdAndLikedId(memberId, targetId)
         val isBlocked = blockRepository.existsByBlockerIdAndBlockedId(memberId, targetId)
-        val isPrivateImageGranted = privateImageGrantRepository.existsByGranterIdAndGranteeId(
-            memberId, targetId
+        val isPrivateImageGranted = privateImageGrantRepository.existsByGranterIdAndGranteeId(memberId, targetId)
+        val isPrivateImageGrantedByTarget = privateImageGrantRepository.existsByGranterIdAndGranteeId(
+            targetId, memberId
         )
-        val isPrivateImageGrantedByTarget =
-            privateImageGrantRepository.existsByGranterIdAndGranteeId(
-                targetId, memberId
-            )
         val likes = likeRepository.countByLikedId(targetId)
         val distance = memberRepository.getDistanceBetween(memberId, targetId)
 
         return MemberGetResponse(
-            memberId = member.id,
-            images = images,
-            nickname = member.nickname.value,
-            gender = member.gender,
-            age = LocalDate.now().year - member.birthYear.value,
-            bio = member.bio?.value,
+            memberId = target.id,
+            images = memberImages,
+            nickname = target.nickname.value,
+            gender = target.gender,
+            age = AgeCalculator.calculate(target.birthYear.value),
+            bio = target.bio?.value,
             likes = likes,
             distance = distance,
-            updatedAt = member.updatedAt,
-            isChatEnabled = member.isChatEnabled,
+            updatedAt = target.updatedAt,
+            isChatEnabled = target.isChatEnabled,
             isLiked = isLiked,
             isBlocked = isBlocked,
             isPrivateImageGranted = isPrivateImageGranted,
