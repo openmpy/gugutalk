@@ -3,14 +3,13 @@ package com.pidulgi.server.social.service
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.common.util.AgeCalculator
 import com.pidulgi.server.social.dto.response.LikeCountResponse
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.LikeRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Service
 class LikeService(
@@ -51,28 +50,28 @@ class LikeService(
     fun getLikedMembers(
         likerId: Long,
         cursorId: Long?,
-        cursorDate: LocalDateTime?,
         size: Int = 20
     ): CursorResponse<SettingResponse> {
-        val result = likeRepository.findLikesByCursor(likerId, cursorId, cursorDate, size + 1)
+        val result = likeRepository.findLikesByCursor(likerId, cursorId, size + 1)
             .map {
                 SettingResponse(
                     id = it.likeId,
                     memberId = it.memberId,
-                    nickname = it.nickname,
+                    nickname = it.nickname.value,
                     gender = it.gender,
-                    age = LocalDate.now().year - it.birthYear,
+                    age = AgeCalculator.calculate(it.birthYear.value),
                     profileUrl = it.profileKey?.let { "$endpoint$it" },
                     createdAt = it.createdAt,
                 )
             }
         val hasNext = result.size > size
         val items = if (hasNext) result.dropLast(1) else result
+        val last = items.lastOrNull()
 
         return CursorResponse(
             payload = items,
-            nextId = if (hasNext) items.last().id else null,
-            nextDateAt = if (hasNext) items.last().createdAt else null,
+            nextId = last?.id,
+            nextDateAt = null,
             hasNext = hasNext
         )
     }

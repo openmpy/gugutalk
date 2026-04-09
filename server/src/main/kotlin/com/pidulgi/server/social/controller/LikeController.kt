@@ -7,7 +7,6 @@ import com.pidulgi.server.social.dto.response.LikeCountResponse
 import com.pidulgi.server.social.service.LikeService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDateTime
 
 @RequestMapping("/api")
 @RestController
@@ -38,10 +37,9 @@ class LikeController(
     fun getLikedMembers(
         @Login likerId: Long,
         @RequestParam(required = false) cursorId: Long?,
-        @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<SettingResponse>> {
-        val response = likeService.getLikedMembers(likerId, cursorId, cursorDate, size)
+        val response = likeService.getLikedMembers(likerId, cursorId, size)
         return ResponseEntity.ok(response)
     }
 }

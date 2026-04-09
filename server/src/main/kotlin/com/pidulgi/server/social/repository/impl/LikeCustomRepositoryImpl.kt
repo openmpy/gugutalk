@@ -9,7 +9,6 @@ import com.pidulgi.server.social.repository.LikeCustomRepository
 import com.pidulgi.server.social.repository.dto.LikeItemResponse
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
-import java.time.LocalDateTime
 
 @Repository
 class LikeCustomRepositoryImpl(
@@ -23,18 +22,11 @@ class LikeCustomRepositoryImpl(
     override fun findLikesByCursor(
         likerId: Long,
         cursorId: Long?,
-        cursorDate: LocalDateTime?,
         size: Int
     ): List<LikeItemResponse> {
         val query = jpql {
-            val cursorCondition = if (cursorId != null && cursorDate != null) {
-                or(
-                    path(Like::createdAt).lt(cursorDate),
-                    and(
-                        path(Like::createdAt).eq(cursorDate),
-                        path(Like::id).lt(cursorId)
-                    )
-                )
+            val cursorCondition = if (cursorId != null) {
+                path(Like::id).lt(cursorId)
             } else null
 
             selectNew<LikeItemResponse>(
@@ -52,7 +44,6 @@ class LikeCustomRepositoryImpl(
                 path(Like::likerId).eq(likerId),
                 cursorCondition
             ).orderBy(
-                path(Like::createdAt).desc(),
                 path(Like::id).desc()
             )
         }

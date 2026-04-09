@@ -13,7 +13,6 @@ final class LikeListViewModel: ObservableObject {
     @Published var members: [SettingResponse] = []
 
     private var cursorId: Int64?
-    private var cursorDateAt: String?
 
     func getLikedMember() async {
         guard case .loading = state else {
@@ -26,12 +25,10 @@ final class LikeListViewModel: ObservableObject {
         do {
             let response = try await socialService.getLikedMember(
                 cursorId: nil,
-                cursorDateAt: nil
             )
 
             members = response.payload
             cursorId = response.nextId
-            cursorDateAt = response.nextDateAt
             hasNext = response.hasNext
 
             state = members.isEmpty ? .empty : .data
@@ -49,12 +46,10 @@ final class LikeListViewModel: ObservableObject {
 
         let response = try await socialService.getLikedMember(
             cursorId: cursorId,
-            cursorDateAt: cursorDateAt
         )
 
         members.append(contentsOf: response.payload)
         cursorId = response.nextId
-        cursorDateAt = response.nextDateAt
         hasNext = response.hasNext
     }
     
