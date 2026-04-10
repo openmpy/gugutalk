@@ -26,14 +26,14 @@ class LikeService(
 
     @Transactional
     fun like(command: LikeMemberCommand): LikeCountResponse {
-        if (!memberRepository.existsById(command.likerId)) {
+        if (!memberRepository.existsById(command.likedId)) {
             throw CustomException("존재하지 않는 회원입니다.")
         }
         if (likeRepository.existsByLikerIdAndLikedId(command.likerId, command.likedId)) {
             throw CustomException("이미 좋아요를 눌렀습니다.")
         }
 
-        val like = Like(likerId = command.likerId, likedId = command.likerId)
+        val like = Like(likerId = command.likerId, likedId = command.likedId)
         likeRepository.save(like)
 
         return LikeCountResponse(likeRepository.countByLikedId(command.likedId))
