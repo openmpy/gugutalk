@@ -47,6 +47,7 @@ class PointService(
             memberId = memberId,
             type = TransactionType.EARN,
             source = PointSource.ATTENDANCE,
+            amount = PointSource.ATTENDANCE.point,
             balanceSnapshot = point.balance,
             description = PointSource.ATTENDANCE.description
         )
@@ -75,6 +76,7 @@ class PointService(
             memberId = memberId,
             type = TransactionType.EARN,
             source = PointSource.AD_REWARD,
+            amount = PointSource.AD_REWARD.point,
             balanceSnapshot = point.balance,
             description = PointSource.AD_REWARD.description
         )
