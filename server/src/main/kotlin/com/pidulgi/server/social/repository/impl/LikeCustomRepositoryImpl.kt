@@ -6,14 +6,15 @@ import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderer
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.LikeCustomRepository
-import com.pidulgi.server.social.repository.dto.LikeItemResponse
+import com.pidulgi.server.social.repository.dto.LikedItemResult
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 
 @Repository
 class LikeCustomRepositoryImpl(
+
+    private val context: JpqlRenderContext,
     private val entityManager: EntityManager,
-    private val jpqlRenderContext: JpqlRenderContext,
 ) : LikeCustomRepository {
 
     private val renderer = JpqlRenderer()
@@ -22,13 +23,9 @@ class LikeCustomRepositoryImpl(
         likerId: Long,
         cursorId: Long?,
         size: Int
-    ): List<LikeItemResponse> {
+    ): List<LikedItemResult> {
         val query = jpql {
-            val cursorCondition = if (cursorId != null) {
-                path(Like::id).lt(cursorId)
-            } else null
-
-            selectNew<LikeItemResponse>(
+            selectNew<LikedItemResult>(
                 path(Like::id),
                 path(Member::id),
                 path(Member::nickname),
@@ -41,17 +38,17 @@ class LikeCustomRepositoryImpl(
                 join(Member::class).on(path(Like::likedId).eq(path(Member::id)))
             ).whereAnd(
                 path(Like::likerId).eq(likerId),
-                cursorCondition
+                cursorId?.let { path(Like::id).lt(cursorId) }
             ).orderBy(
                 path(Like::id).desc()
             )
         }
 
-        val rendered = renderer.render(query, jpqlRenderContext)
-        val jpaQuery = entityManager.createQuery(rendered.query, LikeItemResponse::class.java)
-
-        rendered.params.forEach { (name, value) ->
-            jpaQuery.setParameter(name, value)
+        val rendered = renderer.render(query, context)
+        val jpaQuery = entityManager.createQuery(rendered.query, LikedItemResult::class.java).apply {
+            rendered.params.forEach { (name, value) ->
+                setParameter(name, value)
+            }
         }
         return jpaQuery.setMaxResults(size).resultList
     }

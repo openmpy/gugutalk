@@ -5,7 +5,7 @@ import com.pidulgi.server.member.entity.vo.MemberBirthYear
 import com.pidulgi.server.member.entity.vo.MemberNickname
 import java.time.LocalDateTime
 
-data class LikeItemResponse(
+data class LikedItemResult(
 
     val likeId: Long,
     val memberId: Long,

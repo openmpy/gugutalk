@@ -3,17 +3,21 @@ package com.pidulgi.server.social.service
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.exception.CustomException
-import com.pidulgi.server.common.util.AgeCalculator
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.social.dto.response.LikeCountResponse
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.LikeRepository
+import com.pidulgi.server.social.service.command.LikeMemberCommand
+import com.pidulgi.server.social.service.command.UnlikeMemberCommand
+import com.pidulgi.server.social.service.extension.toSettingResponse
+import com.pidulgi.server.social.service.query.GetLikedMembersQuery
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class LikeService(
+
     @Value("\${s3.endpoint}") private val endpoint: String,
 
     private val likeRepository: LikeRepository,
@@ -21,55 +25,40 @@ class LikeService(
 ) {
 
     @Transactional
-    fun like(likerId: Long, likedId: Long): LikeCountResponse {
-        if (!memberRepository.existsById(likedId)) {
+    fun like(command: LikeMemberCommand): LikeCountResponse {
+        if (!memberRepository.existsById(command.likerId)) {
             throw CustomException("존재하지 않는 회원입니다.")
         }
-        if (likedId == likerId) {
-            throw CustomException("자기 자신에게 좋아요를 누를 수 없습니다.")
-        }
-        if (likeRepository.existsByLikerIdAndLikedId(likerId, likedId)) {
+        if (likeRepository.existsByLikerIdAndLikedId(command.likerId, command.likedId)) {
             throw CustomException("이미 좋아요를 눌렀습니다.")
         }
 
-        likeRepository.save(Like(likerId = likerId, likedId = likedId))
-        return LikeCountResponse(likeRepository.countByLikedId(likedId))
+        val like = Like(likerId = command.likerId, likedId = command.likerId)
+        likeRepository.save(like)
+
+        return LikeCountResponse(likeRepository.countByLikedId(command.likedId))
     }
 
     @Transactional
-    fun unlike(likerId: Long, likedId: Long): LikeCountResponse {
-        val like = (likeRepository.findByLikerIdAndLikedId(likerId, likedId)
+    fun unlike(command: UnlikeMemberCommand): LikeCountResponse {
+        val like = (likeRepository.findByLikerIdAndLikedId(command.likerId, command.likedId)
             ?: throw CustomException("좋아요를 누른 적이 없습니다."))
 
         likeRepository.delete(like)
-        return LikeCountResponse(likeRepository.countByLikedId(likedId))
+        return LikeCountResponse(likeRepository.countByLikedId(command.likedId))
     }
 
     @Transactional(readOnly = true)
-    fun getLikedMembers(
-        likerId: Long,
-        cursorId: Long?,
-        size: Int = 20
-    ): CursorResponse<SettingResponse> {
-        val result = likeRepository.findLikesByCursor(likerId, cursorId, size + 1)
-            .map {
-                SettingResponse(
-                    id = it.likeId,
-                    memberId = it.memberId,
-                    nickname = it.nickname.value,
-                    gender = it.gender,
-                    age = AgeCalculator.calculate(it.birthYear.value),
-                    profileUrl = it.profileKey?.let { "$endpoint$it" },
-                    createdAt = it.createdAt,
-                )
-            }
-        val hasNext = result.size > size
+    fun getLikedMembers(query: GetLikedMembersQuery): CursorResponse<SettingResponse> {
+        val result = likeRepository.findLikesByCursor(query.likerId, query.cursorId, query.size + 1)
+            .map { it.toSettingResponse(endpoint) }
+
+        val hasNext = result.size > query.size
         val items = if (hasNext) result.dropLast(1) else result
-        val last = items.lastOrNull()
 
         return CursorResponse(
             payload = items,
-            nextId = last?.id,
+            nextId = items.lastOrNull()?.id,
             nextDateAt = null,
             hasNext = hasNext
         )

@@ -1,0 +1,1 @@
+CREATE INDEX idx_member_active ON member (id) WHERE deleted_at IS NULL;

@@ -1,12 +1,12 @@
 package com.pidulgi.server.social.repository
 
-import com.pidulgi.server.social.repository.dto.LikeItemResponse
+import com.pidulgi.server.social.repository.dto.LikedItemResult
 
-interface LikeCustomRepository {
+fun interface LikeCustomRepository {
 
     fun findLikesByCursor(
         likerId: Long,
         cursorId: Long?,
         size: Int
-    ): List<LikeItemResponse>
+    ): List<LikedItemResult>
 }

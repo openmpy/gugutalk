@@ -1,7 +1,7 @@
 package com.pidulgi.server.social.entity
 
+import com.pidulgi.server.common.jpa.BaseEntity
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -20,7 +20,4 @@ class Like(
 
     @Column(name = "liked_id", nullable = false)
     val likedId: Long,
-
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) : BaseEntity()
