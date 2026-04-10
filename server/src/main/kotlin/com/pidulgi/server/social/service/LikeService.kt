@@ -39,15 +39,6 @@ class LikeService(
         return LikeCountResponse(likeRepository.countByLikedId(command.likedId))
     }
 
-    @Transactional
-    fun unlike(command: UnlikeMemberCommand): LikeCountResponse {
-        val like = (likeRepository.findByLikerIdAndLikedId(command.likerId, command.likedId)
-            ?: throw CustomException("좋아요를 누른 적이 없습니다."))
-
-        likeRepository.delete(like)
-        return LikeCountResponse(likeRepository.countByLikedId(command.likedId))
-    }
-
     @Transactional(readOnly = true)
     fun getLikedMembers(query: GetLikedMembersQuery): CursorResponse<SettingResponse> {
         val result = likeRepository.findLikesByCursor(query.likerId, query.cursorId, query.size + 1)
@@ -62,5 +53,14 @@ class LikeService(
             nextDateAt = null,
             hasNext = hasNext
         )
+    }
+
+    @Transactional
+    fun unlike(command: UnlikeMemberCommand): LikeCountResponse {
+        val like = (likeRepository.findByLikerIdAndLikedId(command.likerId, command.likedId)
+            ?: throw CustomException("좋아요를 누른 적이 없습니다."))
+
+        likeRepository.delete(like)
+        return LikeCountResponse(likeRepository.countByLikedId(command.likedId))
     }
 }

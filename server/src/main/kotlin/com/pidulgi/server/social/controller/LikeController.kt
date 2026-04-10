@@ -28,16 +28,6 @@ class LikeController(
         return ResponseEntity.ok(response)
     }
 
-    @DeleteMapping("/v1/social/likes/{likedId}")
-    fun unlike(
-        @Login likerId: Long,
-        @PathVariable likedId: Long
-    ): ResponseEntity<LikeCountResponse> {
-        val command = UnlikeMemberCommand(likerId, likedId)
-        val response = likeService.unlike(command)
-        return ResponseEntity.ok(response)
-    }
-
     @GetMapping("/v1/social/likes")
     fun getLikedMembers(
         @Login likerId: Long,
@@ -46,6 +36,16 @@ class LikeController(
     ): ResponseEntity<CursorResponse<SettingResponse>> {
         val query = GetLikedMembersQuery(likerId, cursorId, size)
         val response = likeService.getLikedMembers(query)
+        return ResponseEntity.ok(response)
+    }
+
+    @DeleteMapping("/v1/social/likes/{likedId}")
+    fun unlike(
+        @Login likerId: Long,
+        @PathVariable likedId: Long
+    ): ResponseEntity<LikeCountResponse> {
+        val command = UnlikeMemberCommand(likerId, likedId)
+        val response = likeService.unlike(command)
         return ResponseEntity.ok(response)
     }
 }
