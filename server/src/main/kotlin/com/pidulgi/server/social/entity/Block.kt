@@ -1,7 +1,7 @@
 package com.pidulgi.server.social.entity
 
+import com.pidulgi.server.common.jpa.BaseEntity
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -20,7 +20,4 @@ class Block(
 
     @Column(name = "blocked_id", nullable = false)
     val blockedId: Long,
-
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) : BaseEntity()

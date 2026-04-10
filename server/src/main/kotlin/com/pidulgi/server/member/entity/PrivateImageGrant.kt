@@ -1,7 +1,7 @@
 package com.pidulgi.server.member.entity
 
+import com.pidulgi.server.common.jpa.BaseEntity
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -20,7 +20,4 @@ class PrivateImageGrant(
 
     @Column(name = "grantee_id", nullable = false)
     val granteeId: Long,
-
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) : BaseEntity()
