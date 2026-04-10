@@ -13,8 +13,8 @@ import org.springframework.stereotype.Repository
 @Repository
 class BlockCustomRepositoryImpl(
 
+    private val context: JpqlRenderContext,
     private val entityManager: EntityManager,
-    private val jpqlRenderContext: JpqlRenderContext,
 ) : BlockCustomRepository {
 
     private val renderer = JpqlRenderer()
@@ -44,7 +44,7 @@ class BlockCustomRepositoryImpl(
             )
         }
 
-        val rendered = renderer.render(query, jpqlRenderContext)
+        val rendered = renderer.render(query, context)
         val jpaQuery = entityManager.createQuery(rendered.query, BlockItemResult::class.java).apply {
             rendered.params.forEach { (name, value) ->
                 setParameter(name, value)
