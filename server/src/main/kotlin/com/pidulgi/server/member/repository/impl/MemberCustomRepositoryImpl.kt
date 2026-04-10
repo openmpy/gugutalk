@@ -1,9 +1,14 @@
 package com.pidulgi.server.member.repository.impl
 
 import com.pidulgi.server.member.entity.type.Gender
+import com.pidulgi.server.member.entity.vo.MemberBirthYear
+import com.pidulgi.server.member.entity.vo.MemberComment
+import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.repository.MemberCustomRepository
 import com.pidulgi.server.member.repository.dto.MemberItemResponse
+import com.pidulgi.server.member.repository.dto.MemberItemResult
 import jakarta.persistence.EntityManager
+import org.locationtech.jts.geom.Point
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
@@ -13,52 +18,66 @@ class MemberCustomRepositoryImpl(
     private val entityManager: EntityManager,
 ) : MemberCustomRepository {
 
-    override fun findMembersByCursor(
+    override fun findAllMembersByCursor(
         memberId: Long,
+        location: Point?,
         gender: String,
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int
-    ): List<MemberItemResponse> {
+    ): List<MemberItemResult> {
         val cursorCondition = if (cursorId != null && cursorDate != null) {
             """
             AND (
-                m.updated_at < :cursorDate
-                OR (m.updated_at = :cursorDate AND m.id < :cursorId)
+                m.updated_at < :cursorDate OR (m.updated_at = :cursorDate AND m.id < :cursorId)
             )
             """.trimIndent()
         } else ""
 
+        val distanceExpression = if (location != null) {
+            "ST_Distance(m.location, :location)"
+        } else {
+            "NULL"
+        }
+
+        val genderCondition = if (gender == "MALE" || gender == "FEMALE") {
+            "AND m.gender = :gender"
+        } else ""
+
         val sql = """
-            SELECT m.id, m.nickname, m.gender, m.birth_year, m.bio,
-                   m.comment, m.profile_key, m.updated_at,
-                   CASE WHEN m.location IS NOT NULL AND req.location IS NOT NULL
-                       THEN ST_Distance(m.location, req.location) / 1000.0
-                   END AS distance,
-                   lc.cnt AS likes
+            SELECT m.id,
+                   m.profile_key,
+                   m.nickname,
+                   m.gender,
+                   m.birth_year,
+                   m.comment,
+                   m.updated_at,
+                   $distanceExpression AS distance,
+                   (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
             FROM member m
-            CROSS JOIN (SELECT location FROM member WHERE id = :requesterId) req
-            LEFT JOIN LATERAL (
-                SELECT COUNT(*) AS cnt FROM likes WHERE liked_id = m.id
-            ) lc ON true
             WHERE m.deleted_at IS NULL
-                AND m.id != :requesterId
-                AND (:gender = 'ALL' OR m.gender = :gender)
-                AND NOT EXISTS (
-                    SELECT 1 FROM blocks
-                    WHERE (blocker_id = :requesterId AND blocked_id = m.id)
-                       OR (blocked_id = :requesterId AND blocker_id = m.id)
+                AND m.id <> :memberId
+                AND m.id NOT IN (
+                    SELECT b.blocked_id FROM blocks b WHERE b.blocker_id = :memberId
+                    UNION
+                    SELECT b.blocker_id FROM blocks b WHERE b.blocked_id = :memberId
                 )
+                $genderCondition
                 $cursorCondition
             ORDER BY m.updated_at DESC, m.id DESC
             LIMIT :size
         """.trimIndent()
 
         val query = entityManager.createNativeQuery(sql).apply {
-            setParameter("requesterId", memberId)
-            setParameter("gender", gender)
+            setParameter("memberId", memberId)
             setParameter("size", size)
 
+            if (location != null) {
+                setParameter("location", location)
+            }
+            if (gender == "MALE" || gender == "FEMALE") {
+                setParameter("gender", gender)
+            }
             if (cursorId != null && cursorDate != null) {
                 setParameter("cursorDate", cursorDate)
                 setParameter("cursorId", cursorId)
@@ -66,7 +85,21 @@ class MemberCustomRepositoryImpl(
         }
 
         @Suppress("UNCHECKED_CAST")
-        return (query.resultList as List<Array<Any?>>).map(::toMemberItemResponse)
+        return (query.resultList as List<Array<Any?>>).map(::toMemberItemResult)
+    }
+
+    private fun toMemberItemResult(row: Array<Any?>): MemberItemResult {
+        return MemberItemResult(
+            memberId = (row[0] as Number).toLong(),
+            profileKey = row[1] as? String,
+            nickname = MemberNickname(row[2] as String),
+            gender = Gender.valueOf(row[3] as String),
+            birthYear = MemberBirthYear((row[4] as Number).toInt()),
+            comment = MemberComment(row[5] as String),
+            updatedAt = row[6] as LocalDateTime,
+            distance = (row[7] as? Number)?.toDouble(),
+            likes = (row[8] as Number).toInt(),
+        )
     }
 
     override fun findLocationMembersByPage(

@@ -1,17 +1,20 @@
 package com.pidulgi.server.member.repository
 
 import com.pidulgi.server.member.repository.dto.MemberItemResponse
+import com.pidulgi.server.member.repository.dto.MemberItemResult
+import org.locationtech.jts.geom.Point
 import java.time.LocalDateTime
 
 interface MemberCustomRepository {
 
-    fun findMembersByCursor(
+    fun findAllMembersByCursor(
         memberId: Long,
+        location: Point?,
         gender: String,
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int
-    ): List<MemberItemResponse>
+    ): List<MemberItemResult>
 
     fun findLocationMembersByPage(
         memberId: Long,

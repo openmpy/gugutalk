@@ -4,6 +4,7 @@ import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.discovery.service.RecentService
+import com.pidulgi.server.discovery.service.query.GetRecentMembersQuery
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -26,13 +27,8 @@ class RecentController(
         @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<MemberDiscoveryResponse>> {
-        val response = recentService.getRecentMembers(
-            memberId,
-            gender,
-            cursorId,
-            cursorDate,
-            size
-        )
+        val query = GetRecentMembersQuery(memberId, gender, cursorId, cursorDate, size)
+        val response = recentService.getRecentMembers(query)
         return ResponseEntity.ok(response)
     }
 }
