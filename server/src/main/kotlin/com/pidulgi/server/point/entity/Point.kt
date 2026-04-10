@@ -1,6 +1,7 @@
 package com.pidulgi.server.point.entity
 
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.common.jpa.BaseEntity
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -18,12 +19,9 @@ class Point(
     @Column(name = "balance", nullable = false)
     var balance: Long = 0,
 
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
     @Column(name = "updated_at")
     var updatedAt: LocalDateTime = LocalDateTime.now(),
-) {
+) : BaseEntity() {
 
     fun earn(amount: Long) {
         if (amount <= 0) {
