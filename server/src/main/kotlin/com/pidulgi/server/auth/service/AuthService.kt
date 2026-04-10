@@ -77,10 +77,9 @@ class AuthService(
             throw CustomException("인증 번호가 이미 전송되었습니다.")
         }
 
-        val verificationCode = NumberGenerator.generate()
-
         // 인증 번호 전송
         if (!memberRepository.existsByPhoneNumber(memberPhoneNumber)) {
+            val verificationCode = NumberGenerator.generate()
             smsSender.send(phoneNumber, "구구톡 인증 번호는 [${verificationCode}]입니다.")
 
             redisTemplate.opsForValue().set(
@@ -200,7 +199,6 @@ class AuthService(
     @Transactional(readOnly = true)
     fun login(request: LoginRequest): LoginResponse {
         val memberPhoneNumber = MemberPhoneNumber(request.phoneNumber)
-        MemberPassword(request.password)
 
         val member = (memberRepository.findByPhoneNumber(memberPhoneNumber)
             ?: throw CustomException("다시 한번 확인해주시길 바랍니다."))
