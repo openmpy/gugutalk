@@ -11,8 +11,8 @@ import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.point.entity.type.PointSource
 import com.pidulgi.server.point.repository.PointRepository
-import com.pidulgi.server.point.type.PointSource
 import com.pidulgi.server.social.repository.BlockRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull

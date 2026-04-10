@@ -2,22 +2,18 @@ package com.pidulgi.server.point.service
 
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.point.dto.response.PointGetResponse
+import com.pidulgi.server.point.entity.Point
 import com.pidulgi.server.point.entity.PointTransaction
+import com.pidulgi.server.point.entity.type.PointSource
+import com.pidulgi.server.point.entity.type.TransactionType
 import com.pidulgi.server.point.repository.PointRepository
 import com.pidulgi.server.point.repository.PointTransactionRepository
-import com.pidulgi.server.point.type.PointSource
-import com.pidulgi.server.point.type.TransactionType
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
-
-private const val POINT_EARN_ATTENDANCE_KEY = "point:attendance:"
-private const val POINT_EARN_AD_REWARD_KEY = "point:ad-reward:"
-
-private const val AD_REWARD_DELAY_HOURS: Long = 3
 
 @Service
 class PointService(
@@ -27,10 +23,16 @@ class PointService(
     private val redisTemplate: StringRedisTemplate
 ) {
 
+    companion object {
+        private const val POINT_EARN_ATTENDANCE_KEY = "point:attendance:"
+        private const val POINT_EARN_AD_REWARD_KEY = "point:ad-reward:"
+
+        private const val AD_REWARD_DELAY_HOURS = 3L
+    }
+
     @Transactional
     fun earnByAttendance(memberId: Long) {
-        val point = (pointRepository.findByMemberId(memberId)
-            ?: throw CustomException("존재하지 않는 포인트 정보입니다."))
+        val point = getPoint(memberId)
 
         val attendanceKey = POINT_EARN_ATTENDANCE_KEY + memberId
         redisTemplate.opsForValue().get(attendanceKey)?.let {
@@ -58,8 +60,7 @@ class PointService(
 
     @Transactional
     fun earnByAdReward(memberId: Long) {
-        val point = (pointRepository.findByMemberId(memberId)
-            ?: throw CustomException("존재하지 않는 포인트 정보입니다."))
+        val point = getPoint(memberId)
 
         val adRewardKey = POINT_EARN_AD_REWARD_KEY + memberId
         redisTemplate.opsForValue().get(adRewardKey)?.let {
@@ -86,9 +87,10 @@ class PointService(
 
     @Transactional(readOnly = true)
     fun get(memberId: Long): PointGetResponse {
-        val point = (pointRepository.findByMemberId(memberId)
-            ?: throw CustomException("존재하지 않는 포인트 정보입니다."))
-
+        val point = getPoint(memberId)
         return PointGetResponse(point.balance)
     }
+
+    private fun getPoint(memberId: Long): Point = (pointRepository.findByMemberId(memberId)
+        ?: throw CustomException("존재하지 않는 포인트 정보입니다."))
 }

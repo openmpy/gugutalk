@@ -1,4 +1,4 @@
-package com.pidulgi.server.point.type
+package com.pidulgi.server.point.entity.type
 
 enum class TransactionType {
 

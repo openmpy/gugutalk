@@ -1,9 +1,9 @@
 package com.pidulgi.server.point.entity
 
-import com.pidulgi.server.point.type.PointSource
-import com.pidulgi.server.point.type.TransactionType
+import com.pidulgi.server.common.jpa.BaseEntity
+import com.pidulgi.server.point.entity.type.PointSource
+import com.pidulgi.server.point.entity.type.TransactionType
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "point_transaction")
@@ -32,10 +32,4 @@ class PointTransaction(
 
     @Column(name = "description")
     var description: String? = null,
-
-    @Column(nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
-    @Column
-    var updatedAt: LocalDateTime = LocalDateTime.now(),
-)
+) : BaseEntity()

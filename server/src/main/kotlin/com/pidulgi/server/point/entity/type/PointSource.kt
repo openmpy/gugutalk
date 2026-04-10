@@ -1,4 +1,4 @@
-package com.pidulgi.server.point.type
+package com.pidulgi.server.point.entity.type
 
 enum class PointSource(val point: Long, val description: String) {
 
