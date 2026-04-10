@@ -39,6 +39,7 @@ const val AUTH_ACCESS_TOKEN_BLACKLIST_KEY = "auth:access-token:blacklist:"
 
 @Service
 class AuthService(
+
     @Value("\${jwt.access-token-expire-seconds}") private val accessTokenExpireSeconds: Long,
 
     private val memberRepository: MemberRepository,
