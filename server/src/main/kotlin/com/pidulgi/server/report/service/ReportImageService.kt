@@ -32,7 +32,9 @@ class ReportImageService(
             val extension = it.contentType.substringAfterLast("/").lowercase()
             val key = "reports/${member.id}/${UUID.randomUUID()}.$extension"
 
-            reportImageRepository.save(ReportImage(key = key))
+            val reportImage = ReportImage(key = key)
+            reportImageRepository.save(reportImage)
+
             s3Service.createPresignedUrl(key, it.contentType)
         }
         return PresignedUrlsResponse(presigned = urls)

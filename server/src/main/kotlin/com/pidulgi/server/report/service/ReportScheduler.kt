@@ -19,6 +19,8 @@ class ReportScheduler(
     private val s3Service: S3Service,
 ) {
 
+    private val log = KotlinLogging.logger {}
+
     @Scheduled(cron = "0 0 9 * * *")
     fun cleanUpPendingImages() {
         val expiredBefore = LocalDateTime.now().minusHours(24)
@@ -33,8 +35,6 @@ class ReportScheduler(
         reportImageRepository.deleteAllByIdInBatch(pendingImages.map { it.id })
         s3Service.deleteAll(pendingImages.map { it.key })
     }
-
-    private val log = KotlinLogging.logger {}
 
     @Scheduled(cron = "0 0 9 * * *")
     fun cleanUpReports() {
