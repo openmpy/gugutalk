@@ -7,8 +7,8 @@ final class PrivateImageGrantService {
     let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
-    func grant(memberId: Int64) async throws {
-        let url = "\(baseURL)/v1/members/\(memberId)/private-images/grant"
+    func open(memberId: Int64) async throws {
+        let url = "\(baseURL)/v1/members/\(memberId)/private-image-grant"
 
         try await session.request(
             url,
@@ -16,8 +16,8 @@ final class PrivateImageGrantService {
         ).validateWithErrorHandling()
     }
 
-    func revoke(memberId: Int64) async throws {
-        let url = "\(baseURL)/v1/members/\(memberId)/private-images/grant"
+    func close(memberId: Int64) async throws {
+        let url = "\(baseURL)/v1/members/\(memberId)/private-image-grant"
 
         try await session.request(
             url,

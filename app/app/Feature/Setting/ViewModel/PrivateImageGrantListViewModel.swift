@@ -53,12 +53,12 @@ final class PrivateImageGrantListViewModel: ObservableObject {
         hasNext = response.hasNext
     }
 
-    func revoke(memberId: Int64) async throws {
+    func close(memberId: Int64) async throws {
         members.removeAll { $0.memberId == memberId }
 
         if members.isEmpty {
             state = .empty
         }
-        _ = try await grantService.revoke(memberId: memberId)
+        _ = try await grantService.close(memberId: memberId)
     }
 }

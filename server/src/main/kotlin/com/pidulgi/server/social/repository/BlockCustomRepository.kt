@@ -2,7 +2,7 @@ package com.pidulgi.server.social.repository
 
 import com.pidulgi.server.social.repository.dto.BlockItemResult
 
-interface BlockCustomRepository {
+fun interface BlockCustomRepository {
 
     fun findBlocksByCursor(
         blockerId: Long,

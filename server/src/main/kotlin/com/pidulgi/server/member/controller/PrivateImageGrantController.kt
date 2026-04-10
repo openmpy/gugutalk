@@ -4,6 +4,9 @@ import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.member.service.PrivateImageGrantService
+import com.pidulgi.server.member.service.command.PrivateImageGrantCloseCommand
+import com.pidulgi.server.member.service.command.PrivateImageGrantOpenCommand
+import com.pidulgi.server.member.service.query.GetGrantedMembersQuery
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -14,21 +17,13 @@ class PrivateImageGrantController(
     private val privateImageGrantService: PrivateImageGrantService,
 ) {
 
-    @PostMapping("/v1/members/{granteeId}/private-images/grant")
-    fun grant(
+    @PostMapping("/v1/members/{granteeId}/private-image-grant")
+    fun open(
         @Login granterId: Long,
         @PathVariable granteeId: Long
     ): ResponseEntity<Unit> {
-        privateImageGrantService.open(granterId, granteeId)
-        return ResponseEntity.ok().build()
-    }
-
-    @DeleteMapping("/v1/members/{granteeId}/private-images/grant")
-    fun revoke(
-        @Login granterId: Long,
-        @PathVariable granteeId: Long
-    ): ResponseEntity<Unit> {
-        privateImageGrantService.close(granterId, granteeId)
+        val command = PrivateImageGrantOpenCommand(granterId, granteeId)
+        privateImageGrantService.open(command)
         return ResponseEntity.ok().build()
     }
 
@@ -38,9 +33,18 @@ class PrivateImageGrantController(
         @RequestParam(required = false) cursorId: Long?,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<SettingResponse>> {
-        val response = privateImageGrantService.getGrantedMembers(
-            granterId, cursorId, size
-        )
+        val query = GetGrantedMembersQuery(granterId, cursorId, size)
+        val response = privateImageGrantService.getGrantedMembers(query)
         return ResponseEntity.ok(response)
+    }
+
+    @DeleteMapping("/v1/members/{granteeId}/private-image-grant")
+    fun close(
+        @Login granterId: Long,
+        @PathVariable granteeId: Long
+    ): ResponseEntity<Unit> {
+        val command = PrivateImageGrantCloseCommand(granterId, granteeId)
+        privateImageGrantService.close(command)
+        return ResponseEntity.ok().build()
     }
 }

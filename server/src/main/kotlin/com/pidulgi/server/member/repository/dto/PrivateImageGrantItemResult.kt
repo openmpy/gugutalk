@@ -5,7 +5,7 @@ import com.pidulgi.server.member.entity.vo.MemberBirthYear
 import com.pidulgi.server.member.entity.vo.MemberNickname
 import java.time.LocalDateTime
 
-data class PrivateImageGrantItemResponse(
+data class PrivateImageGrantItemResult(
 
     val grantId: Long,
     val memberId: Long,

@@ -1,12 +1,12 @@
 package com.pidulgi.server.member.repository
 
-import com.pidulgi.server.member.repository.dto.PrivateImageGrantItemResponse
+import com.pidulgi.server.member.repository.dto.PrivateImageGrantItemResult
 
-interface PrivateImageGrantCustomRepository {
+fun interface PrivateImageGrantCustomRepository {
 
     fun findGrantsByCursor(
         granterId: Long,
         cursorId: Long?,
         size: Int
-    ): List<PrivateImageGrantItemResponse>
+    ): List<PrivateImageGrantItemResult>
 }
