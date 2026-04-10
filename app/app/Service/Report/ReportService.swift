@@ -22,7 +22,7 @@ final class ReportService {
 
         return try await session.request(
             url,
-            method: .put,
+            method: .post,
             parameters: body,
             encoder: JSONParameterEncoder.default
         )

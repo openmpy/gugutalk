@@ -1,11 +1,9 @@
 package com.pidulgi.server.report.dto
 
-import com.pidulgi.server.report.entity.type.ReportType
-
 data class ReportCreateRequest(
 
     val images: List<ReportImageRequest> = emptyList(),
-    val type: ReportType,
+    val type: String,
     val reason: String?,
 ) {
 

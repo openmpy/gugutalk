@@ -5,8 +5,10 @@ import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.report.dto.ReportCreateRequest
 import com.pidulgi.server.report.entity.Report
+import com.pidulgi.server.report.entity.type.ReportType
 import com.pidulgi.server.report.repository.ReportImageRepository
 import com.pidulgi.server.report.repository.ReportRepository
+import com.pidulgi.server.report.service.command.ReportCreateCommand
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,12 +23,13 @@ class ReportService(
 
     @Transactional
     fun create(
-        reporterId: Long,
-        reportedId: Long,
+        command: ReportCreateCommand,
         request: ReportCreateRequest
     ) {
-        val reporter = getMember(reporterId)
-        val reported = getMember(reportedId)
+        val reportType = ReportType.from(request.type)
+
+        val reporter = getMember(command.reporterId)
+        val reported = getMember(command.reportedId)
 
         val report = Report(
             reporterId = reporter.id,
@@ -39,7 +42,7 @@ class ReportService(
             reportedPhoneNumber = reported.phoneNumber.value,
             reportedNickname = reported.nickname.value,
 
-            type = request.type,
+            type = reportType,
             reason = request.reason,
         )
         reportRepository.save(report)

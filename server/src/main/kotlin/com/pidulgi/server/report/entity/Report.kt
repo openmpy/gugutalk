@@ -1,9 +1,9 @@
 package com.pidulgi.server.report.entity
 
+import com.pidulgi.server.common.jpa.BaseEntity
 import com.pidulgi.server.report.entity.type.ReportStatus
 import com.pidulgi.server.report.entity.type.ReportType
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "report")
@@ -47,10 +47,7 @@ class Report(
 
     @Column(name = "reason", columnDefinition = "TEXT")
     val reason: String? = null,
-
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-) {
+) : BaseEntity() {
 
     fun updateStatus(reportStatus: ReportStatus) {
         this.status = reportStatus

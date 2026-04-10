@@ -24,7 +24,6 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
-import java.time.LocalDateTime
 import java.util.*
 
 @ConditionalOnProperty(name = ["app.dummy-data.init"], havingValue = "true")
@@ -153,7 +152,6 @@ class DummyDataInit {
                         reportedPhoneNumber = "010",
                         reportedNickname = "nickname",
                         type = ReportType.ETC,
-                        createdAt = LocalDateTime.now().minusYears(2),
                     )
                 }
                 reportRepository.saveAll(reports)
