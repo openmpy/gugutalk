@@ -1,6 +1,6 @@
 package com.pidulgi.server.social.repository
 
-import com.pidulgi.server.social.repository.dto.BlockItemResponse
+import com.pidulgi.server.social.repository.dto.BlockItemResult
 
 interface BlockCustomRepository {
 
@@ -8,5 +8,5 @@ interface BlockCustomRepository {
         blockerId: Long,
         cursorId: Long?,
         size: Int
-    ): List<BlockItemResponse>
+    ): List<BlockItemResult>
 }

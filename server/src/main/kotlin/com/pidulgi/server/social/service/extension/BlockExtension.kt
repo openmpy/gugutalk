@@ -2,11 +2,11 @@ package com.pidulgi.server.social.service.extension
 
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.util.AgeCalculator
-import com.pidulgi.server.social.repository.dto.LikeItemResult
+import com.pidulgi.server.social.repository.dto.BlockItemResult
 
-fun LikeItemResult.toSettingResponse(endpoint: String) = SettingResponse(
+fun BlockItemResult.toSettingResponse(endpoint: String) = SettingResponse(
 
-    id = this.likeId,
+    id = this.blockId,
     memberId = this.memberId,
     nickname = this.nickname.value,
     gender = this.gender,

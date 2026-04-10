@@ -6,7 +6,7 @@ import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderer
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.LikeCustomRepository
-import com.pidulgi.server.social.repository.dto.LikedItemResult
+import com.pidulgi.server.social.repository.dto.LikeItemResult
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 
@@ -23,9 +23,9 @@ class LikeCustomRepositoryImpl(
         likerId: Long,
         cursorId: Long?,
         size: Int
-    ): List<LikedItemResult> {
+    ): List<LikeItemResult> {
         val query = jpql {
-            selectNew<LikedItemResult>(
+            selectNew<LikeItemResult>(
                 path(Like::id),
                 path(Member::id),
                 path(Member::nickname),
@@ -45,7 +45,7 @@ class LikeCustomRepositoryImpl(
         }
 
         val rendered = renderer.render(query, context)
-        val jpaQuery = entityManager.createQuery(rendered.query, LikedItemResult::class.java).apply {
+        val jpaQuery = entityManager.createQuery(rendered.query, LikeItemResult::class.java).apply {
             rendered.params.forEach { (name, value) ->
                 setParameter(name, value)
             }

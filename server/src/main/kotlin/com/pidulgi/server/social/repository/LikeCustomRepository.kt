@@ -1,6 +1,6 @@
 package com.pidulgi.server.social.repository
 
-import com.pidulgi.server.social.repository.dto.LikedItemResult
+import com.pidulgi.server.social.repository.dto.LikeItemResult
 
 fun interface LikeCustomRepository {
 
@@ -8,5 +8,5 @@ fun interface LikeCustomRepository {
         likerId: Long,
         cursorId: Long?,
         size: Int
-    ): List<LikedItemResult>
+    ): List<LikeItemResult>
 }

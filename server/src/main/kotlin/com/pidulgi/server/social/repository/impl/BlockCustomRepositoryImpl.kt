@@ -6,12 +6,13 @@ import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderer
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.social.entity.Block
 import com.pidulgi.server.social.repository.BlockCustomRepository
-import com.pidulgi.server.social.repository.dto.BlockItemResponse
+import com.pidulgi.server.social.repository.dto.BlockItemResult
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 
 @Repository
 class BlockCustomRepositoryImpl(
+
     private val entityManager: EntityManager,
     private val jpqlRenderContext: JpqlRenderContext,
 ) : BlockCustomRepository {
@@ -22,13 +23,9 @@ class BlockCustomRepositoryImpl(
         blockerId: Long,
         cursorId: Long?,
         size: Int
-    ): List<BlockItemResponse> {
+    ): List<BlockItemResult> {
         val query = jpql {
-            val cursorCondition = if (cursorId != null) {
-                path(Block::id).lt(cursorId)
-            } else null
-
-            selectNew<BlockItemResponse>(
+            selectNew<BlockItemResult>(
                 path(Block::id),
                 path(Member::id),
                 path(Member::nickname),
@@ -41,17 +38,17 @@ class BlockCustomRepositoryImpl(
                 join(Member::class).on(path(Block::blockedId).eq(path(Member::id)))
             ).whereAnd(
                 path(Block::blockerId).eq(blockerId),
-                cursorCondition
+                cursorId?.let { path(Block::id).lt(cursorId) }
             ).orderBy(
                 path(Block::id).desc()
             )
         }
 
         val rendered = renderer.render(query, jpqlRenderContext)
-        val jpaQuery = entityManager.createQuery(rendered.query, BlockItemResponse::class.java)
-
-        rendered.params.forEach { (name, value) ->
-            jpaQuery.setParameter(name, value)
+        val jpaQuery = entityManager.createQuery(rendered.query, BlockItemResult::class.java).apply {
+            rendered.params.forEach { (name, value) ->
+                setParameter(name, value)
+            }
         }
         return jpaQuery.setMaxResults(size).resultList
     }

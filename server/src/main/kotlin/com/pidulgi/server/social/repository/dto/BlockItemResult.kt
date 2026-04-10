@@ -5,9 +5,9 @@ import com.pidulgi.server.member.entity.vo.MemberBirthYear
 import com.pidulgi.server.member.entity.vo.MemberNickname
 import java.time.LocalDateTime
 
-data class LikedItemResult(
+data class BlockItemResult(
 
-    val likeId: Long,
+    val blockId: Long,
     val memberId: Long,
     val nickname: MemberNickname,
     val gender: Gender,
