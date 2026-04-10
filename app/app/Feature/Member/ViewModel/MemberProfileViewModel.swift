@@ -88,12 +88,12 @@ final class MemberProfileViewModel: ObservableObject {
         defer { isLoading = false }
 
         if member.isPrivateImageGranted == false {
-            try await privateImageGrantService.grant(memberId: memberId)
+            try await privateImageGrantService.open(memberId: memberId)
             member.isPrivateImageGranted = true
 
             ToastManager.shared.show("비밀 사진을 열으셨습니다.")
         } else {
-            try await privateImageGrantService.revoke(memberId: memberId)
+            try await privateImageGrantService.close(memberId: memberId)
             member.isPrivateImageGranted = false
 
             ToastManager.shared.show("비밀 사진을 닫으셨습니다.")

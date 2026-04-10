@@ -47,7 +47,7 @@ struct PrivateImageGrantListView: View {
                         onDelete: {
                             Task {
                                 do {
-                                    try await vm.revoke(memberId: it.memberId)
+                                    try await vm.close(memberId: it.memberId)
                                 } catch {
                                     ToastManager.shared.show(error.localizedDescription, type: .error)
                                 }
