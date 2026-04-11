@@ -7,7 +7,7 @@ fun ChatRoomItemResult.toChatRoomGetResponse(endpoint: String) = ChatRoomGetResp
 
     chatRoomId = this.chatRoomId,
     targetId = this.targetId,
-    nickname = this.nickname,
+    nickname = this.nickname.value,
     profileUrl = this.profileKey?.let { "$endpoint$it" },
     lastMessage = this.lastMessage,
     sortAt = this.sortAt,
