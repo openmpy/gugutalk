@@ -56,6 +56,31 @@ final class ChatRoomService {
         .decodingWithErrorHandling(CursorResponse<ChatRoomGetResponse>.self)
     }
 
+    func search(
+        nickname: String,
+        cursorId: Int64?,
+        cursorSimilarity: Double?,
+        size: Int = 20
+    ) async throws -> CursorSimilarityResponse<ChatRoomSearchResponse> {
+        let url = "\(baseURL)/v1/chat-rooms/search"
+
+        var params: Parameters = [
+            "nickname": nickname,
+            "size": size
+        ]
+        if cursorId != nil && cursorSimilarity != nil {
+            params["cursorId"] = cursorId
+            params["cursorSimilarity"] = cursorSimilarity
+        }
+
+        return try await session.request(
+            url,
+            method: .get,
+            parameters: params.compactMapValues { $0 }
+        )
+        .decodingWithErrorHandling(CursorSimilarityResponse<ChatRoomSearchResponse>.self)
+    }
+
     func markAsRead(
         chatRoomId: Int64
     ) async throws {
@@ -66,29 +91,5 @@ final class ChatRoomService {
             method: .put
         )
         .validateWithErrorHandling()
-    }
-
-    func search(
-        keyword: String,
-        cursorId: Int64?,
-        cursorDateAt: String?,
-        size: Int = 20
-    ) async throws -> CursorResponse<ChatRoomGetResponse> {
-        let url = "\(baseURL)/v1/chat-rooms/search?keyword=\(keyword)"
-
-        var params: Parameters = [
-            "size": size
-        ]
-        if cursorId != nil && cursorDateAt != nil {
-            params["cursorId"] = cursorId
-            params["cursorDate"] = cursorDateAt
-        }
-
-        return try await session.request(
-            url,
-            method: .get,
-            parameters: params.compactMapValues { $0 }
-        )
-        .decodingWithErrorHandling(CursorResponse<ChatRoomGetResponse>.self)
     }
 }

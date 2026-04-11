@@ -1,49 +1,43 @@
 import SwiftUI
 
 struct ChatSearchView: View {
-
+    
     @StateObject private var vm = ChatSearchViewModel()
-
+    
     var body: some View {
         VStack {
             VStack {
                 switch vm.state {
-
+                    
                 case .idle:
                     Spacer()
                     Text("닉네임을 입력해주세요.")
                     Spacer()
-
+                    
                 case .loading:
                     Spacer()
                     ProgressView()
                     Spacer()
-
+                    
                 case .empty:
                     Spacer()
                     Text("검색 결과가 없습니다.")
                     Spacer()
-
+                    
                 case .data:
                     listSection
-
+                    
                 case .error(let message):
                     errorSection(message: message)
                 }
             }
         }
-        .onAppear {
-            vm.subscribe()
-        }
-        .onDisappear {
-            vm.unsubscribe()
-        }
         .searchable(
-            text: $vm.keyword,
+            text: $vm.nickname,
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "닉네임 입력 (2자 이상)"
         )
-        .onChange(of: vm.keyword) { _, newValue in
+        .onChange(of: vm.nickname) { _, newValue in
             if newValue.isEmpty {
                 vm.state = .idle
             }
@@ -57,9 +51,9 @@ struct ChatSearchView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
     }
-
+    
     // MARK: - SECTION
-
+    
     private var listSection: some View {
         ScrollView {
             LazyVStack {
@@ -96,12 +90,12 @@ struct ChatSearchView: View {
             hideKeyboard()
         }
     }
-
+    
     private func errorSection(message: String) -> some View {
         VStack {
             Text(message)
                 .padding(.bottom)
-
+            
             Button("다시 시도") {
                 Task {
                     await vm.search()
