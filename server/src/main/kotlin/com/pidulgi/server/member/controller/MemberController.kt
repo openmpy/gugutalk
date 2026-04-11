@@ -1,8 +1,7 @@
 package com.pidulgi.server.member.controller
 
 import com.pidulgi.server.common.auth.Login
-import com.pidulgi.server.common.dto.CursorResponse
-import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
+import com.pidulgi.server.common.dto.CursorSimilarityResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateCommentRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateProfileRequest
@@ -10,7 +9,9 @@ import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
 import com.pidulgi.server.member.dto.response.MemberGetChatEnabledResponse
 import com.pidulgi.server.member.dto.response.MemberGetMeResponse
 import com.pidulgi.server.member.dto.response.MemberGetResponse
+import com.pidulgi.server.member.dto.response.MemberSearchResponse
 import com.pidulgi.server.member.service.MemberService
+import com.pidulgi.server.member.service.query.SearchByNicknameQuery
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -77,11 +78,13 @@ class MemberController(
     @GetMapping("/v1/members/search")
     fun search(
         @Login memberId: Long,
-        @RequestParam keyword: String,
+        @RequestParam(required = true) nickname: String,
         @RequestParam(required = false) cursorId: Long?,
+        @RequestParam(required = false) cursorSimilarity: Double?,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<CursorResponse<MemberDiscoveryResponse>> {
-        val response = memberService.searchByNickname(memberId, keyword, cursorId, size)
+    ): ResponseEntity<CursorSimilarityResponse<MemberSearchResponse>> {
+        val query = SearchByNicknameQuery(memberId, nickname, cursorId, cursorSimilarity, size)
+        val response = memberService.searchByNickname(query)
         return ResponseEntity.ok(response)
     }
 

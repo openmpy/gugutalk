@@ -2,20 +2,16 @@ package com.pidulgi.server.member.service
 
 import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
 import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
-import com.pidulgi.server.common.dto.CursorResponse
+import com.pidulgi.server.common.dto.CursorSimilarityResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.s3.S3Service
 import com.pidulgi.server.common.util.AgeCalculator
-import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
 import com.pidulgi.server.member.dto.request.MemberBumpRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateCommentRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateProfileRequest
 import com.pidulgi.server.member.dto.request.MemberUpdateProfileRequest.ProfileImageUpdate
 import com.pidulgi.server.member.dto.request.MemberWithdrawRequest
-import com.pidulgi.server.member.dto.response.MemberGetChatEnabledResponse
-import com.pidulgi.server.member.dto.response.MemberGetMeResponse
-import com.pidulgi.server.member.dto.response.MemberGetResponse
-import com.pidulgi.server.member.dto.response.MemberImageResponse
+import com.pidulgi.server.member.dto.response.*
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.MemberImage
 import com.pidulgi.server.member.entity.type.ImageType
@@ -27,6 +23,8 @@ import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
 import com.pidulgi.server.member.service.event.MemberWithdrawEvent
+import com.pidulgi.server.member.service.extension.toMemberDiscoveryResponse
+import com.pidulgi.server.member.service.query.SearchByNicknameQuery
 import com.pidulgi.server.social.repository.BlockRepository
 import com.pidulgi.server.social.repository.LikeRepository
 import org.locationtech.jts.geom.Coordinate
@@ -39,7 +37,6 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
-import java.time.LocalDate
 
 @Service
 class MemberService(
@@ -194,43 +191,28 @@ class MemberService(
     }
 
     @Transactional(readOnly = true)
-    fun searchByNickname(
-        memberId: Long,
-        keyword: String,
-        cursorId: Long?,
-        size: Int
-    ): CursorResponse<MemberDiscoveryResponse> {
-        if (keyword.length < 2) {
+    fun searchByNickname(query: SearchByNicknameQuery): CursorSimilarityResponse<MemberSearchResponse> {
+        if (query.nickname.length < 2) {
             throw CustomException("검색어는 2자 이상이어야 합니다.")
         }
 
-        val result = memberRepository.searchByNickname(
-            memberId,
-            keyword,
-            cursorId,
-            size + 1
-        ).map {
-            MemberDiscoveryResponse(
-                memberId = it.memberId,
-                profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
-                nickname = it.nickname,
-                gender = it.gender,
-                age = LocalDate.now().year - it.birthYear,
-                comment = it.comment,
-                distance = it.distance,
-                likes = it.likes,
-                updatedAt = it.updatedAt,
-            )
-        }
+        val member = getMember(query.memberId)
+        val result = memberRepository.findAllMembersByNicknameWithCursor(
+            query.memberId,
+            query.nickname,
+            member.location,
+            query.cursorId,
+            query.cursorSimilarity,
+            query.size + 1
+        ).map { it.toMemberDiscoveryResponse(endpoint) }
 
-        val hasNext = result.size > size
+        val hasNext = result.size > query.size
         val items = if (hasNext) result.dropLast(1) else result
-        val last = items.lastOrNull()
 
-        return CursorResponse(
+        return CursorSimilarityResponse(
             payload = items,
-            nextId = last?.memberId,
-            nextDateAt = null,
+            nextId = items.lastOrNull()?.memberId,
+            nextSimilarity = items.lastOrNull()?.similarityScore,
             hasNext = hasNext,
         )
     }

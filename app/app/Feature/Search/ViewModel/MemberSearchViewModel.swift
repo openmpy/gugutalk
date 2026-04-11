@@ -10,14 +10,16 @@ final class MemberSearchViewModel: ObservableObject {
     @Published var isPaging: Bool = false
     @Published var hasNext: Bool = true
 
-    @Published var members: [MemberDiscoveryResponse] = []
-    @Published var keyword: String = ""
+    @Published var members: [MemberSearchResponse] = []
+    @Published var nickname: String = ""
 
     private var isLoading: Bool = false
+
     private var cursorId: Int64?
+    private var cursorSimilarity: Double?
 
     func search() async {
-        guard keyword.count >= 2 else {
+        guard nickname.count >= 2 else {
             state = .idle
             return
         }
@@ -30,12 +32,14 @@ final class MemberSearchViewModel: ObservableObject {
 
         do {
             let response = try await memberService.search(
-                keyword: keyword,
-                cursorId: nil
+                nickname: nickname,
+                cursorId: nil,
+                cursorSimilarity: nil
             )
 
             members = response.payload
             cursorId = response.nextId
+            cursorSimilarity = response.nextSimilarity
             hasNext = response.hasNext
 
             state = members.isEmpty ? .empty : .data
@@ -51,12 +55,14 @@ final class MemberSearchViewModel: ObservableObject {
         defer { isPaging = false }
 
         let response = try await memberService.search(
-            keyword: keyword,
-            cursorId: cursorId
+            nickname: nickname,
+            cursorId: cursorId,
+            cursorSimilarity: cursorSimilarity
         )
 
         members.append(contentsOf: response.payload)
         cursorId = response.nextId
+        cursorSimilarity = response.nextSimilarity
         hasNext = response.hasNext
     }
 }

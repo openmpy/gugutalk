@@ -1,18 +1,18 @@
-package com.pidulgi.server.member.repository.dto
+package com.pidulgi.server.member.dto.response
 
 import com.pidulgi.server.member.entity.type.Gender
 import java.time.LocalDateTime
 
-data class MemberItemResponse(
+data class MemberSearchResponse(
 
     val memberId: Long,
+    val profileUrl: String?,
     val nickname: String,
     val gender: Gender,
-    val birthYear: Int,
-    val bio: String?,
+    val age: Int,
     val comment: String?,
-    val profileKey: String?,
-    val updatedAt: LocalDateTime,
     val distance: Double?,
     val likes: Int,
+    val updatedAt: LocalDateTime,
+    val similarityScore: Double,
 )

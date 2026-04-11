@@ -31,11 +31,11 @@ struct MemberSearchView: View {
             }
         }
         .searchable(
-            text: $vm.keyword,
+            text: $vm.nickname,
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "닉네임 입력 (2자 이상)"
         )
-        .onChange(of: vm.keyword) { _, newValue in
+        .onChange(of: vm.nickname) { _, newValue in
             if newValue.isEmpty {
                 vm.state = .idle
             }

@@ -1,7 +1,7 @@
 package com.pidulgi.server.member.repository
 
-import com.pidulgi.server.member.repository.dto.MemberItemResponse
 import com.pidulgi.server.member.repository.dto.MemberItemResult
+import com.pidulgi.server.member.repository.dto.MemberSearchItemResult
 import org.locationtech.jts.geom.Point
 import java.time.LocalDateTime
 
@@ -25,12 +25,14 @@ interface MemberCustomRepository {
         size: Int
     ): List<MemberItemResult>
 
-    fun searchByNickname(
+    fun findAllMembersByNicknameWithCursor(
         memberId: Long,
-        keyword: String,
+        nickname: String,
+        location: Point?,
         cursorId: Long?,
+        cursorSimilarity: Double?,
         size: Int
-    ): List<MemberItemResponse>
+    ): List<MemberSearchItemResult>
 
     fun findDistanceFromLocation(
         location: Point?,

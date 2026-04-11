@@ -5,8 +5,8 @@ import com.pidulgi.server.member.entity.vo.MemberBirthYear
 import com.pidulgi.server.member.entity.vo.MemberComment
 import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.repository.MemberCustomRepository
-import com.pidulgi.server.member.repository.dto.MemberItemResponse
 import com.pidulgi.server.member.repository.dto.MemberItemResult
+import com.pidulgi.server.member.repository.dto.MemberSearchItemResult
 import jakarta.persistence.EntityManager
 import org.locationtech.jts.geom.Point
 import org.springframework.stereotype.Repository
@@ -18,6 +18,7 @@ class MemberCustomRepositoryImpl(
     private val entityManager: EntityManager,
 ) : MemberCustomRepository {
 
+    // 회원 목록 - 최근 업데이트 순
     override fun findAllMembersByCursor(
         memberId: Long,
         location: Point?,
@@ -79,8 +80,8 @@ class MemberCustomRepositoryImpl(
                 setParameter("gender", gender)
             }
             if (cursorId != null && cursorDate != null) {
-                setParameter("cursorDate", cursorDate)
                 setParameter("cursorId", cursorId)
+                setParameter("cursorDate", cursorDate)
             }
         }
 
@@ -88,6 +89,7 @@ class MemberCustomRepositoryImpl(
         return (query.resultList as List<Array<Any?>>).map(::toMemberItemResult)
     }
 
+    // 회원 목록 - 거리 순
     override fun findAllMembersWithDistanceByCursor(
         memberId: Long,
         location: Point,
@@ -146,8 +148,8 @@ class MemberCustomRepositoryImpl(
                 setParameter("gender", gender)
             }
             if (cursorId != null && cursorDistance != null) {
-                setParameter("cursorDistance", cursorDistance)
                 setParameter("cursorId", cursorId)
+                setParameter("cursorDistance", cursorDistance)
             }
         }
 
@@ -155,65 +157,74 @@ class MemberCustomRepositoryImpl(
         return (query.resultList as List<Array<Any?>>).map(::toMemberItemResult)
     }
 
-    private fun toMemberItemResult(row: Array<Any?>): MemberItemResult {
-        return MemberItemResult(
-            memberId = (row[0] as Number).toLong(),
-            profileKey = row[1] as? String,
-            nickname = MemberNickname(row[2] as String),
-            gender = Gender.valueOf(row[3] as String),
-            birthYear = MemberBirthYear((row[4] as Number).toInt()),
-            comment = MemberComment(row[5] as String),
-            updatedAt = row[6] as LocalDateTime,
-            distance = (row[7] as? Number)?.toDouble(),
-            likes = (row[8] as Number).toInt(),
-        )
-    }
-
-    override fun searchByNickname(
+    // 회원 검색 - 닉네임 유사도
+    override fun findAllMembersByNicknameWithCursor(
         memberId: Long,
-        keyword: String,
+        nickname: String,
+        location: Point?,
         cursorId: Long?,
+        cursorSimilarity: Double?,
         size: Int
-    ): List<MemberItemResponse> {
-        val cursorCondition = if (cursorId != null) {
-            "AND m.id < :cursorId"
+    ): List<MemberSearchItemResult> {
+        val cursorCondition = if (cursorId != null && cursorSimilarity != null) {
+            """
+            AND (
+                similarity(m.nickname, :nickname) < :cursorSimilarity
+                OR (similarity(m.nickname, :nickname) = :cursorSimilarity AND m.id < :cursorId)
+            )
+            """.trimIndent()
         } else ""
 
+        val distanceExpression = if (location != null) {
+            "ST_Distance(m.location, :location)"
+        } else {
+            "NULL"
+        }
+
         val sql = """
-            SELECT m.id, m.nickname, m.gender, m.birth_year, m.bio, m.comment, m.profile_key, m.updated_at,
-                CASE WHEN m.location IS NOT NULL AND req.location IS NOT NULL
-                    THEN ST_Distance(m.location, req.location) / 1000.0
-                END AS distance,
-                (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
+            SELECT m.id,
+                   m.profile_key,
+                   m.nickname,
+                   m.gender,
+                   m.birth_year,
+                   m.comment,
+                   m.updated_at,
+                   $distanceExpression AS distance,
+                   (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes,
+                   similarity(m.nickname, :nickname) AS similarity_score
             FROM member m
-            CROSS JOIN (SELECT location FROM member WHERE id = :requesterId) req
             WHERE m.deleted_at IS NULL
-                AND m.id != :requesterId
-                AND m.nickname ILIKE '%' || :keyword || '%'
-                AND NOT EXISTS (
-                    SELECT 1 FROM blocks
-                    WHERE (blocker_id = :requesterId AND blocked_id = m.id)
-                       OR (blocked_id = :requesterId AND blocker_id = m.id)
+                AND m.id <> :memberId
+                AND m.nickname % :nickname
+                AND m.id NOT IN (
+                    SELECT b.blocked_id FROM blocks b WHERE b.blocker_id = :memberId
+                    UNION
+                    SELECT b.blocker_id FROM blocks b WHERE b.blocked_id = :memberId
                 )
                 $cursorCondition
-            ORDER BY m.id DESC
+            ORDER BY similarity_score DESC, m.id DESC
             LIMIT :size
         """.trimIndent()
 
         val query = entityManager.createNativeQuery(sql).apply {
-            setParameter("requesterId", memberId)
-            setParameter("keyword", keyword)
+            setParameter("memberId", memberId)
+            setParameter("nickname", nickname)
             setParameter("size", size)
 
-            if (cursorId != null) {
+            if (location != null) {
+                setParameter("location", location)
+            }
+            if (cursorId != null && cursorSimilarity != null) {
                 setParameter("cursorId", cursorId)
+                setParameter("cursorSimilarity", cursorSimilarity)
             }
         }
 
         @Suppress("UNCHECKED_CAST")
-        return (query.resultList as List<Array<Any?>>).map(::toMemberItemResponse)
+        return (query.resultList as List<Array<Any?>>).map(::toMemberSearchItemResult)
     }
 
+    // 회원 사이 거리
     override fun findDistanceFromLocation(
         location: Point?,
         memberId: Long
@@ -237,16 +248,32 @@ class MemberCustomRepositoryImpl(
         return (result.firstOrNull() as? Number)?.toDouble()
     }
 
-    private fun toMemberItemResponse(row: Array<Any?>) = MemberItemResponse(
-        memberId = (row[0] as Number).toLong(),
-        nickname = row[1] as String,
-        gender = Gender.valueOf(row[2] as String),
-        birthYear = (row[3] as Number).toInt(),
-        bio = row[4] as String?,
-        comment = row[5] as String?,
-        profileKey = row[6] as String?,
-        updatedAt = row[7] as LocalDateTime,
-        distance = (row[8] as? Number)?.toDouble(),
-        likes = (row[9] as Number).toInt(),
-    )
+    private fun toMemberItemResult(row: Array<Any?>): MemberItemResult {
+        return MemberItemResult(
+            memberId = (row[0] as Number).toLong(),
+            profileKey = row[1] as? String,
+            nickname = MemberNickname(row[2] as String),
+            gender = Gender.valueOf(row[3] as String),
+            birthYear = MemberBirthYear((row[4] as Number).toInt()),
+            comment = MemberComment(row[5] as String),
+            updatedAt = row[6] as LocalDateTime,
+            distance = (row[7] as? Number)?.toDouble(),
+            likes = (row[8] as Number).toInt(),
+        )
+    }
+
+    private fun toMemberSearchItemResult(row: Array<Any?>): MemberSearchItemResult {
+        return MemberSearchItemResult(
+            memberId = (row[0] as Number).toLong(),
+            profileKey = row[1] as? String,
+            nickname = MemberNickname(row[2] as String),
+            gender = Gender.valueOf(row[3] as String),
+            birthYear = MemberBirthYear((row[4] as Number).toInt()),
+            comment = MemberComment(row[5] as String),
+            updatedAt = row[6] as LocalDateTime,
+            distance = (row[7] as? Number)?.toDouble(),
+            likes = (row[8] as Number).toInt(),
+            similarityScore = (row[9] as Number).toDouble(),
+        )
+    }
 }

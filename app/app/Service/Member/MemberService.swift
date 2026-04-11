@@ -82,18 +82,20 @@ final class MemberService {
     }
 
     func search(
-        keyword: String,
+        nickname: String,
         cursorId: Int64?,
+        cursorSimilarity: Double?,
         size: Int = 20
-    ) async throws -> CursorResponse<MemberDiscoveryResponse> {
+    ) async throws -> CursorSimilarityResponse<MemberSearchResponse> {
         let url = "\(baseURL)/v1/members/search"
 
         var params: Parameters = [
-            "keyword": keyword,
+            "nickname": nickname,
             "size": size
         ]
-        if let cursorId {
+        if cursorId != nil && cursorSimilarity != nil {
             params["cursorId"] = cursorId
+            params["cursorSimilarity"] = cursorSimilarity
         }
 
         return try await session.request(
@@ -101,7 +103,7 @@ final class MemberService {
             method: .get,
             parameters: params
         )
-        .decodingWithErrorHandling(CursorResponse<MemberDiscoveryResponse>.self)
+        .decodingWithErrorHandling(CursorSimilarityResponse<MemberSearchResponse>.self)
     }
 
     func getChatEnabled() async throws -> MemberGetChatEnabledResponse {
