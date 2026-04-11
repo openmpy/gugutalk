@@ -214,19 +214,27 @@ class MemberCustomRepositoryImpl(
         return (query.resultList as List<Array<Any?>>).map(::toMemberItemResponse)
     }
 
-    override fun getDistanceBetween(fromId: Long, toId: Long): Double? {
+    override fun findDistanceFromLocation(
+        location: Point?,
+        memberId: Long
+    ): Double? {
+        if (location == null) {
+            return null
+        }
+
         val sql = """
-            SELECT ST_Distance(a.location, b.location) / 1000.0
-            FROM member a, member b
-            WHERE a.id = :fromId AND b.id = :toId
-              AND a.location IS NOT NULL AND b.location IS NOT NULL
+            SELECT (m.location <-> :location)
+            FROM member m
+            WHERE m.id = :memberId
+                AND m.location IS NOT NULL
         """.trimIndent()
 
-        return (entityManager.createNativeQuery(sql)
-            .setParameter("fromId", fromId)
-            .setParameter("toId", toId)
-            .resultList
-            .firstOrNull() as? Number)?.toDouble()
+        val result = entityManager.createNativeQuery(sql).apply {
+            setParameter("location", location)
+            setParameter("memberId", memberId)
+        }.resultList
+
+        return (result.firstOrNull() as? Number)?.toDouble()
     }
 
     private fun toMemberItemResponse(row: Array<Any?>) = MemberItemResponse(

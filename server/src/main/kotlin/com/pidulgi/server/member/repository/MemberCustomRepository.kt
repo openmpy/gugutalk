@@ -32,5 +32,8 @@ interface MemberCustomRepository {
         size: Int
     ): List<MemberItemResponse>
 
-    fun getDistanceBetween(fromId: Long, toId: Long): Double?
+    fun findDistanceFromLocation(
+        location: Point?,
+        memberId: Long
+    ): Double?
 }

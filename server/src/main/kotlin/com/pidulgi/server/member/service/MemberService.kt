@@ -44,6 +44,7 @@ import java.time.LocalDate
 
 @Service
 class MemberService(
+
     @Value("\${s3.endpoint}") private val endpoint: String,
     @Value("\${jwt.access-token-expire-seconds}") private val accessTokenExpireSeconds: Long,
 
@@ -88,8 +89,8 @@ class MemberService(
 
     @Transactional(readOnly = true)
     fun getMember(memberId: Long, targetId: Long): MemberGetResponse {
-        val target = (memberRepository.findByIdOrNull(targetId)
-            ?: throw CustomException("존재하지 않는 회원입니다."))
+        val member = getMember(memberId)
+        val target = getMember(targetId)
         val memberImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
             target.id, ImageType.PUBLIC
         ).map {
@@ -103,7 +104,7 @@ class MemberService(
             targetId, memberId
         )
         val likes = likeRepository.countByLikedId(targetId)
-        val distance = memberRepository.getDistanceBetween(memberId, targetId)
+        val distance = memberRepository.findDistanceFromLocation(member.location, targetId)
 
         return MemberGetResponse(
             memberId = target.id,
@@ -113,7 +114,7 @@ class MemberService(
             age = AgeCalculator.calculate(target.birthYear.value),
             bio = target.bio?.value,
             likes = likes,
-            distance = distance,
+            distance = distance?.div(1000),
             updatedAt = target.updatedAt,
             isChatEnabled = target.isChatEnabled,
             isLiked = isLiked,
