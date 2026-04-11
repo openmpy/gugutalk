@@ -101,7 +101,7 @@ class DummyDataInit {
             // 포인트
             if (pointRepository.count() == 0L) {
                 val points = (1 until DUMMY_MEMBER_COUNT + 1).map { i ->
-                    Point(memberId = i.toLong())
+                    Point(memberId = i.toLong(), balance = 1000)
                 }
                 pointRepository.saveAll(points)
             }

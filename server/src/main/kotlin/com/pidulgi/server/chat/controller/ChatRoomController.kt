@@ -3,6 +3,7 @@ package com.pidulgi.server.chat.controller
 import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
 import com.pidulgi.server.chat.service.ChatRoomService
+import com.pidulgi.server.chat.service.command.ChatRoomCreateCommand
 import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
@@ -19,9 +20,10 @@ class ChatRoomController(
     @PostMapping("/v1/chat-rooms")
     fun create(
         @Login senderId: Long,
-        @RequestParam(value = "targetId") targetId: Long,
+        @RequestParam(required = true) targetId: Long,
     ): ResponseEntity<ChatRoomCreateResponse> {
-        val response = chatRoomService.create(senderId, targetId)
+        val command = ChatRoomCreateCommand(senderId, targetId)
+        val response = chatRoomService.create(command)
         return ResponseEntity.ok(response)
     }
 

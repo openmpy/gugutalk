@@ -8,6 +8,7 @@ import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
 import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
+import com.pidulgi.server.chat.service.command.ChatRoomCreateCommand
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
@@ -35,26 +36,21 @@ class ChatRoomService(
 ) {
 
     @Transactional
-    fun create(
-        senderId: Long,
-        targetId: Long,
-    ): ChatRoomCreateResponse {
-        memberRepository.findByIdOrNull(targetId)
+    fun create(command: ChatRoomCreateCommand): ChatRoomCreateResponse {
+        memberRepository.findByIdOrNull(command.targetId)
             ?: throw CustomException("존재하지 않는 회원입니다.")
+        blockRepository.findBlock(command.senderId, command.targetId)
+            ?.let { throw CustomException("차단된 회원입니다.") }
 
-        if (blockRepository.findBlock(senderId, targetId) != null) {
-            throw CustomException("차단된 회원입니다.")
-        }
-
-        val point = (pointRepository.findByMemberId(senderId)
-            ?: throw CustomException("존재하지 않는 포인트 정보입니다."))
+        val point = (pointRepository.findByMemberId(command.senderId)
+            ?: throw CustomException("포인트 정보를 찾을 수 없습니다."))
 
         if (point.balance < PointSource.SEND_MESSAGE.point) {
             throw CustomException("포인트가 부족합니다.")
         }
 
-        val chatRoom = findChatRoom(senderId, targetId)
-            ?: chatRoomRepository.save(ChatRoom.of(senderId, targetId))
+        val chatRoom = findChatRoom(command.senderId, command.targetId)
+            ?: chatRoomRepository.save(ChatRoom.of(command.senderId, command.targetId))
 
         point.use(PointSource.SEND_MESSAGE.point)
         return ChatRoomCreateResponse(chatRoom.id)
