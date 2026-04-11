@@ -2,9 +2,6 @@ package com.pidulgi.server.member.service
 
 import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
 import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
-import com.pidulgi.server.chat.dto.event.ChatEvent
-import com.pidulgi.server.chat.dto.event.type.ChatEventType.DELETE_CHAT_ROOM
-import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.s3.S3Service
@@ -29,14 +26,15 @@ import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
+import com.pidulgi.server.member.service.event.MemberWithdrawEvent
 import com.pidulgi.server.social.repository.BlockRepository
 import com.pidulgi.server.social.repository.LikeRepository
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -50,13 +48,12 @@ class MemberService(
 
     private val memberRepository: MemberRepository,
     private val memberImageRepository: MemberImageRepository,
-    private val chatRoomRepository: ChatRoomRepository,
     private val likeRepository: LikeRepository,
     private val blockRepository: BlockRepository,
     private val privateImageGrantRepository: PrivateImageGrantRepository,
     private val redisTemplate: StringRedisTemplate,
-    private val messagingTemplate: SimpMessagingTemplate,
     private val s3Service: S3Service,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     @Transactional(readOnly = true)
@@ -145,19 +142,7 @@ class MemberService(
 
         member.withdraw()
 
-        // 채팅방 삭제
-        val chatRooms = chatRoomRepository.findAllByMember1IdOrMember2Id(memberId, memberId)
-        chatRooms.forEach {
-            val chatEvent = ChatEvent(
-                DELETE_CHAT_ROOM,
-                null
-            )
-            messagingTemplate.convertAndSend(
-                "/topic/chat-rooms/${it.id}",
-                chatEvent
-            )
-            it.delete()
-        }
+        applicationEventPublisher.publishEvent(MemberWithdrawEvent(memberId))
     }
 
     @Transactional
