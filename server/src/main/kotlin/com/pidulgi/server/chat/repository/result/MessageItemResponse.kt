@@ -1,4 +1,4 @@
-package com.pidulgi.server.chat.repository.dto
+package com.pidulgi.server.chat.repository.result
 
 import com.pidulgi.server.chat.entity.type.MessageType
 import java.time.LocalDateTime

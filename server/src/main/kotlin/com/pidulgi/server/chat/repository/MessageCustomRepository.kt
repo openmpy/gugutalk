@@ -1,6 +1,6 @@
 package com.pidulgi.server.chat.repository
 
-import com.pidulgi.server.chat.repository.dto.MessageItemResponse
+import com.pidulgi.server.chat.repository.result.MessageItemResponse
 import java.time.LocalDateTime
 
 interface MessageCustomRepository {

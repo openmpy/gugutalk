@@ -2,7 +2,7 @@ package com.pidulgi.server.chat.repository.impl
 
 import com.pidulgi.server.chat.entity.type.MessageType
 import com.pidulgi.server.chat.repository.MessageCustomRepository
-import com.pidulgi.server.chat.repository.dto.MessageItemResponse
+import com.pidulgi.server.chat.repository.result.MessageItemResponse
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime

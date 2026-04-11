@@ -1,7 +1,7 @@
 package com.pidulgi.server.chat.service.extension
 
 import com.pidulgi.server.chat.dto.response.ChatRoomSearchResponse
-import com.pidulgi.server.chat.repository.dto.ChatRoomSearchItemResult
+import com.pidulgi.server.chat.repository.result.ChatRoomSearchItemResult
 
 fun ChatRoomSearchItemResult.toChatRoomSearchResponse(endpoint: String) = ChatRoomSearchResponse(
 

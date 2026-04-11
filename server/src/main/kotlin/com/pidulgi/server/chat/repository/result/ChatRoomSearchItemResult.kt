@@ -1,8 +1,8 @@
-package com.pidulgi.server.chat.repository.dto
+package com.pidulgi.server.chat.repository.result
 
 import java.time.LocalDateTime
 
-data class ChatRoomItemResult(
+data class ChatRoomSearchItemResult(
 
     val chatRoomId: Long,
     val targetId: Long,
@@ -11,4 +11,5 @@ data class ChatRoomItemResult(
     val lastMessage: String?,
     val sortAt: LocalDateTime,
     val unreadCount: Int,
+    val similarityScore: Double,
 )

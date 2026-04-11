@@ -1,14 +1,15 @@
 package com.pidulgi.server.chat.repository.impl
 
 import com.pidulgi.server.chat.repository.ChatRoomCustomRepository
-import com.pidulgi.server.chat.repository.dto.ChatRoomItemResult
-import com.pidulgi.server.chat.repository.dto.ChatRoomSearchItemResult
+import com.pidulgi.server.chat.repository.result.ChatRoomItemResult
+import com.pidulgi.server.chat.repository.result.ChatRoomSearchItemResult
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
 @Repository
 class ChatRoomCustomRepositoryImpl(
+
     private val entityManager: EntityManager,
 ) : ChatRoomCustomRepository {
 

@@ -1,7 +1,7 @@
 package com.pidulgi.server.chat.repository
 
-import com.pidulgi.server.chat.repository.dto.ChatRoomItemResult
-import com.pidulgi.server.chat.repository.dto.ChatRoomSearchItemResult
+import com.pidulgi.server.chat.repository.result.ChatRoomItemResult
+import com.pidulgi.server.chat.repository.result.ChatRoomSearchItemResult
 import java.time.LocalDateTime
 
 interface ChatRoomCustomRepository {
