@@ -31,6 +31,7 @@ import com.pidulgi.server.social.repository.BlockRepository
 import com.pidulgi.server.social.repository.LikeRepository
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.PrecisionModel
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -55,6 +56,10 @@ class MemberService(
     private val s3Service: S3Service,
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
+
+    companion object {
+        private val GEOMETRY_FACTORY = GeometryFactory(PrecisionModel(), 4326)
+    }
 
     @Transactional(readOnly = true)
     fun getMe(memberId: Long): MemberGetMeResponse {
@@ -150,7 +155,7 @@ class MemberService(
         val member = getMember(memberId)
 
         if (request.longitude != null && request.latitude != null) {
-            val point = GeometryFactory().createPoint(Coordinate(request.longitude, request.latitude))
+            val point = GEOMETRY_FACTORY.createPoint(Coordinate(request.longitude, request.latitude))
             member.bump(point)
         }
     }
