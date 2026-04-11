@@ -1,14 +1,12 @@
 package com.pidulgi.server.chat.service
 
-import com.pidulgi.server.chat.dto.event.ChatEvent
-import com.pidulgi.server.chat.dto.event.ChatRoomDeleteEvent
-import com.pidulgi.server.chat.dto.event.type.ChatEventType.DELETE_CHAT_ROOM
 import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
 import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.chat.service.command.ChatRoomCreateCommand
+import com.pidulgi.server.chat.service.event.ChatDeleteEvent
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
@@ -16,8 +14,8 @@ import com.pidulgi.server.point.entity.type.PointSource
 import com.pidulgi.server.point.repository.PointRepository
 import com.pidulgi.server.social.repository.BlockRepository
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -32,7 +30,7 @@ class ChatRoomService(
     private val memberRepository: MemberRepository,
     private val pointRepository: PointRepository,
     private val blockRepository: BlockRepository,
-    private val messagingTemplate: SimpMessagingTemplate,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     @Transactional
@@ -68,36 +66,11 @@ class ChatRoomService(
             throw CustomException("접근할 수 없는 채팅방입니다.")
         }
 
-        val targetId = if (chatRoom.member1Id == memberId) {
-            chatRoom.member2Id
-        } else {
-            chatRoom.member1Id
-        }
+        val targetId = getTargetId(chatRoom, memberId)
 
         chatRoom.delete()
 
-        // 방 구독 전체 전송
-        val event = ChatEvent(
-            DELETE_CHAT_ROOM,
-            null
-        )
-        messagingTemplate.convertAndSend(
-            "/topic/chat-rooms/${chatRoomId}",
-            event
-        )
-
-        // 채널 구독 개인 전송
-        val chatRoomEvent = ChatEvent(
-            DELETE_CHAT_ROOM,
-            ChatRoomDeleteEvent(
-                chatRoomId,
-            )
-        )
-        messagingTemplate.convertAndSendToUser(
-            targetId.toString(),
-            "/queue/chat-rooms",
-            chatRoomEvent
-        )
+        applicationEventPublisher.publishEvent(ChatDeleteEvent(chatRoomId, targetId))
     }
 
     @Transactional(readOnly = true)
@@ -200,5 +173,11 @@ class ChatRoomService(
             memberB to memberA
         }
         return chatRoomRepository.findByMember1IdAndMember2Id(m1, m2)
+    }
+
+    private fun getTargetId(chatRoom: ChatRoom, memberId: Long): Long = if (chatRoom.member1Id == memberId) {
+        chatRoom.member2Id
+    } else {
+        chatRoom.member1Id
     }
 }
