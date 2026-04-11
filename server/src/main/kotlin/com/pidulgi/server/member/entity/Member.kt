@@ -76,7 +76,7 @@ class Member(
     )
     var comment: MemberComment = MemberComment("반갑습니다."),
 
-    @Column(columnDefinition = "geography(Point,4326)")
+    @Column(columnDefinition = "geography(Point, 4326)")
     var location: Point? = null,
 
     @Column

@@ -16,12 +16,14 @@ interface MemberCustomRepository {
         size: Int
     ): List<MemberItemResult>
 
-    fun findLocationMembersByPage(
+    fun findAllMembersWithDistanceByCursor(
         memberId: Long,
+        location: Point,
         gender: String,
-        page: Int,
+        cursorId: Long?,
+        cursorDistance: Double?,
         size: Int
-    ): List<MemberItemResponse>
+    ): List<MemberItemResult>
 
     fun searchByNickname(
         memberId: Long,

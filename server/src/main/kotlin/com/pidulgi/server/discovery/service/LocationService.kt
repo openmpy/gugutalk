@@ -1,12 +1,15 @@
 package com.pidulgi.server.discovery.service
 
-import com.pidulgi.server.common.dto.PageResponse
+import com.pidulgi.server.common.dto.CursorDistanceResponse
+import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.discovery.dto.response.MemberDiscoveryResponse
+import com.pidulgi.server.discovery.service.extension.toMemberDiscoveryResponse
+import com.pidulgi.server.discovery.service.query.GetLocationMembersQuery
 import com.pidulgi.server.member.repository.MemberRepository
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
 
 @Service
 class LocationService(
@@ -17,37 +20,28 @@ class LocationService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getLocationMembers(
-        memberId: Long,
-        gender: String,
-        page: Int,
-        size: Int
-    ): PageResponse<MemberDiscoveryResponse> {
-        val result = memberRepository.findLocationMembersByPage(
-            memberId,
-            gender,
-            page,
-            size + 1
-        ).map {
-            MemberDiscoveryResponse(
-                memberId = it.memberId,
-                profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
-                nickname = it.nickname,
-                gender = it.gender,
-                age = LocalDate.now().year - it.birthYear,
-                comment = it.comment,
-                distance = it.distance,
-                likes = it.likes,
-                updatedAt = it.updatedAt,
-            )
-        }
+    fun getLocationMembers(query: GetLocationMembersQuery): CursorDistanceResponse<MemberDiscoveryResponse> {
+        val member = (memberRepository.findByIdOrNull(query.memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
+        val location = member.location
+            ?: throw CustomException("위치 정보를 불러올 수 없습니다.")
 
-        val hasNext = result.size > size
+        val result = memberRepository.findAllMembersWithDistanceByCursor(
+            query.memberId,
+            location,
+            query.gender,
+            query.cursorId,
+            query.cursorDistance?.times(1000),
+            query.size + 1
+        ).map { it.toMemberDiscoveryResponse(endpoint) }
+
+        val hasNext = result.size > query.size
         val items = if (hasNext) result.dropLast(1) else result
 
-        return PageResponse(
+        return CursorDistanceResponse(
             payload = items,
-            page = page,
+            nextId = items.lastOrNull()?.memberId,
+            nextDistance = items.lastOrNull()?.distance,
             hasNext = hasNext
         )
     }

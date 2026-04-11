@@ -9,22 +9,26 @@ final class LocationService {
 
     func getLocationMembers(
         gender: String = "ALL",
-        page: Int = 0,
+        cursorId: Int64?,
+        cursorDistance: Double?,
         size: Int = 20
-    ) async throws -> PageResponse<MemberDiscoveryResponse> {
+    ) async throws -> CursorDistanceResponse<MemberDiscoveryResponse> {
         let url = "\(baseURL)/v1/discovery/location"
 
-        let params: Parameters = [
+        var params: Parameters = [
             "gender": gender,
-            "page": page,
             "size": size
         ]
+        if cursorId != nil && cursorDistance != nil {
+            params["cursorId"] = cursorId
+            params["cursorDistance"] = cursorDistance
+        }
 
         return try await session.request(
             url,
             method: .get,
             parameters: params.compactMapValues { $0 }
         )
-        .decodingWithErrorHandling(PageResponse<MemberDiscoveryResponse>.self)
+        .decodingWithErrorHandling(CursorDistanceResponse<MemberDiscoveryResponse>.self)
     }
 }

@@ -16,8 +16,8 @@ final class LocationViewModel: ObservableObject {
     @Published var members: [MemberDiscoveryResponse] = []
     @Published var selectGender: String = "ALL"
 
-    private var page: Int = 0
-    private var size: Int = 20
+    private var cursorId: Int64?
+    private var cursorDistance: Double?
 
     func getLocationMembers() async {
         guard !hasLoaded else { return }
@@ -36,12 +36,13 @@ final class LocationViewModel: ObservableObject {
         do {
             let response = try await locaionService.getLocationMembers(
                 gender: selectGender,
-                page: 0,
-                size: size
+                cursorId: nil,
+                cursorDistance: nil
             )
 
             members = response.payload
-            page = 1
+            cursorId = response.nextId
+            cursorDistance = response.nextDistance
             hasNext = response.hasNext
 
             state = members.isEmpty ? .empty : .data
@@ -58,12 +59,13 @@ final class LocationViewModel: ObservableObject {
 
         let response = try await locaionService.getLocationMembers(
             gender: selectGender,
-            page: page,
-            size: size
+            cursorId: cursorId,
+            cursorDistance: cursorDistance
         )
 
         members.append(contentsOf: response.payload)
-        page = page + 1
+        cursorId = response.nextId
+        cursorDistance = response.nextDistance
         hasNext = response.hasNext
     }
 

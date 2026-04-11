@@ -88,6 +88,73 @@ class MemberCustomRepositoryImpl(
         return (query.resultList as List<Array<Any?>>).map(::toMemberItemResult)
     }
 
+    override fun findAllMembersWithDistanceByCursor(
+        memberId: Long,
+        location: Point,
+        gender: String,
+        cursorId: Long?,
+        cursorDistance: Double?,
+        size: Int
+    ): List<MemberItemResult> {
+        val cursorCondition = if (cursorId != null && cursorDistance != null) {
+            """
+            AND (
+                (m.location <-> :location) > :cursorDistance
+                OR (
+                    ABS((m.location <-> :location) - :cursorDistance) < 1e-9
+                    AND m.id < :cursorId
+                )
+            )
+            """.trimIndent()
+        } else ""
+
+        val genderCondition = if (gender == "MALE" || gender == "FEMALE") {
+            "AND m.gender = :gender"
+        } else ""
+
+        val sql = """
+            SELECT m.id,
+                   m.profile_key,
+                   m.nickname,
+                   m.gender,
+                   m.birth_year,
+                   m.comment,
+                   m.updated_at,
+                   (m.location <-> :location) AS distance,
+                   (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
+            FROM member m
+            WHERE m.deleted_at IS NULL
+                AND m.id <> :memberId
+                AND m.location IS NOT NULL
+                AND m.id NOT IN (
+                    SELECT b.blocked_id FROM blocks b WHERE b.blocker_id = :memberId
+                    UNION
+                    SELECT b.blocker_id FROM blocks b WHERE b.blocked_id = :memberId
+                )
+                $genderCondition
+                $cursorCondition
+            ORDER BY m.location <-> :location, m.id DESC
+            LIMIT :size
+        """.trimIndent()
+
+        val query = entityManager.createNativeQuery(sql).apply {
+            setParameter("memberId", memberId)
+            setParameter("location", location)
+            setParameter("size", size)
+
+            if (gender == "MALE" || gender == "FEMALE") {
+                setParameter("gender", gender)
+            }
+            if (cursorId != null && cursorDistance != null) {
+                setParameter("cursorDistance", cursorDistance)
+                setParameter("cursorId", cursorId)
+            }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        return (query.resultList as List<Array<Any?>>).map(::toMemberItemResult)
+    }
+
     private fun toMemberItemResult(row: Array<Any?>): MemberItemResult {
         return MemberItemResult(
             memberId = (row[0] as Number).toLong(),
@@ -100,43 +167,6 @@ class MemberCustomRepositoryImpl(
             distance = (row[7] as? Number)?.toDouble(),
             likes = (row[8] as Number).toInt(),
         )
-    }
-
-    override fun findLocationMembersByPage(
-        memberId: Long,
-        gender: String,
-        page: Int,
-        size: Int
-    ): List<MemberItemResponse> {
-        val sql = """
-            SELECT m.id, m.nickname, m.gender, m.birth_year, m.bio, m.comment, m.profile_key, m.updated_at,
-                ST_Distance(m.location, req.location) / 1000.0 AS distance,
-                (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
-            FROM member m
-            CROSS JOIN (SELECT location FROM member WHERE id = :requesterId) req
-            WHERE m.deleted_at IS NULL
-                AND m.id != :requesterId
-                AND m.location IS NOT NULL
-                AND req.location IS NOT NULL
-                AND m.updated_at >= NOW() - INTERVAL '24 hours'
-                AND (:gender = 'ALL' OR m.gender = :gender)
-                AND NOT EXISTS (
-                    SELECT 1 FROM blocks
-                    WHERE (blocker_id = :requesterId AND blocked_id = m.id)
-                       OR (blocked_id = :requesterId AND blocker_id = m.id)
-                )
-            ORDER BY ST_Distance(m.location, req.location), m.id
-            LIMIT :size OFFSET :offset
-        """.trimIndent()
-
-        val query = entityManager.createNativeQuery(sql).apply {
-            setParameter("requesterId", memberId)
-            setParameter("gender", gender)
-            setParameter("size", size)
-            setParameter("offset", page * size)
-        }
-        @Suppress("UNCHECKED_CAST")
-        return (query.resultList as List<Array<Any?>>).map(::toMemberItemResponse)
     }
 
     override fun searchByNickname(
