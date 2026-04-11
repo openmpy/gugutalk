@@ -117,6 +117,10 @@ class ChatRoomService(
         val chatRoom = chatRoomRepository.findByIdOrNull(chatRoomId)
             ?: throw CustomException("존재하지 않는 채팅방입니다.")
 
+        if (chatRoom.member1Id != memberId && chatRoom.member2Id != memberId) {
+            throw CustomException("접근할 수 없는 채팅방입니다.")
+        }
+
         val lastMessageId = messageRepository.findLastMessageId(chatRoomId)
             ?: return
 
