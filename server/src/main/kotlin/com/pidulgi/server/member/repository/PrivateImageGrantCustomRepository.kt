@@ -1,6 +1,6 @@
 package com.pidulgi.server.member.repository
 
-import com.pidulgi.server.member.repository.dto.PrivateImageGrantItemResult
+import com.pidulgi.server.member.repository.result.PrivateImageGrantItemResult
 
 fun interface PrivateImageGrantCustomRepository {
 

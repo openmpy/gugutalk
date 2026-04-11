@@ -2,7 +2,7 @@ package com.pidulgi.server.member.service.extension
 
 import com.pidulgi.server.common.util.AgeCalculator
 import com.pidulgi.server.member.dto.response.MemberSearchResponse
-import com.pidulgi.server.member.repository.dto.MemberSearchItemResult
+import com.pidulgi.server.member.repository.result.MemberSearchItemResult
 
 fun MemberSearchItemResult.toMemberDiscoveryResponse(endpoint: String) = MemberSearchResponse(
 

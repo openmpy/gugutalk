@@ -5,8 +5,8 @@ import com.pidulgi.server.member.entity.vo.MemberBirthYear
 import com.pidulgi.server.member.entity.vo.MemberComment
 import com.pidulgi.server.member.entity.vo.MemberNickname
 import com.pidulgi.server.member.repository.MemberCustomRepository
-import com.pidulgi.server.member.repository.dto.MemberItemResult
-import com.pidulgi.server.member.repository.dto.MemberSearchItemResult
+import com.pidulgi.server.member.repository.result.MemberItemResult
+import com.pidulgi.server.member.repository.result.MemberSearchItemResult
 import jakarta.persistence.EntityManager
 import org.locationtech.jts.geom.Point
 import org.springframework.stereotype.Repository

@@ -6,7 +6,7 @@ import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderer
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.social.entity.Like
 import com.pidulgi.server.social.repository.LikeCustomRepository
-import com.pidulgi.server.social.repository.dto.LikeItemResult
+import com.pidulgi.server.social.repository.result.LikeItemResult
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 

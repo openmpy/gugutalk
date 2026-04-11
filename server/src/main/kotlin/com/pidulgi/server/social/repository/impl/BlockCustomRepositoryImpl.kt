@@ -6,7 +6,7 @@ import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderer
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.social.entity.Block
 import com.pidulgi.server.social.repository.BlockCustomRepository
-import com.pidulgi.server.social.repository.dto.BlockItemResult
+import com.pidulgi.server.social.repository.result.BlockItemResult
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 

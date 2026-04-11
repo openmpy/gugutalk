@@ -2,7 +2,7 @@ package com.pidulgi.server.social.service.extension
 
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.util.AgeCalculator
-import com.pidulgi.server.social.repository.dto.BlockItemResult
+import com.pidulgi.server.social.repository.result.BlockItemResult
 
 fun BlockItemResult.toSettingResponse(endpoint: String) = SettingResponse(
 

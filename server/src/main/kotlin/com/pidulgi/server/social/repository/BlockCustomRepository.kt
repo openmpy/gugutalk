@@ -1,6 +1,6 @@
 package com.pidulgi.server.social.repository
 
-import com.pidulgi.server.social.repository.dto.BlockItemResult
+import com.pidulgi.server.social.repository.result.BlockItemResult
 
 fun interface BlockCustomRepository {
 

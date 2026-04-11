@@ -6,7 +6,7 @@ import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderer
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.PrivateImageGrant
 import com.pidulgi.server.member.repository.PrivateImageGrantCustomRepository
-import com.pidulgi.server.member.repository.dto.PrivateImageGrantItemResult
+import com.pidulgi.server.member.repository.result.PrivateImageGrantItemResult
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 

@@ -1,4 +1,4 @@
-package com.pidulgi.server.social.repository.dto
+package com.pidulgi.server.social.repository.result
 
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.vo.MemberBirthYear

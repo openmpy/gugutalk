@@ -1,7 +1,7 @@
 package com.pidulgi.server.member.repository
 
-import com.pidulgi.server.member.repository.dto.MemberItemResult
-import com.pidulgi.server.member.repository.dto.MemberSearchItemResult
+import com.pidulgi.server.member.repository.result.MemberItemResult
+import com.pidulgi.server.member.repository.result.MemberSearchItemResult
 import org.locationtech.jts.geom.Point
 import java.time.LocalDateTime
 

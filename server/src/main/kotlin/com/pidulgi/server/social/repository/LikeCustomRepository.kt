@@ -1,6 +1,6 @@
 package com.pidulgi.server.social.repository
 
-import com.pidulgi.server.social.repository.dto.LikeItemResult
+import com.pidulgi.server.social.repository.result.LikeItemResult
 
 fun interface LikeCustomRepository {
 

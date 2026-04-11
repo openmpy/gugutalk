@@ -2,7 +2,7 @@ package com.pidulgi.server.member.service.extension
 
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.util.AgeCalculator
-import com.pidulgi.server.member.repository.dto.PrivateImageGrantItemResult
+import com.pidulgi.server.member.repository.result.PrivateImageGrantItemResult
 
 fun PrivateImageGrantItemResult.toSettingResponse(endpoint: String) = SettingResponse(
 

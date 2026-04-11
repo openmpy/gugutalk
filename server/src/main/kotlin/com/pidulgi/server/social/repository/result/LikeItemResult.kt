@@ -1,13 +1,13 @@
-package com.pidulgi.server.member.repository.dto
+package com.pidulgi.server.social.repository.result
 
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.vo.MemberBirthYear
 import com.pidulgi.server.member.entity.vo.MemberNickname
 import java.time.LocalDateTime
 
-data class PrivateImageGrantItemResult(
+data class LikeItemResult(
 
-    val grantId: Long,
+    val likeId: Long,
     val memberId: Long,
     val nickname: MemberNickname,
     val gender: Gender,

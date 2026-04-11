@@ -1,4 +1,4 @@
-package com.pidulgi.server.member.repository.dto
+package com.pidulgi.server.member.repository.result
 
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.vo.MemberBirthYear
@@ -6,7 +6,7 @@ import com.pidulgi.server.member.entity.vo.MemberComment
 import com.pidulgi.server.member.entity.vo.MemberNickname
 import java.time.LocalDateTime
 
-data class MemberSearchItemResult(
+data class MemberItemResult(
 
     val memberId: Long,
     val profileKey: String?,
@@ -17,5 +17,4 @@ data class MemberSearchItemResult(
     val updatedAt: LocalDateTime,
     val distance: Double?,
     val likes: Int,
-    val similarityScore: Double,
 )
