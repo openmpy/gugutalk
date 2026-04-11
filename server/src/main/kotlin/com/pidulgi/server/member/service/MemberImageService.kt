@@ -19,6 +19,7 @@ import java.util.*
 
 @Service
 class MemberImageService(
+
     private val memberRepository: MemberRepository,
     private val privateImageGrantRepository: PrivateImageGrantRepository,
     private val memberImageRepository: MemberImageRepository,
