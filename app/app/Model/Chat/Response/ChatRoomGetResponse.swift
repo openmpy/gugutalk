@@ -5,7 +5,6 @@ struct ChatRoomGetResponse: Codable, Identifiable {
     let nickname: String
     let profileUrl: String?
     let lastMessage: String?
-    let lastMessageAt: String?
     let sortAt: String
     let unreadCount: Int
 

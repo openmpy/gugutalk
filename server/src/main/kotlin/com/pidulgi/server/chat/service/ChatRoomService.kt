@@ -7,6 +7,8 @@ import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.chat.service.command.ChatRoomCreateCommand
 import com.pidulgi.server.chat.service.event.ChatDeleteEvent
+import com.pidulgi.server.chat.service.extension.toChatRoomGetResponse
+import com.pidulgi.server.chat.service.query.GetChatRoomsQuery
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
@@ -74,40 +76,22 @@ class ChatRoomService(
     }
 
     @Transactional(readOnly = true)
-    fun gets(
-        memberId: Long,
-        status: String,
-        cursorId: Long?,
-        cursorDate: LocalDateTime?,
-        size: Int
-    ): CursorResponse<ChatRoomGetResponse> {
-        val result = chatRoomRepository.findChatRoomsByCursor(
-            memberId = memberId,
-            status = status,
-            cursorId = cursorId,
-            cursorDate = cursorDate,
-            size = size + 1
-        ).map {
-            ChatRoomGetResponse(
-                chatRoomId = it.chatRoomId,
-                targetId = it.targetId,
-                nickname = it.nickname,
-                profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
-                lastMessage = it.lastMessage,
-                lastMessageAt = it.lastMessageAt,
-                sortAt = it.sortAt,
-                unreadCount = it.unreadCount,
-            )
-        }
+    fun gets(query: GetChatRoomsQuery): CursorResponse<ChatRoomGetResponse> {
+        val result = chatRoomRepository.findAllChatRoomsByCursor(
+            memberId = query.memberId,
+            status = query.status,
+            cursorId = query.cursorId,
+            cursorDate = query.cursorDate,
+            size = query.size + 1
+        ).map { it.toChatRoomGetResponse(endpoint) }
 
-        val hasNext = result.size > size
+        val hasNext = result.size > query.size
         val items = if (hasNext) result.dropLast(1) else result
-        val last = items.lastOrNull()
 
         return CursorResponse(
             payload = items,
-            nextId = last?.chatRoomId,
-            nextDateAt = last?.sortAt,
+            nextId = items.lastOrNull()?.chatRoomId,
+            nextDateAt = items.lastOrNull()?.sortAt,
             hasNext = hasNext
         )
     }
@@ -152,7 +136,7 @@ class ChatRoomService(
                 nickname = it.nickname,
                 profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
                 lastMessage = it.lastMessage,
-                lastMessageAt = it.lastMessageAt,
+//                lastMessageAt = it.lastMessageAt,
                 sortAt = it.sortAt,
                 unreadCount = it.unreadCount,
             )

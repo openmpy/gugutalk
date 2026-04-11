@@ -1,7 +1,7 @@
 package com.pidulgi.server.chat.repository.impl
 
 import com.pidulgi.server.chat.repository.ChatRoomCustomRepository
-import com.pidulgi.server.chat.repository.dto.ChatRoomItemResponse
+import com.pidulgi.server.chat.repository.dto.ChatRoomItemResult
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
@@ -11,26 +11,23 @@ class ChatRoomCustomRepositoryImpl(
     private val entityManager: EntityManager,
 ) : ChatRoomCustomRepository {
 
-    override fun findChatRoomsByCursor(
+    override fun findAllChatRoomsByCursor(
         memberId: Long,
         status: String,
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int
-    ): List<ChatRoomItemResponse> {
+    ): List<ChatRoomItemResult> {
         val cursorCondition = if (cursorId != null && cursorDate != null) {
             """
             AND (
                 COALESCE(cr.last_message_at, cr.created_at) < :cursorDate
-                OR (
-                    COALESCE(cr.last_message_at, cr.created_at) = :cursorDate
-                    AND cr.id < :cursorId
-                )
+                OR (COALESCE(cr.last_message_at, cr.created_at) = :cursorDate AND cr.id < :cursorId)
             )
             """.trimIndent()
         } else ""
 
-        val unreadCondition = if (status == "UNREAD") {
+        val statusCondition = if (status.equals("UNREAD", ignoreCase = true)) {
             """
             AND (
                 (cr.member1_id = :memberId AND cr.member1_unread_count > 0)
@@ -47,7 +44,6 @@ class ChatRoomCustomRepositoryImpl(
                 m.nickname,
                 m.profile_key,
                 cr.last_message,
-                cr.last_message_at,
                 COALESCE(cr.last_message_at, cr.created_at) AS sort_at,
                 CASE 
                     WHEN cr.member1_id = :memberId THEN cr.member1_unread_count
@@ -62,8 +58,8 @@ class ChatRoomCustomRepositoryImpl(
                 AND m.deleted_at IS NULL
             WHERE cr.deleted_at IS NULL
                 AND (cr.member1_id = :memberId OR cr.member2_id = :memberId)
-                $unreadCondition
                 $cursorCondition
+                $statusCondition
             ORDER BY sort_at DESC, cr.id DESC
             LIMIT :size
         """.trimIndent()
@@ -79,7 +75,7 @@ class ChatRoomCustomRepositoryImpl(
         }
 
         @Suppress("UNCHECKED_CAST")
-        return (query.resultList as List<Array<Any?>>).map(::toChatRoomItemResponse)
+        return (query.resultList as List<Array<Any?>>).map(::toChatRoomItemResult)
     }
 
     override fun searchChatRoomsByCursor(
@@ -88,7 +84,7 @@ class ChatRoomCustomRepositoryImpl(
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int
-    ): List<ChatRoomItemResponse> {
+    ): List<ChatRoomItemResult> {
         val cursorCondition = if (cursorId != null && cursorDate != null) {
             """
             AND (
@@ -114,7 +110,6 @@ class ChatRoomCustomRepositoryImpl(
                 m.nickname,
                 m.profile_key,
                 cr.last_message,
-                cr.last_message_at,
                 COALESCE(cr.last_message_at, cr.created_at) AS sort_at,
                 CASE 
                     WHEN cr.member1_id = :memberId THEN cr.member1_unread_count
@@ -150,18 +145,17 @@ class ChatRoomCustomRepositoryImpl(
         }
 
         @Suppress("UNCHECKED_CAST")
-        return (query.resultList as List<Array<Any?>>).map(::toChatRoomItemResponse)
+        return (query.resultList as List<Array<Any?>>).map(::toChatRoomItemResult)
     }
 
-    private fun toChatRoomItemResponse(row: Array<Any?>) =
-        ChatRoomItemResponse(
+    private fun toChatRoomItemResult(row: Array<Any?>) =
+        ChatRoomItemResult(
             chatRoomId = (row[0] as Number).toLong(),
             targetId = (row[1] as Number).toLong(),
             nickname = row[2] as String,
             profileKey = row[3] as String?,
             lastMessage = row[4] as String?,
-            lastMessageAt = row[5] as LocalDateTime?,
-            sortAt = row[6] as LocalDateTime,
-            unreadCount = (row[7] as Number).toInt(),
+            sortAt = row[5] as LocalDateTime,
+            unreadCount = (row[6] as Number).toInt(),
         )
 }

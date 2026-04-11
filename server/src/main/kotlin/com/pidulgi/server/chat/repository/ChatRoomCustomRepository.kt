@@ -1,17 +1,17 @@
 package com.pidulgi.server.chat.repository
 
-import com.pidulgi.server.chat.repository.dto.ChatRoomItemResponse
+import com.pidulgi.server.chat.repository.dto.ChatRoomItemResult
 import java.time.LocalDateTime
 
 interface ChatRoomCustomRepository {
 
-    fun findChatRoomsByCursor(
+    fun findAllChatRoomsByCursor(
         memberId: Long,
         status: String,
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int
-    ): List<ChatRoomItemResponse>
+    ): List<ChatRoomItemResult>
 
     fun searchChatRoomsByCursor(
         memberId: Long,
@@ -19,5 +19,5 @@ interface ChatRoomCustomRepository {
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int
-    ): List<ChatRoomItemResponse>
+    ): List<ChatRoomItemResult>
 }

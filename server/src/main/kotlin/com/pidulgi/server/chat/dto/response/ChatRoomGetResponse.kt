@@ -9,7 +9,6 @@ data class ChatRoomGetResponse(
     val nickname: String,
     val profileUrl: String?,
     val lastMessage: String?,
-    val lastMessageAt: LocalDateTime?,
     val sortAt: LocalDateTime,
     val unreadCount: Int,
 )

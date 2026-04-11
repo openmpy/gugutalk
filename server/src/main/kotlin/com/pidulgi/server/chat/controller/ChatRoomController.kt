@@ -4,6 +4,7 @@ import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
 import com.pidulgi.server.chat.service.ChatRoomService
 import com.pidulgi.server.chat.service.command.ChatRoomCreateCommand
+import com.pidulgi.server.chat.service.query.GetChatRoomsQuery
 import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
@@ -39,12 +40,13 @@ class ChatRoomController(
     @GetMapping("/v1/chat-rooms")
     fun gets(
         @Login memberId: Long,
-        @RequestParam(value = "status", defaultValue = "ALL") status: String,
+        @RequestParam(required = false, defaultValue = "ALL") status: String,
         @RequestParam(required = false) cursorId: Long?,
         @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<ChatRoomGetResponse>> {
-        val response = chatRoomService.gets(memberId, status, cursorId, cursorDate, size)
+        val query = GetChatRoomsQuery(memberId, status, cursorId, cursorDate, size)
+        val response = chatRoomService.gets(query)
         return ResponseEntity.ok(response)
     }
 

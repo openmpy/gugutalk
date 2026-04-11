@@ -132,7 +132,6 @@ final class ChatViewModel: ObservableObject {
             nickname: event.nickname,
             profileUrl: event.profileUrl,
             lastMessage: event.lastMessage,
-            lastMessageAt: event.lastMessageAt,
             sortAt: event.lastMessageAt ?? "",
             unreadCount: event.unreadCount
         )
