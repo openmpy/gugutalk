@@ -192,10 +192,6 @@ class MemberService(
 
     @Transactional(readOnly = true)
     fun searchByNickname(query: SearchByNicknameQuery): CursorSimilarityResponse<MemberSearchResponse> {
-        if (query.nickname.length < 2) {
-            throw CustomException("검색어는 2자 이상이어야 합니다.")
-        }
-
         val member = getMember(query.memberId)
         val result = memberRepository.findAllMembersByNicknameWithCursor(
             query.memberId,
