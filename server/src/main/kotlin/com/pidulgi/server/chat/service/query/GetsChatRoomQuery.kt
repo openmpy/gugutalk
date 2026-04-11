@@ -2,7 +2,7 @@ package com.pidulgi.server.chat.service.query
 
 import java.time.LocalDateTime
 
-data class GetChatRoomsQuery(
+data class GetsChatRoomQuery(
 
     val memberId: Long,
     val status: String,

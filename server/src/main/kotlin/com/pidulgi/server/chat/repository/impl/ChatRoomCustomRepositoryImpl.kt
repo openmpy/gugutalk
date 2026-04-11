@@ -2,6 +2,7 @@ package com.pidulgi.server.chat.repository.impl
 
 import com.pidulgi.server.chat.repository.ChatRoomCustomRepository
 import com.pidulgi.server.chat.repository.dto.ChatRoomItemResult
+import com.pidulgi.server.chat.repository.dto.ChatRoomSearchItemResult
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
@@ -11,6 +12,7 @@ class ChatRoomCustomRepositoryImpl(
     private val entityManager: EntityManager,
 ) : ChatRoomCustomRepository {
 
+    // 채팅방 목록
     override fun findAllChatRoomsByCursor(
         memberId: Long,
         status: String,
@@ -78,28 +80,20 @@ class ChatRoomCustomRepositoryImpl(
         return (query.resultList as List<Array<Any?>>).map(::toChatRoomItemResult)
     }
 
-    override fun searchChatRoomsByCursor(
+    // 채팅방 검색 - 닉네임 유사도
+    override fun findAllChatRoomsByNicknameWithCursor(
         memberId: Long,
-        keyword: String?,
+        nickname: String,
         cursorId: Long?,
-        cursorDate: LocalDateTime?,
+        cursorSimilarity: Double?,
         size: Int
-    ): List<ChatRoomItemResult> {
-        val cursorCondition = if (cursorId != null && cursorDate != null) {
+    ): List<ChatRoomSearchItemResult> {
+        val cursorCondition = if (cursorId != null && cursorSimilarity != null) {
             """
             AND (
-                COALESCE(cr.last_message_at, cr.created_at) < :cursorDate
-                OR (
-                    COALESCE(cr.last_message_at, cr.created_at) = :cursorDate
-                    AND cr.id < :cursorId
-                )
+                similarity(m.nickname, :nickname) < :cursorSimilarity
+                OR (similarity(m.nickname, :nickname) = :cursorSimilarity AND m.id < :cursorId)
             )
-            """.trimIndent()
-        } else ""
-
-        val keywordCondition = if (!keyword.isNullOrBlank()) {
-            """
-            AND m.nickname ILIKE '%' || :keyword || '%'
             """.trimIndent()
         } else ""
 
@@ -114,7 +108,8 @@ class ChatRoomCustomRepositoryImpl(
                 CASE 
                     WHEN cr.member1_id = :memberId THEN cr.member1_unread_count
                     ELSE cr.member2_unread_count
-                END AS unread_count
+                END AS unread_count,
+                similarity(m.nickname, :nickname) AS similarity_score
             FROM chat_room cr
             JOIN member m 
                 ON m.id = CASE 
@@ -124,28 +119,25 @@ class ChatRoomCustomRepositoryImpl(
                 AND m.deleted_at IS NULL
             WHERE cr.deleted_at IS NULL
                 AND (cr.member1_id = :memberId OR cr.member2_id = :memberId)
-                $keywordCondition
+                AND m.nickname % :nickname
                 $cursorCondition
-            ORDER BY sort_at DESC, cr.id DESC
+            ORDER BY similarity_score DESC, cr.id DESC
             LIMIT :size
         """.trimIndent()
 
         val query = entityManager.createNativeQuery(sql).apply {
             setParameter("memberId", memberId)
+            setParameter("nickname", nickname)
             setParameter("size", size)
 
-            if (!keyword.isNullOrBlank()) {
-                setParameter("keyword", keyword)
-            }
-
-            if (cursorId != null && cursorDate != null) {
+            if (cursorId != null && cursorSimilarity != null) {
                 setParameter("cursorId", cursorId)
-                setParameter("cursorDate", cursorDate)
+                setParameter("cursorSimilarity", cursorSimilarity)
             }
         }
 
         @Suppress("UNCHECKED_CAST")
-        return (query.resultList as List<Array<Any?>>).map(::toChatRoomItemResult)
+        return (query.resultList as List<Array<Any?>>).map(::toChatRoomSearchItemResult)
     }
 
     private fun toChatRoomItemResult(row: Array<Any?>) =
@@ -157,5 +149,17 @@ class ChatRoomCustomRepositoryImpl(
             lastMessage = row[4] as String?,
             sortAt = row[5] as LocalDateTime,
             unreadCount = (row[6] as Number).toInt(),
+        )
+
+    private fun toChatRoomSearchItemResult(row: Array<Any?>) =
+        ChatRoomSearchItemResult(
+            chatRoomId = (row[0] as Number).toLong(),
+            targetId = (row[1] as Number).toLong(),
+            nickname = row[2] as String,
+            profileKey = row[3] as String?,
+            lastMessage = row[4] as String?,
+            sortAt = row[5] as LocalDateTime,
+            unreadCount = (row[6] as Number).toInt(),
+            similarityScore = (row[7] as Number).toDouble(),
         )
 }

@@ -2,11 +2,14 @@ package com.pidulgi.server.chat.controller
 
 import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
+import com.pidulgi.server.chat.dto.response.ChatRoomSearchResponse
 import com.pidulgi.server.chat.service.ChatRoomService
 import com.pidulgi.server.chat.service.command.ChatRoomCreateCommand
-import com.pidulgi.server.chat.service.query.GetChatRoomsQuery
+import com.pidulgi.server.chat.service.query.GetsChatRoomQuery
+import com.pidulgi.server.chat.service.query.SearchChatRoomQuery
 import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.dto.CursorResponse
+import com.pidulgi.server.common.dto.CursorSimilarityResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
@@ -45,7 +48,7 @@ class ChatRoomController(
         @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<ChatRoomGetResponse>> {
-        val query = GetChatRoomsQuery(memberId, status, cursorId, cursorDate, size)
+        val query = GetsChatRoomQuery(memberId, status, cursorId, cursorDate, size)
         val response = chatRoomService.gets(query)
         return ResponseEntity.ok(response)
     }
@@ -62,12 +65,13 @@ class ChatRoomController(
     @GetMapping("/v1/chat-rooms/search")
     fun search(
         @Login memberId: Long,
-        @RequestParam(value = "keyword") keyword: String,
+        @RequestParam(required = true) nickname: String,
         @RequestParam(required = false) cursorId: Long?,
-        @RequestParam(required = false) cursorDate: LocalDateTime?,
+        @RequestParam(required = false) cursorSimilarity: Double?,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<CursorResponse<ChatRoomGetResponse>> {
-        val response = chatRoomService.search(memberId, keyword, cursorId, cursorDate, size)
+    ): ResponseEntity<CursorSimilarityResponse<ChatRoomSearchResponse>> {
+        val query = SearchChatRoomQuery(memberId, nickname, cursorId, cursorSimilarity, size)
+        val response = chatRoomService.search(query)
         return ResponseEntity.ok(response)
     }
 }

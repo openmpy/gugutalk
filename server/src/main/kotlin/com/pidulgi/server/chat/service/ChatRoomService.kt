@@ -2,14 +2,18 @@ package com.pidulgi.server.chat.service
 
 import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
+import com.pidulgi.server.chat.dto.response.ChatRoomSearchResponse
 import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.chat.service.command.ChatRoomCreateCommand
 import com.pidulgi.server.chat.service.event.ChatDeleteEvent
 import com.pidulgi.server.chat.service.extension.toChatRoomGetResponse
-import com.pidulgi.server.chat.service.query.GetChatRoomsQuery
+import com.pidulgi.server.chat.service.extension.toChatRoomSearchResponse
+import com.pidulgi.server.chat.service.query.GetsChatRoomQuery
+import com.pidulgi.server.chat.service.query.SearchChatRoomQuery
 import com.pidulgi.server.common.dto.CursorResponse
+import com.pidulgi.server.common.dto.CursorSimilarityResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.point.entity.type.PointSource
@@ -20,7 +24,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
 
 @Service
 class ChatRoomService(
@@ -76,7 +79,7 @@ class ChatRoomService(
     }
 
     @Transactional(readOnly = true)
-    fun gets(query: GetChatRoomsQuery): CursorResponse<ChatRoomGetResponse> {
+    fun gets(query: GetsChatRoomQuery): CursorResponse<ChatRoomGetResponse> {
         val result = chatRoomRepository.findAllChatRoomsByCursor(
             memberId = query.memberId,
             status = query.status,
@@ -96,6 +99,27 @@ class ChatRoomService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun search(query: SearchChatRoomQuery): CursorSimilarityResponse<ChatRoomSearchResponse> {
+        val result = chatRoomRepository.findAllChatRoomsByNicknameWithCursor(
+            memberId = query.memberId,
+            nickname = query.nickname,
+            cursorId = query.cursorId,
+            cursorSimilarity = query.cursorSimilarity,
+            size = query.size + 1
+        ).map { it.toChatRoomSearchResponse(endpoint) }
+
+        val hasNext = result.size > query.size
+        val items = if (hasNext) result.dropLast(1) else result
+
+        return CursorSimilarityResponse(
+            payload = items,
+            nextId = items.lastOrNull()?.chatRoomId,
+            nextSimilarity = items.lastOrNull()?.similarityScore,
+            hasNext = hasNext
+        )
+    }
+
     @Transactional
     fun markAsRead(memberId: Long, chatRoomId: Long) {
         val chatRoom = chatRoomRepository.findByIdOrNull(chatRoomId)
@@ -109,49 +133,6 @@ class ChatRoomService(
             ?: return
 
         chatRoom.read(memberId, lastMessageId)
-    }
-
-    @Transactional(readOnly = true)
-    fun search(
-        memberId: Long,
-        keyword: String,
-        cursorId: Long?,
-        cursorDate: LocalDateTime?,
-        size: Int
-    ): CursorResponse<ChatRoomGetResponse> {
-        if (keyword.length < 2) {
-            throw CustomException("검색어는 2자 이상이어야 합니다.")
-        }
-
-        val result = chatRoomRepository.searchChatRoomsByCursor(
-            memberId = memberId,
-            keyword = keyword,
-            cursorId = cursorId,
-            cursorDate = cursorDate,
-            size = size + 1
-        ).map {
-            ChatRoomGetResponse(
-                chatRoomId = it.chatRoomId,
-                targetId = it.targetId,
-                nickname = it.nickname,
-                profileUrl = it.profileKey?.let { key -> "$endpoint$key" },
-                lastMessage = it.lastMessage,
-//                lastMessageAt = it.lastMessageAt,
-                sortAt = it.sortAt,
-                unreadCount = it.unreadCount,
-            )
-        }
-
-        val hasNext = result.size > size
-        val items = if (hasNext) result.dropLast(1) else result
-        val last = items.lastOrNull()
-
-        return CursorResponse(
-            payload = items,
-            nextId = last?.chatRoomId,
-            nextDateAt = last?.sortAt,
-            hasNext = hasNext
-        )
     }
 
     private fun findChatRoom(memberA: Long, memberB: Long): ChatRoom? {
