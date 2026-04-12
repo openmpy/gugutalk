@@ -7,6 +7,7 @@ import com.pidulgi.server.ban.repository.BanHistoryRepository
 import com.pidulgi.server.ban.repository.BanRepository
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.report.entity.type.ReportType
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -42,5 +43,13 @@ class BanService(
             expiredAt = request.expiredAt
         )
         banHistoryRepository.save(banHistory)
+    }
+
+    @Transactional
+    fun remove(banId: Long) {
+        val ban = (banRepository.findByIdOrNull(banId)
+            ?: throw CustomException("존재하지 않는 정지 정보입니다."))
+
+        banRepository.delete(ban)
     }
 }
