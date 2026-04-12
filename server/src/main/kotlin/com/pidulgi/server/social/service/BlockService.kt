@@ -1,5 +1,11 @@
 package com.pidulgi.server.social.service
 
+import com.pidulgi.server.chat.dto.event.ChatEvent
+import com.pidulgi.server.chat.dto.event.ChatRoomDeleteEvent
+import com.pidulgi.server.chat.dto.event.type.ChatEventType.DELETE_CHAT_ROOM
+import com.pidulgi.server.chat.repository.ChatRoomRepository
+import com.pidulgi.server.chat.service.event.ChatQueueEvent
+import com.pidulgi.server.chat.service.event.ChatTopicEvent
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.dto.SettingResponse
 import com.pidulgi.server.common.exception.CustomException
@@ -8,7 +14,6 @@ import com.pidulgi.server.social.entity.Block
 import com.pidulgi.server.social.repository.BlockRepository
 import com.pidulgi.server.social.service.command.BlockAddMemberCommand
 import com.pidulgi.server.social.service.command.BlockRemoveMemberCommand
-import com.pidulgi.server.social.service.event.BlockAddEvent
 import com.pidulgi.server.social.service.extension.toSettingResponse
 import com.pidulgi.server.social.service.query.GetBlockedMembersQuery
 import org.springframework.beans.factory.annotation.Value
@@ -23,6 +28,7 @@ class BlockService(
 
     private val blockRepository: BlockRepository,
     private val memberRepository: MemberRepository,
+    private val chatRoomRepository: ChatRoomRepository,
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
@@ -38,7 +44,27 @@ class BlockService(
         val block = Block(blockerId = command.blockerId, blockedId = command.blockedId)
         blockRepository.save(block)
 
-        applicationEventPublisher.publishEvent(BlockAddEvent(command.blockerId, command.blockedId))
+        val (member1Id, member2Id) = if (command.blockerId < command.blockedId)
+            command.blockerId to command.blockedId else command.blockedId to command.blockerId
+        val chatRoom = chatRoomRepository.findByMember1IdAndMember2Id(member1Id, member2Id)
+            ?: throw CustomException("존재하지 않는 채팅방입니다.")
+
+        chatRoom.delete()
+
+        // 이벤트
+        val chatEvent = ChatEvent(
+            DELETE_CHAT_ROOM,
+            null
+        )
+        applicationEventPublisher.publishEvent(ChatTopicEvent(chatRoom.id, chatEvent))
+
+        val chatRoomEvent = ChatEvent(
+            DELETE_CHAT_ROOM,
+            ChatRoomDeleteEvent(
+                chatRoom.id,
+            )
+        )
+        applicationEventPublisher.publishEvent(ChatQueueEvent(command.blockedId, chatRoomEvent))
     }
 
     @Transactional(readOnly = true)
