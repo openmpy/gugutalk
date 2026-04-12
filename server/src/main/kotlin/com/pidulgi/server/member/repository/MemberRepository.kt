@@ -11,57 +11,11 @@ import java.time.LocalDateTime
 
 interface MemberRepository : JpaRepository<Member, Long>, MemberCustomRepository {
 
-    fun findByUuid(uuid: String): Member?
-
     fun existsByPhoneNumber(phoneNumber: MemberPhoneNumber): Boolean
 
     fun existsByNickname(nickname: MemberNickname): Boolean
 
     fun findByPhoneNumber(phoneNumber: MemberPhoneNumber): Member?
-
-    @Query(
-        value = """
-            SELECT *
-            FROM member m
-            WHERE m.id = :id
-        """,
-        nativeQuery = true
-    )
-    fun findByIdOrNullNative(id: Long): Member?
-
-    @Query(
-        value = """
-            SELECT *
-            FROM member m
-            WHERE :gender = 'ALL' OR m.gender = :gender
-            ORDER BY m.updated_at DESC, m.id DESC
-            LIMIT :size OFFSET :offset
-        """,
-        nativeQuery = true
-    )
-    fun findAllByPage(
-        @Param("gender") gender: String,
-        @Param("offset") offset: Int,
-        @Param("size") size: Int
-    ): List<Member>
-
-    @Query(
-        value = """
-            SELECT *
-            FROM member m
-            WHERE m.nickname ILIKE '%' || :keyword || '%'
-                AND (:gender = 'ALL' OR m.gender = :gender)
-            ORDER BY m.updated_at DESC, m.id DESC
-            LIMIT :size OFFSET :offset
-        """,
-        nativeQuery = true
-    )
-    fun findAllByNicknamePage(
-        @Param("keyword") keyword: String,
-        @Param("gender") gender: String,
-        @Param("offset") offset: Int,
-        @Param("size") size: Int
-    ): List<Member>
 
     @Query(
         value = """

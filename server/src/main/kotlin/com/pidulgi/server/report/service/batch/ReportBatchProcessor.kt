@@ -1,6 +1,6 @@
 package com.pidulgi.server.report.service.batch
 
-import com.pidulgi.server.common.s3.S3CleanupEvent
+import com.pidulgi.server.common.s3.event.S3CleanupEvent
 import com.pidulgi.server.report.entity.Report
 import com.pidulgi.server.report.repository.ReportImageRepository
 import com.pidulgi.server.report.repository.ReportRepository

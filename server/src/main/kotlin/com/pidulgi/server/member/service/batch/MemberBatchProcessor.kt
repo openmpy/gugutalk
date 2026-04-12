@@ -1,6 +1,6 @@
 package com.pidulgi.server.member.service.batch
 
-import com.pidulgi.server.common.s3.S3CleanupEvent
+import com.pidulgi.server.common.s3.event.S3CleanupEvent
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository

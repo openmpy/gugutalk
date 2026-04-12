@@ -1,8 +1,8 @@
 package com.pidulgi.server.report.service
 
 import com.pidulgi.server.common.exception.CustomException
-import com.pidulgi.server.common.s3.PresignedUrlsResponse
 import com.pidulgi.server.common.s3.S3Service
+import com.pidulgi.server.common.s3.dto.response.PresignedUrlsResponse
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.report.dto.ReportGetPresignedUrlsRequest

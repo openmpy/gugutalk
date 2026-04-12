@@ -3,7 +3,7 @@ package com.pidulgi.server.chat.controller
 import com.pidulgi.server.chat.dto.request.MediaGetPresignedUrlsRequest
 import com.pidulgi.server.chat.service.MessageImageService
 import com.pidulgi.server.common.auth.Login
-import com.pidulgi.server.common.s3.PresignedUrlsResponse
+import com.pidulgi.server.common.s3.dto.response.PresignedUrlsResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 

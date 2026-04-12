@@ -3,7 +3,7 @@ package com.pidulgi.server.chat.service.batch
 import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
-import com.pidulgi.server.common.s3.S3CleanupEvent
+import com.pidulgi.server.common.s3.event.S3CleanupEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional

@@ -1,6 +1,6 @@
 package com.pidulgi.server.common.s3
 
-import com.pidulgi.server.common.s3.PresignedUrlsResponse.PresignedUrlResponse
+import com.pidulgi.server.common.s3.dto.response.PresignedUrlsResponse.PresignedUrlResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service

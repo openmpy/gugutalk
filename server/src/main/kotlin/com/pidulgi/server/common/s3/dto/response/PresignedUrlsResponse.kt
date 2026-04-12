@@ -1,4 +1,4 @@
-package com.pidulgi.server.common.s3
+package com.pidulgi.server.common.s3.dto.response
 
 data class PresignedUrlsResponse(
 

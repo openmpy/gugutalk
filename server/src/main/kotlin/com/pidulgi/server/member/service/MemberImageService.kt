@@ -1,8 +1,8 @@
 package com.pidulgi.server.member.service
 
 import com.pidulgi.server.common.exception.CustomException
-import com.pidulgi.server.common.s3.PresignedUrlsResponse
 import com.pidulgi.server.common.s3.S3Service
+import com.pidulgi.server.common.s3.dto.response.PresignedUrlsResponse
 import com.pidulgi.server.member.dto.request.MemberGetPresignedUrlsRequest
 import com.pidulgi.server.member.dto.response.MemberGetPrivateImagesResponse
 import com.pidulgi.server.member.dto.response.MemberGetPrivateImagesResponse.MemberPrivateImageResponse

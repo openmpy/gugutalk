@@ -8,6 +8,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent
 
 @Component
 class WebSocketEventListener(
+
     private val chatRoomSessionManager: ChatRoomSessionManager
 ) {
 

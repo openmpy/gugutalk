@@ -3,8 +3,8 @@ package com.pidulgi.server.chat.service
 import com.pidulgi.server.chat.dto.request.MediaGetPresignedUrlsRequest
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.common.exception.CustomException
-import com.pidulgi.server.common.s3.PresignedUrlsResponse
 import com.pidulgi.server.common.s3.S3Service
+import com.pidulgi.server.common.s3.dto.response.PresignedUrlsResponse
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberRepository
 import org.springframework.data.repository.findByIdOrNull
