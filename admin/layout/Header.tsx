@@ -7,7 +7,7 @@ export default function Header() {
       <div className="flex items-center gap-4 text-white font-semibold">
         <Link href="/member">회원</Link>
         <Link href="/report">신고</Link>
-        <Link href="/">정지</Link>
+        <Link href="/ban">정지</Link>
       </div>
     </header>
   );
