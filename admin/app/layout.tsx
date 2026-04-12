@@ -1,4 +1,5 @@
-import Header from "@/component/Header";
+import Footer from "@/layout/Footer";
+import Header from "@/layout/Header";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -13,9 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-slate-500">
         <Header />
-        <main>{children}</main>
+        <main className="flex-1 bg-white">{children}</main>
+        <Footer />
       </body>
     </html>
   );
