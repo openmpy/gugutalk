@@ -14,14 +14,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full antialiased">
-      <body className="h-full flex flex-col bg-slate-200 overflow-hidden">
-        <main className="flex-1 overflow-hidden">
-          <div className="max-w-4xl mx-auto bg-white h-full flex flex-col overflow-y-auto relative">
+    <html lang="ko" className="h-full min-h-dvh antialiased">
+      <body className="flex h-full min-h-dvh flex-col overflow-hidden bg-slate-200">
+        <main className="flex min-h-0 flex-1 overflow-hidden">
+          <div className="relative mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col bg-white">
             <Header />
-            {children}
+            <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
             <Footer />
-
             <RefreshButton />
           </div>
         </main>
