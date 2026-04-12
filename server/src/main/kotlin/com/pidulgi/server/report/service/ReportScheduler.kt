@@ -24,7 +24,7 @@ class ReportScheduler(
     @Scheduled(cron = "0 0 9 * * *")
     fun cleanUpPendingImages() {
         val expiredBefore = LocalDateTime.now().minusHours(24)
-        val pendingImages = reportImageRepository.findByStatusAndCreatedAtBefore(
+        val pendingImages = reportImageRepository.findAllByStatusAndCreatedAtBefore(
             PENDING, expiredBefore
         )
 

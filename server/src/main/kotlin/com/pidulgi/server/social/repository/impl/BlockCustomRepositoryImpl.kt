@@ -19,7 +19,7 @@ class BlockCustomRepositoryImpl(
 
     private val renderer = JpqlRenderer()
 
-    override fun findBlocksByCursor(
+    override fun findAllBlocksByCursor(
         blockerId: Long,
         cursorId: Long?,
         size: Int

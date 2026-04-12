@@ -43,7 +43,7 @@ class BlockService(
 
     @Transactional(readOnly = true)
     fun getBlockedMembers(query: GetBlockedMembersQuery): CursorResponse<SettingResponse> {
-        val result = blockRepository.findBlocksByCursor(query.blockerId, query.cursorId, query.size + 1)
+        val result = blockRepository.findAllBlocksByCursor(query.blockerId, query.cursorId, query.size + 1)
             .map { it.toSettingResponse(endpoint) }
 
         val hasNext = result.size > query.size

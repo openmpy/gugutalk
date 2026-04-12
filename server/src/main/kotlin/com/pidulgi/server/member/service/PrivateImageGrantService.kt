@@ -41,7 +41,7 @@ class PrivateImageGrantService(
 
     @Transactional(readOnly = true)
     fun getGrantedMembers(query: GetGrantedMembersQuery): CursorResponse<SettingResponse> {
-        val result = privateImageGrantRepository.findGrantsByCursor(
+        val result = privateImageGrantRepository.findAllGrantsByCursor(
             query.granterId, query.cursorId, query.size + 1
         ).map { it.toSettingResponse(endpoint) }
 

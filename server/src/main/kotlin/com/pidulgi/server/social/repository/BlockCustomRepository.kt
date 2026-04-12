@@ -4,7 +4,7 @@ import com.pidulgi.server.social.repository.result.BlockItemResult
 
 fun interface BlockCustomRepository {
 
-    fun findBlocksByCursor(
+    fun findAllBlocksByCursor(
         blockerId: Long,
         cursorId: Long?,
         size: Int

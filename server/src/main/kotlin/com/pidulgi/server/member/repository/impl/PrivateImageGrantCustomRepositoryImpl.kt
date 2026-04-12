@@ -19,7 +19,7 @@ class PrivateImageGrantCustomRepositoryImpl(
 
     private val renderer = JpqlRenderer()
 
-    override fun findGrantsByCursor(
+    override fun findAllGrantsByCursor(
         granterId: Long,
         cursorId: Long?,
         size: Int

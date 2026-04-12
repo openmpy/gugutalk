@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 
 interface MemberImageRepository : JpaRepository<MemberImage, Long> {
 
-    fun findByMemberIdAndTypeOrderBySortOrder(
+    fun findAllByMemberIdAndTypeOrderBySortOrder(
         memberId: Long,
         type: ImageType
     ): List<MemberImage>
@@ -21,7 +21,7 @@ interface MemberImageRepository : JpaRepository<MemberImage, Long> {
 
     fun deleteAllByIdIn(ids: List<Long>)
 
-    fun findByStatusAndCreatedAtBefore(
+    fun findAllByStatusAndCreatedAtBefore(
         status: ImageStatus,
         createdAtBefore: LocalDateTime
     ): List<MemberImage>

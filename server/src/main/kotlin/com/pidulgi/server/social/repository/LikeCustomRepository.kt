@@ -4,7 +4,7 @@ import com.pidulgi.server.social.repository.result.LikeItemResult
 
 fun interface LikeCustomRepository {
 
-    fun findLikesByCursor(
+    fun findAllLikesByCursor(
         likerId: Long,
         cursorId: Long?,
         size: Int

@@ -55,7 +55,7 @@ class MemberImageService(
             throw CustomException("비밀 사진이 공개되지 않았습니다.")
         }
 
-        val privateImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
+        val privateImages = memberImageRepository.findAllByMemberIdAndTypeOrderBySortOrder(
             granterId,
             ImageType.PRIVATE
         ).map {

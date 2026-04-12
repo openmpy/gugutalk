@@ -41,7 +41,7 @@ class LikeService(
 
     @Transactional(readOnly = true)
     fun getLikedMembers(query: GetLikedMembersQuery): CursorResponse<SettingResponse> {
-        val result = likeRepository.findLikesByCursor(query.likerId, query.cursorId, query.size + 1)
+        val result = likeRepository.findAllLikesByCursor(query.likerId, query.cursorId, query.size + 1)
             .map { it.toSettingResponse(endpoint) }
 
         val hasNext = result.size > query.size

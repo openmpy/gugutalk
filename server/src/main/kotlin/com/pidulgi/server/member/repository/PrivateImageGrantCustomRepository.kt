@@ -4,7 +4,7 @@ import com.pidulgi.server.member.repository.result.PrivateImageGrantItemResult
 
 fun interface PrivateImageGrantCustomRepository {
 
-    fun findGrantsByCursor(
+    fun findAllGrantsByCursor(
         granterId: Long,
         cursorId: Long?,
         size: Int

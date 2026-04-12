@@ -2,7 +2,6 @@ package com.pidulgi.server.chat.repository
 
 import com.pidulgi.server.chat.entity.Message
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 interface MessageRepository : JpaRepository<Message, Long>, MessageCustomRepository {
@@ -26,15 +25,7 @@ interface MessageRepository : JpaRepository<Message, Long>, MessageCustomReposit
         """,
         nativeQuery = true
     )
-    fun findS3KeysByChatRoomIdIn(chatRoomIds: List<Long>): List<String>
+    fun findAllKeysByChatRoomIdIn(chatRoomIds: List<Long>): List<String>
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(
-        value = """
-            DELETE FROM message
-            WHERE chat_room_id IN :chatRoomIds
-        """,
-        nativeQuery = true
-    )
-    fun hardDeleteAllByChatRoomIdIn(chatRoomIds: List<Long>)
+    fun deleteAllByChatRoomIdIn(chatRoomIds: List<Long>)
 }

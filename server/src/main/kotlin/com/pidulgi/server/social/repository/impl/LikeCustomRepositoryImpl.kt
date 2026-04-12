@@ -19,7 +19,7 @@ class LikeCustomRepositoryImpl(
 
     private val renderer = JpqlRenderer()
 
-    override fun findLikesByCursor(
+    override fun findAllLikesByCursor(
         likerId: Long,
         cursorId: Long?,
         size: Int

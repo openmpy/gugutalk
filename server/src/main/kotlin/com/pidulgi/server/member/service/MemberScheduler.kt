@@ -24,7 +24,7 @@ class MemberScheduler(
     @Scheduled(cron = "0 0 9 * * *")
     fun cleanUpPendingImages() {
         val expiredBefore = LocalDateTime.now().minusHours(24)
-        val pendingImages = memberImageRepository.findByStatusAndCreatedAtBefore(
+        val pendingImages = memberImageRepository.findAllByStatusAndCreatedAtBefore(
             PENDING, expiredBefore
         )
 

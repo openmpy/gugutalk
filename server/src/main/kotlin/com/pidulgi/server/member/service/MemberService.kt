@@ -90,7 +90,7 @@ class MemberService(
     fun getMember(memberId: Long, targetId: Long): MemberGetResponse {
         val member = getMember(memberId)
         val target = getMember(targetId)
-        val memberImages = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(
+        val memberImages = memberImageRepository.findAllByMemberIdAndTypeOrderBySortOrder(
             target.id, ImageType.PUBLIC
         ).map {
             MemberImageResponse(it.id, it.sortOrder, endpoint + it.key)
@@ -234,7 +234,7 @@ class MemberService(
         requestImages: List<ProfileImageUpdate>,
         type: ImageType
     ): Map<Long, MemberImage> {
-        val images = memberImageRepository.findByMemberIdAndTypeOrderBySortOrder(memberId, type)
+        val images = memberImageRepository.findAllByMemberIdAndTypeOrderBySortOrder(memberId, type)
 
         val existing = images.associateBy { it.id }
         val keepIds = requestImages.mapNotNull { it.imageId }.toSet()
