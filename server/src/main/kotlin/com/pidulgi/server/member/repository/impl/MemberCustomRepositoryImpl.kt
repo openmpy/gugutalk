@@ -36,7 +36,7 @@ class MemberCustomRepositoryImpl(
         } else ""
 
         val distanceExpression = if (location != null) {
-            "ST_Distance(m.location, :location)"
+            "m.location <-> :location"
         } else {
             "NULL"
         }
@@ -103,7 +103,7 @@ class MemberCustomRepositoryImpl(
             AND (
                 (m.location <-> :location) > :cursorDistance
                 OR (
-                    ABS((m.location <-> :location) - :cursorDistance) < 1e-9
+                    (m.location <-> :location) < :cursorDistance
                     AND m.id < :cursorId
                 )
             )
@@ -176,7 +176,7 @@ class MemberCustomRepositoryImpl(
         } else ""
 
         val distanceExpression = if (location != null) {
-            "ST_Distance(m.location, :location)"
+            "m.location <-> :location"
         } else {
             "NULL"
         }

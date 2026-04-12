@@ -23,10 +23,13 @@ import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.point.entity.Point
 import com.pidulgi.server.point.repository.PointRepository
 import jakarta.servlet.http.HttpServletRequest
+import org.apache.hc.client5.http.auth.InvalidCredentialsException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
@@ -58,6 +61,8 @@ class AuthService(
         private const val AUTH_SMS_MAX_DAILY_SEND_COUNT = 3
         private const val AUTH_VERIFICATION_CODE_MINUTES = 5L
     }
+
+    private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
 
     @Transactional
     fun sendVerificationCode(servletRequest: HttpServletRequest, phoneNumber: String) {
@@ -126,10 +131,13 @@ class AuthService(
         }
 
         // 회원 계정 생성
+        val password = passwordEncoder.encode(request.password)
+            ?: throw CustomException("비밀번호 암호화에 실패했습니다.")
+
         val member = Member(
             uuid = MemberUuid(request.uuid),
             phoneNumber = memberPhoneNumber,
-            password = MemberPassword(request.password),
+            password = MemberPassword(password),
             gender = gender,
         )
         memberRepository.save(member)
@@ -203,8 +211,9 @@ class AuthService(
 
         val member = (memberRepository.findByPhoneNumber(memberPhoneNumber)
             ?: throw CustomException("다시 한번 확인해주시길 바랍니다."))
-        if (member.password.value != request.password) {
-            throw CustomException("다시 한번 확인해주시길 바랍니다.")
+
+        if (!passwordEncoder.matches(request.password, member.password.value)) {
+            throw InvalidCredentialsException("다시 한번 확인해주시길 바랍니다.")
         }
 
         val accessToken = jwtProvider.generateAccessToken(member.id, member.role)

@@ -47,24 +47,25 @@ class BlockService(
         val (member1Id, member2Id) = if (command.blockerId < command.blockedId)
             command.blockerId to command.blockedId else command.blockedId to command.blockerId
         val chatRoom = chatRoomRepository.findByMember1IdAndMember2Id(member1Id, member2Id)
-            ?: throw CustomException("존재하지 않는 채팅방입니다.")
 
-        chatRoom.delete()
+        chatRoom?.let {
+            it.delete()
 
-        // 이벤트
-        val chatEvent = ChatEvent(
-            DELETE_CHAT_ROOM,
-            null
-        )
-        applicationEventPublisher.publishEvent(ChatTopicEvent(chatRoom.id, chatEvent))
-
-        val chatRoomEvent = ChatEvent(
-            DELETE_CHAT_ROOM,
-            ChatRoomDeleteEvent(
-                chatRoom.id,
+            // 이벤트
+            val chatEvent = ChatEvent(
+                DELETE_CHAT_ROOM,
+                null
             )
-        )
-        applicationEventPublisher.publishEvent(ChatQueueEvent(command.blockedId, chatRoomEvent))
+            applicationEventPublisher.publishEvent(ChatTopicEvent(it.id, chatEvent))
+
+            val chatRoomEvent = ChatEvent(
+                DELETE_CHAT_ROOM,
+                ChatRoomDeleteEvent(
+                    it.id,
+                )
+            )
+            applicationEventPublisher.publishEvent(ChatQueueEvent(command.blockedId, chatRoomEvent))
+        }
     }
 
     @Transactional(readOnly = true)
