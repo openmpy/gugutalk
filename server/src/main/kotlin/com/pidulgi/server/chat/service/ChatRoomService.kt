@@ -1,5 +1,8 @@
 package com.pidulgi.server.chat.service
 
+import com.pidulgi.server.chat.dto.event.ChatEvent
+import com.pidulgi.server.chat.dto.event.ChatRoomDeleteEvent
+import com.pidulgi.server.chat.dto.event.type.ChatEventType.DELETE_CHAT_ROOM
 import com.pidulgi.server.chat.dto.response.ChatRoomCreateResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomGetResponse
 import com.pidulgi.server.chat.dto.response.ChatRoomSearchResponse
@@ -7,7 +10,8 @@ import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.chat.service.command.ChatRoomCreateCommand
-import com.pidulgi.server.chat.service.event.ChatDeleteEvent
+import com.pidulgi.server.chat.service.event.ChatQueueEvent
+import com.pidulgi.server.chat.service.event.ChatTopicEvent
 import com.pidulgi.server.chat.service.extension.toChatRoomGetResponse
 import com.pidulgi.server.chat.service.extension.toChatRoomSearchResponse
 import com.pidulgi.server.chat.service.query.GetsChatRoomQuery
@@ -69,15 +73,26 @@ class ChatRoomService(
         val chatRoom = (chatRoomRepository.findByIdOrNull(chatRoomId)
             ?: throw CustomException("존재하지 않는 채팅방입니다."))
 
-        if (chatRoom.member1Id != memberId && chatRoom.member2Id != memberId) {
-            throw CustomException("접근할 수 없는 채팅방입니다.")
-        }
+        check(chatRoom.hasMember(memberId)) { "접근할 수 없는 채팅방입니다." }
 
         val targetId = getTargetId(chatRoom, memberId)
 
         chatRoom.delete()
 
-        applicationEventPublisher.publishEvent(ChatDeleteEvent(chatRoomId, targetId))
+        // 이벤트
+        val chatEvent = ChatEvent(
+            DELETE_CHAT_ROOM,
+            null
+        )
+        applicationEventPublisher.publishEvent(ChatTopicEvent(chatRoomId, chatEvent))
+
+        val chatRoomEvent = ChatEvent(
+            DELETE_CHAT_ROOM,
+            ChatRoomDeleteEvent(
+                chatRoomId,
+            )
+        )
+        applicationEventPublisher.publishEvent(ChatQueueEvent(targetId, chatRoomEvent))
     }
 
     @Transactional(readOnly = true)

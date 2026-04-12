@@ -1,9 +1,7 @@
 package com.pidulgi.server.chat.service
 
-import com.pidulgi.server.chat.dto.event.ChatEvent
-import com.pidulgi.server.chat.dto.event.ChatRoomDeleteEvent
-import com.pidulgi.server.chat.dto.event.type.ChatEventType.DELETE_CHAT_ROOM
-import com.pidulgi.server.chat.service.event.ChatDeleteEvent
+import com.pidulgi.server.chat.service.event.ChatQueueEvent
+import com.pidulgi.server.chat.service.event.ChatTopicEvent
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
@@ -16,28 +14,19 @@ class ChatEventListener(
 ) {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun deleteChatRoom(event: ChatDeleteEvent) {
-        // 전체
-        val chatEvent = ChatEvent(
-            DELETE_CHAT_ROOM,
-            null
-        )
+    fun topic(event: ChatTopicEvent) {
         messagingTemplate.convertAndSend(
             "/topic/chat-rooms/${event.chatRoomId}",
-            chatEvent
+            event.chatEvent
         )
+    }
 
-        // 개인
-        val chatRoomEvent = ChatEvent(
-            DELETE_CHAT_ROOM,
-            ChatRoomDeleteEvent(
-                event.chatRoomId,
-            )
-        )
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun queue(event: ChatQueueEvent) {
         messagingTemplate.convertAndSendToUser(
-            event.targetId.toString(),
+            event.memberId.toString(),
             "/queue/chat-rooms",
-            chatRoomEvent
+            event.chatEvent
         )
     }
 }
