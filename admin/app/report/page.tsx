@@ -27,7 +27,7 @@ export default function MemberPage() {
         </button>
       </div>
       <div className="flex flex-wrap items-center">
-        <select className="h-9 w-[100px] shrink-0 border border-l-0 border-slate-300 bg-white px-2 text-sm focus:outline-none">
+        <select className="h-9 w-[85px] shrink-0 border border-l-0 border-slate-300 bg-white px-2 text-sm focus:outline-none">
           <option value="nickname">닉네임</option>
           <option value="uuid">UUID</option>
           <option value="phone">휴대폰</option>
@@ -45,9 +45,9 @@ export default function MemberPage() {
         {reports.map((report) => (
           <div key={report.id} className="flex flex-col">
             <div className="flex items-center">
-              <div className="text-sm px-2 flex-1">
+              <div className="text-xs p-2 flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="font-bold">{report.type}</p>
+                  <p className="font-bold text-sm">{report.type}</p>
                   <p>{report.createdAt}</p>
                 </div>
                 <p>신고자: {report.reporterNickname}</p>

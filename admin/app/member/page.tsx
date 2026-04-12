@@ -19,7 +19,7 @@ export default function MemberPage() {
         <h1 className="font-bold">회원 관리</h1>
       </div>
       <div className="flex flex-wrap items-center">
-        <select className="h-9 w-[100px] shrink-0 border border-l-0 border-slate-300 bg-white px-2 text-sm focus:outline-none">
+        <select className="h-9 w-[85px] shrink-0 border border-l-0 border-slate-300 bg-white px-2 text-sm focus:outline-none">
           <option value="nickname">닉네임</option>
           <option value="uuid">UUID</option>
           <option value="phone">휴대폰</option>
@@ -42,11 +42,11 @@ export default function MemberPage() {
                 alt="member"
                 width={100}
                 height={100}
-                className="w-[100px] h-[100px] shrink-0"
+                className="w-[85px] h-[85px] shrink-0"
               />
-              <div className="text-sm px-2 flex-1">
+              <div className="text-xs p-2 flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="font-bold">{member.nickname}</p>
+                  <p className="font-bold text-sm">{member.nickname}</p>
                   <p>{member.time}</p>
                 </div>
                 <p>{member.phone}</p>
