@@ -14,7 +14,7 @@ interface ChatRoomCustomRepository {
         size: Int
     ): List<ChatRoomItemResult>
 
-    fun findAllChatRoomsByNicknameWithCursor(
+    fun findAllChatRoomsByNicknameByCursor(
         memberId: Long,
         nickname: String,
         cursorId: Long?,

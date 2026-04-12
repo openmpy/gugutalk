@@ -1,6 +1,8 @@
 package com.pidulgi.server.common.data
 
 import com.pidulgi.server.chat.entity.ChatRoom
+import com.pidulgi.server.chat.entity.Message
+import com.pidulgi.server.chat.entity.type.MessageType
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.member.entity.Member
@@ -32,7 +34,7 @@ import java.util.*
 class DummyDataInit {
 
     private companion object {
-        const val DUMMY_MEMBER_COUNT = 1000
+        const val DUMMY_MEMBER_COUNT = 100
     }
 
     private val log = KotlinLogging.logger {}
@@ -67,9 +69,9 @@ class DummyDataInit {
         likeRepository: LikeRepository,
         privateImageGrantRepository: PrivateImageGrantRepository,
         blockRepository: BlockRepository,
+        reportRepository: ReportRepository,
         chatRoomRepository: ChatRoomRepository,
         messageRepository: MessageRepository,
-        reportRepository: ReportRepository,
     ): CommandLineRunner {
         return CommandLineRunner {
             // 회원
@@ -169,6 +171,21 @@ class DummyDataInit {
                 chatRoomRepository.saveAll(chatRooms)
             }
 
+            // 쪽지
+            if (messageRepository.count() == 0L) {
+                (1 until DUMMY_MEMBER_COUNT - 1).map { i ->
+                    val messages = (1 until 100).map { j ->
+                        Message(
+                            chatRoomId = i.toLong(),
+                            senderId = 2,
+                            content = "안녕하세요$j",
+                            type = MessageType.TEXT,
+                        )
+                    }
+                    messageRepository.saveAll(messages)
+                }
+            }
+
             // 로그
             log.info { "회원 더미 데이터 (${memberRepository.count()})개" }
             log.info { "포인트 더미 데이터 (${pointRepository.count()})개" }
@@ -177,6 +194,7 @@ class DummyDataInit {
             log.info { "차단 더미 데이터 (${blockRepository.count()})개" }
             log.info { "신고 더미 데이터 (${reportRepository.count()})개" }
             log.info { "채팅방 더미 데이터 (${chatRoomRepository.count()})개" }
+            log.info { "쪽지 더미 데이터 (${messageRepository.count()})개" }
         }
     }
 }

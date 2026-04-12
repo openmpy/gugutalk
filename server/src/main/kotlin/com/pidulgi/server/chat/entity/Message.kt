@@ -12,9 +12,8 @@ class Message(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id", nullable = false)
-    val chatRoom: ChatRoom,
+    @Column(name = "chat_room_id", nullable = false)
+    val chatRoomId: Long = 0,
 
     @Column(name = "sender_id", nullable = false)
     val senderId: Long,

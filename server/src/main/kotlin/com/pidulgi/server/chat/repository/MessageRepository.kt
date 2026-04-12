@@ -11,7 +11,7 @@ interface MessageRepository : JpaRepository<Message, Long>, MessageCustomReposit
         value = """
             SELECT m.id 
             FROM Message m
-            WHERE m.chatRoom.id = :chatRoomId
+            WHERE m.chatRoomId = :chatRoomId
             ORDER BY m.id DESC
             LIMIT 1
         """

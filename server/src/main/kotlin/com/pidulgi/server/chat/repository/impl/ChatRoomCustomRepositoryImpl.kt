@@ -99,7 +99,7 @@ class ChatRoomCustomRepositoryImpl(
     }
 
     // 채팅방 검색 - 닉네임 유사도
-    override fun findAllChatRoomsByNicknameWithCursor(
+    override fun findAllChatRoomsByNicknameByCursor(
         memberId: Long,
         nickname: String,
         cursorId: Long?,

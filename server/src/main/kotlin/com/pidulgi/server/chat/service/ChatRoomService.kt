@@ -118,7 +118,7 @@ class ChatRoomService(
 
     @Transactional(readOnly = true)
     fun search(query: SearchChatRoomQuery): CursorSimilarityResponse<ChatRoomSearchResponse> {
-        val result = chatRoomRepository.findAllChatRoomsByNicknameWithCursor(
+        val result = chatRoomRepository.findAllChatRoomsByNicknameByCursor(
             memberId = query.memberId,
             nickname = query.nickname,
             cursorId = query.cursorId,

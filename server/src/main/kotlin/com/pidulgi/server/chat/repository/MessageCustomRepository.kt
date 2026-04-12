@@ -1,14 +1,14 @@
 package com.pidulgi.server.chat.repository
 
-import com.pidulgi.server.chat.repository.result.MessageItemResponse
+import com.pidulgi.server.chat.repository.result.MessageItemResult
 import java.time.LocalDateTime
 
-interface MessageCustomRepository {
+fun interface MessageCustomRepository {
 
-    fun findMessagesByCursor(
+    fun findAllMessagesByCursor(
         chatRoomId: Long,
         cursorId: Long?,
         cursorDate: LocalDateTime?,
         size: Int
-    ): List<MessageItemResponse>
+    ): List<MessageItemResult>
 }

@@ -3,7 +3,7 @@ package com.pidulgi.server.chat.repository.result
 import com.pidulgi.server.chat.entity.type.MessageType
 import java.time.LocalDateTime
 
-data class MessageItemResponse(
+data class MessageItemResult(
 
     val messageId: Long,
     val senderId: Long,

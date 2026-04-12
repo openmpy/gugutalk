@@ -16,6 +16,8 @@ import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
 import com.pidulgi.server.chat.service.event.ChatQueueEvent
 import com.pidulgi.server.chat.service.event.ChatTopicEvent
+import com.pidulgi.server.chat.service.extension.toMessageGetResponse
+import com.pidulgi.server.chat.service.query.GetsMessageQuery
 import com.pidulgi.server.chat.websocket.ChatRoomSessionManager
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
@@ -27,7 +29,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
 
 @Service
 class MessageService(
@@ -55,7 +56,7 @@ class MessageService(
 
         // 메시지 저장
         val message = Message(
-            chatRoom = chatRoom,
+            chatRoomId = chatRoomId,
             senderId = senderId,
             content = request.content,
             type = MessageType.TEXT,
@@ -124,50 +125,31 @@ class MessageService(
     }
 
     @Transactional(readOnly = true)
-    fun gets(
-        memberId: Long,
-        chatRoomId: Long,
-        cursorId: Long?,
-        cursorDate: LocalDateTime?,
-        size: Int
-    ): CursorResponse<MessageGetResponse> {
-        val chatRoom = getChatRoom(chatRoomId)
+    fun gets(query: GetsMessageQuery): CursorResponse<MessageGetResponse> {
+        val chatRoom = getChatRoom(query.chatRoomId)
 
-        check(chatRoom.hasMember(memberId)) { "접근할 수 없는 채팅방입니다." }
+        check(chatRoom.hasMember(query.memberId)) { "접근할 수 없는 채팅방입니다." }
 
-        val result = messageRepository.findMessagesByCursor(
-            chatRoomId,
-            cursorId,
-            cursorDate,
-            size + 1
-        ).map {
-            val content = when (it.type) {
-                MessageType.IMAGE, MessageType.VIDEO -> "$endpoint${it.content}"
-                else -> it.content
-            }
-            MessageGetResponse(
-                it.messageId,
-                it.senderId,
-                content,
-                it.type,
-                it.createdAt,
-            )
-        }
+        val result = messageRepository.findAllMessagesByCursor(
+            query.chatRoomId,
+            query.cursorId,
+            query.cursorDate,
+            query.size + 1
+        ).map { it.toMessageGetResponse(endpoint) }
 
-        val hasNext = result.size > size
+        val hasNext = result.size > query.size
         val items = if (hasNext) result.dropLast(1) else result
-        val last = items.lastOrNull()
 
         return CursorResponse(
             payload = items,
-            nextId = last?.messageId,
-            nextDateAt = last?.createdAt,
+            nextId = items.lastOrNull()?.messageId,
+            nextDateAt = items.lastOrNull()?.createdAt,
             hasNext = hasNext
         )
     }
 
     @Transactional(readOnly = true)
-    fun getMember(memberId: Long, chatRoomId: Long): MessageGetMemberResponse {
+    fun getTarget(memberId: Long, chatRoomId: Long): MessageGetMemberResponse {
         val chatRoom = getChatRoom(chatRoomId)
 
         check(chatRoom.hasMember(memberId)) { "접근할 수 없는 채팅방입니다." }
@@ -205,7 +187,7 @@ class MessageService(
         val label = if (type == MessageType.IMAGE) "이미지" else "동영상"
 
         val message = messageRepository.save(
-            Message(chatRoom = chatRoom, senderId = senderId, content = key, type = type)
+            Message(chatRoomId = chatRoomId, senderId = senderId, content = key, type = type)
         )
         chatRoom.update(label, message.createdAt)
 

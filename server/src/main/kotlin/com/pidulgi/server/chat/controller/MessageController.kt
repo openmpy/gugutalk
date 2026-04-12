@@ -3,6 +3,7 @@ package com.pidulgi.server.chat.controller
 import com.pidulgi.server.chat.dto.response.MessageGetMemberResponse
 import com.pidulgi.server.chat.dto.response.MessageGetResponse
 import com.pidulgi.server.chat.service.MessageService
+import com.pidulgi.server.chat.service.query.GetsMessageQuery
 import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
@@ -24,16 +25,17 @@ class MessageController(
         @RequestParam(required = false) cursorDate: LocalDateTime?,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<CursorResponse<MessageGetResponse>> {
-        val response = messageService.gets(memberId, chatRoomId, cursorId, cursorDate, size)
+        val query = GetsMessageQuery(memberId, chatRoomId, cursorId, cursorDate, size)
+        val response = messageService.gets(query)
         return ResponseEntity.ok(response)
     }
 
     @GetMapping("/v1/chat-rooms/{chatRoomId}/member")
-    fun getMember(
+    fun getTarget(
         @Login memberId: Long,
         @PathVariable chatRoomId: Long,
     ): ResponseEntity<MessageGetMemberResponse> {
-        val response = messageService.getMember(memberId, chatRoomId)
+        val response = messageService.getTarget(memberId, chatRoomId)
         return ResponseEntity.ok(response)
     }
 }
