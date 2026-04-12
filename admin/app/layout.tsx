@@ -1,3 +1,4 @@
+import RefreshButton from "@/component/RefreshButton";
 import Footer from "@/layout/Footer";
 import Header from "@/layout/Header";
 import type { Metadata } from "next";
@@ -14,10 +15,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-slate-500">
-        <Header />
-        <main className="flex-1 bg-white">{children}</main>
-        <Footer />
+      <body className="h-full flex flex-col bg-slate-200 overflow-hidden">
+        <main className="flex-1 overflow-hidden">
+          <div className="max-w-4xl mx-auto bg-white h-full flex flex-col overflow-y-auto relative">
+            <Header />
+            {children}
+            <Footer />
+
+            <RefreshButton />
+          </div>
+        </main>
       </body>
     </html>
   );

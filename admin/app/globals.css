@@ -11,3 +11,13 @@ button:hover {
 a:hover {
   opacity: 0.8;
 }
+
+div {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow-y: scroll;
+}
+
+div::-webkit-scrollbar {
+  display: none;
+}
