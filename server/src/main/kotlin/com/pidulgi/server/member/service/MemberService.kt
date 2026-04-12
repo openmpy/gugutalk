@@ -132,7 +132,7 @@ class MemberService(
         val refreshTokenKeyExists = redisTemplate.hasKey(refreshTokenKey)
 
         if (refreshTokenKeyExists == false) {
-            throw CustomException("존재하지 않는 리프레시 토큰입니다.")
+            throw CustomException("로그인을 다시 해주시길 바랍니다.")
         }
 
         redisTemplate.opsForValue().set(

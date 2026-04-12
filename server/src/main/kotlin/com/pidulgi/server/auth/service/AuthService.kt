@@ -243,7 +243,7 @@ class AuthService(
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + request.refreshToken
         val refreshTokenKeyExists = redisTemplate.hasKey(refreshTokenKey)
         if (refreshTokenKeyExists == false) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "존재하지 않는 리프레시 토큰입니다.")
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "로그인을 다시 해주시길 바랍니다.")
         }
 
         val accessToken = jwtProvider.generateAccessToken(member.id, member.role)

@@ -1,6 +1,7 @@
 package com.pidulgi.server.point.service
 
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.point.dto.response.PointGetResponse
 import com.pidulgi.server.point.entity.Point
 import com.pidulgi.server.point.entity.PointTransaction
@@ -9,6 +10,7 @@ import com.pidulgi.server.point.entity.type.TransactionType
 import com.pidulgi.server.point.repository.PointRepository
 import com.pidulgi.server.point.repository.PointTransactionRepository
 import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -20,6 +22,7 @@ class PointService(
 
     private val pointRepository: PointRepository,
     private val pointTransactionRepository: PointTransactionRepository,
+    private val memberRepository: MemberRepository,
     private val redisTemplate: StringRedisTemplate
 ) {
 
@@ -33,8 +36,10 @@ class PointService(
     @Transactional
     fun earnByAttendance(memberId: Long) {
         val point = getPoint(memberId)
+        val member = (memberRepository.findByIdOrNull(memberId)
+            ?: throw CustomException("존재하지 않는 회원입니다."))
 
-        val attendanceKey = POINT_EARN_ATTENDANCE_KEY + memberId
+        val attendanceKey = POINT_EARN_ATTENDANCE_KEY + member.uuid.value
         redisTemplate.opsForValue().get(attendanceKey)?.let {
             throw CustomException("오늘은 이미 출석 체크를 완료하셨습니다.")
         }
