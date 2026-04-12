@@ -26,6 +26,8 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -39,6 +41,7 @@ class DummyDataInit {
 
     private val log = KotlinLogging.logger {}
     private val geometryFactory = GeometryFactory()
+    private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
     private val locations = listOf(
         Pair(126.9780, 37.5665),   // 서울 시청 (기준)
         Pair(126.9850, 37.5700),   // 약 0.8km
@@ -89,7 +92,7 @@ class DummyDataInit {
                     Member(
                         uuid = MemberUuid(UUID.randomUUID().toString()),
                         phoneNumber = MemberPhoneNumber("0100000%04d".format(i)),
-                        password = MemberPassword("1234"),
+                        password = MemberPassword(passwordEncoder.encode("1234")!!),
                         nickname = MemberNickname("닉네임$i"),
                         gender = if (i % 3 == 0) Gender.MALE else Gender.FEMALE,
                         birthYear = MemberBirthYear(1993 + (i % 12)),

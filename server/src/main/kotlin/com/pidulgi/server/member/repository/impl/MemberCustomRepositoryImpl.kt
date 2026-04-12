@@ -101,9 +101,9 @@ class MemberCustomRepositoryImpl(
         val cursorCondition = if (cursorId != null && cursorDistance != null) {
             """
             AND (
-                (m.location <-> :location) > :cursorDistance
+                ROUND((m.location <-> :location)::numeric, 6) > ROUND(CAST(:cursorDistance AS numeric), 6)
                 OR (
-                    (m.location <-> :location) < :cursorDistance
+                    ROUND((m.location <-> :location)::numeric, 6) = ROUND(CAST(:cursorDistance AS numeric), 6)
                     AND m.id < :cursorId
                 )
             )
@@ -122,7 +122,7 @@ class MemberCustomRepositoryImpl(
                    m.birth_year,
                    m.comment,
                    m.updated_at,
-                   (m.location <-> :location) AS distance,
+                   ROUND((m.location <-> :location)::numeric, 6) AS distance,
                    (SELECT COUNT(*) FROM likes l WHERE l.liked_id = m.id) AS likes
             FROM member m
             WHERE m.deleted_at IS NULL
