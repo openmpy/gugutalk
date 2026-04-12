@@ -14,6 +14,8 @@ import com.pidulgi.server.chat.entity.Message
 import com.pidulgi.server.chat.entity.type.MessageType
 import com.pidulgi.server.chat.repository.ChatRoomRepository
 import com.pidulgi.server.chat.repository.MessageRepository
+import com.pidulgi.server.chat.service.event.ChatQueueEvent
+import com.pidulgi.server.chat.service.event.ChatTopicEvent
 import com.pidulgi.server.chat.websocket.ChatRoomSessionManager
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
@@ -21,8 +23,8 @@ import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.social.repository.BlockRepository
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -36,8 +38,8 @@ class MessageService(
     private val chatRoomRepository: ChatRoomRepository,
     private val memberRepository: MemberRepository,
     private val blockRepository: BlockRepository,
-    private val messagingTemplate: SimpMessagingTemplate,
     private val chatRoomSessionManager: ChatRoomSessionManager,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     @Transactional
@@ -72,7 +74,7 @@ class MessageService(
         // unreadCount 계산
         val updatedUnreadCount = if (isActive) 0 else chatRoom.getUnreadCount(targetId) + 1
 
-        // 개인
+        // 이벤트
         val messageEvent = ChatEvent(
             SEND_MESSAGE,
             MessageSendEvent(
@@ -83,12 +85,8 @@ class MessageService(
                 message.createdAt,
             )
         )
-        messagingTemplate.convertAndSend(
-            "/topic/chat-rooms/$chatRoomId",
-            messageEvent
-        )
+        applicationEventPublisher.publishEvent(ChatTopicEvent(chatRoomId, messageEvent))
 
-        // 전체
         val chatRoomEvent = ChatEvent(
             SEND_CHAT_ROOM,
             ChatRoomSendEvent(
@@ -102,11 +100,7 @@ class MessageService(
                 updatedUnreadCount
             )
         )
-        messagingTemplate.convertAndSendToUser(
-            targetId.toString(),
-            "/queue/chat-rooms",
-            chatRoomEvent
-        )
+        applicationEventPublisher.publishEvent(ChatQueueEvent(targetId, chatRoomEvent))
     }
 
     @Transactional
@@ -139,9 +133,7 @@ class MessageService(
     ): CursorResponse<MessageGetResponse> {
         val chatRoom = getChatRoom(chatRoomId)
 
-        if (chatRoom.member1Id != memberId && chatRoom.member2Id != memberId) {
-            throw CustomException("접근할 수 없는 채팅방입니다.")
-        }
+        check(chatRoom.hasMember(memberId)) { "접근할 수 없는 채팅방입니다." }
 
         val result = messageRepository.findMessagesByCursor(
             chatRoomId,
@@ -178,16 +170,9 @@ class MessageService(
     fun getMember(memberId: Long, chatRoomId: Long): MessageGetMemberResponse {
         val chatRoom = getChatRoom(chatRoomId)
 
-        if (chatRoom.member1Id != memberId && chatRoom.member2Id != memberId) {
-            throw CustomException("접근할 수 없는 채팅방입니다.")
-        }
+        check(chatRoom.hasMember(memberId)) { "접근할 수 없는 채팅방입니다." }
 
-        val targetId = if (chatRoom.member1Id == memberId) {
-            chatRoom.member2Id
-        } else {
-            chatRoom.member1Id
-        }
-
+        val targetId = getTargetId(chatRoom, memberId)
         val target = getMember(targetId)
 
         return MessageGetMemberResponse(
@@ -228,37 +213,32 @@ class MessageService(
 
         val updatedUnreadCount = if (isActive) 0 else chatRoom.getUnreadCount(targetId) + 1
 
-        // 개인
-        messagingTemplate.convertAndSend(
-            "/topic/chat-rooms/$chatRoomId",
-            ChatEvent(
-                SEND_MESSAGE,
-                MessageSendEvent(
-                    message.id,
-                    senderId,
-                    "$endpoint$key",
-                    type,
-                    message.createdAt
-                )
+        // 이벤트
+        val messageEvent = ChatEvent(
+            SEND_MESSAGE,
+            MessageSendEvent(
+                message.id,
+                senderId,
+                "$endpoint$key",
+                type,
+                message.createdAt
             )
         )
+        applicationEventPublisher.publishEvent(ChatTopicEvent(chatRoomId, messageEvent))
 
-        // 전체
-        messagingTemplate.convertAndSendToUser(
-            targetId.toString(), "/queue/chat-rooms",
-            ChatEvent(
-                SEND_CHAT_ROOM,
-                ChatRoomSendEvent(
-                    chatRoomId,
-                    senderId,
-                    sender.profileKey?.let { "$endpoint$it" },
-                    sender.nickname.value,
-                    label,
-                    type,
-                    message.createdAt,
-                    updatedUnreadCount
-                )
+        val chatRoomEvent = ChatEvent(
+            SEND_CHAT_ROOM,
+            ChatRoomSendEvent(
+                chatRoomId,
+                senderId,
+                sender.profileKey?.let { "$endpoint$it" },
+                sender.nickname.value,
+                label,
+                type,
+                message.createdAt,
+                updatedUnreadCount
             )
         )
+        applicationEventPublisher.publishEvent(ChatQueueEvent(targetId, chatRoomEvent))
     }
 }
