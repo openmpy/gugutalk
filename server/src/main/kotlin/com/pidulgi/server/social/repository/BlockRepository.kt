@@ -14,12 +14,13 @@ interface BlockRepository : JpaRepository<Block, Long>, BlockCustomRepository {
 
     @Query(
         value = """
-            SELECT b FROM Block b
+            SELECT COUNT(b) > 0
+            FROM Block b
             WHERE (b.blockerId = :senderId AND b.blockedId = :targetId)
                OR (b.blockerId = :targetId AND b.blockedId = :senderId)
         """
     )
-    fun findBlock(senderId: Long, targetId: Long): Block?
+    fun existsBlock(senderId: Long, targetId: Long): Boolean
 
     @Modifying
     @Query("DELETE FROM Block b WHERE b.blockerId IN :memberIds OR b.blockedId IN :memberIds")

@@ -42,8 +42,10 @@ class ChatRoomService(
     fun create(command: ChatRoomCreateCommand): ChatRoomCreateResponse {
         memberRepository.findByIdOrNull(command.targetId)
             ?: throw CustomException("존재하지 않는 회원입니다.")
-        blockRepository.findBlock(command.senderId, command.targetId)
-            ?.let { throw CustomException("차단된 회원입니다.") }
+
+        if (blockRepository.existsBlock(command.senderId, command.targetId)) {
+            throw CustomException("차단된 회원입니다.")
+        }
 
         val point = (pointRepository.findByMemberId(command.senderId)
             ?: throw CustomException("포인트 정보를 찾을 수 없습니다."))

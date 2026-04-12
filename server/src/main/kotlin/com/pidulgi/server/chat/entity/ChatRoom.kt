@@ -96,4 +96,11 @@ class ChatRoom(
             else -> throw CustomException("접근할 수 없는 채팅방입니다.")
         }
     }
+
+    fun hasMember(memberId: Long) = member1Id == memberId || member2Id == memberId
+
+    fun getUnreadCount(memberId: Long) = when (memberId) {
+        member1Id -> member1UnreadCount
+        else -> member2UnreadCount
+    }
 }
