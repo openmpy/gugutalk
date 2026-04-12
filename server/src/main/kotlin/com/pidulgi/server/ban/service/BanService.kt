@@ -10,6 +10,7 @@ import com.pidulgi.server.report.entity.type.ReportType
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class BanService(
@@ -31,7 +32,7 @@ class BanService(
             phoneNumber = request.phoneNumber,
             type = type,
             reason = request.reason,
-            expiredAt = request.expiredAt
+            expiredAt = LocalDateTime.now().plusDays(request.days),
         )
         banRepository.save(ban)
 
@@ -40,7 +41,7 @@ class BanService(
             phoneNumber = request.phoneNumber,
             type = type,
             reason = request.reason,
-            expiredAt = request.expiredAt
+            expiredAt = LocalDateTime.now().plusDays(request.days)
         )
         banHistoryRepository.save(banHistory)
     }
