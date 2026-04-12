@@ -1,8 +1,8 @@
 package com.pidulgi.server.auth.entity
 
+import com.pidulgi.server.common.jpa.BaseEntity
 import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "phone_verification")
@@ -24,7 +24,4 @@ class PhoneVerification(
 
     @Column(name = "client_ip", nullable = false)
     val clientIp: String,
-
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) : BaseEntity()

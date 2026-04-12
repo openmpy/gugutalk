@@ -1,5 +1,6 @@
 package com.pidulgi.server.fcm.entity
 
+import com.pidulgi.server.common.jpa.BaseEntity
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -23,12 +24,9 @@ class FcmToken(
     @Column(name = "is_active")
     var isActive: Boolean = true,
 
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
     @Column(name = "updated_at")
     var updatedAt: LocalDateTime = LocalDateTime.now()
-) {
+) : BaseEntity() {
 
     fun update(token: String) {
         this.token = token

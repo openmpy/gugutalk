@@ -1,9 +1,9 @@
 package com.pidulgi.server.member.entity
 
+import com.pidulgi.server.common.jpa.BaseEntity
 import com.pidulgi.server.member.entity.type.ImageStatus
 import com.pidulgi.server.member.entity.type.ImageType
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "member_image")
@@ -29,10 +29,7 @@ class MemberImage(
 
     @Column(name = "sort_order", nullable = false)
     var sortOrder: Int = 0,
-
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-) {
+) : BaseEntity() {
 
     fun upload(memberId: Long, sortOrder: Int) {
         this.memberId = memberId

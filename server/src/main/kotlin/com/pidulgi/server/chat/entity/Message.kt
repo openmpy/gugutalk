@@ -1,8 +1,8 @@
 package com.pidulgi.server.chat.entity
 
 import com.pidulgi.server.chat.entity.type.MessageType
+import com.pidulgi.server.common.jpa.BaseEntity
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "message")
@@ -24,7 +24,4 @@ class Message(
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     val type: MessageType,
-
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) : BaseEntity()

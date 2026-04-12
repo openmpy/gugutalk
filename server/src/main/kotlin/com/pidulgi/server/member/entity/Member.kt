@@ -1,5 +1,6 @@
 package com.pidulgi.server.member.entity
 
+import com.pidulgi.server.common.jpa.BaseEntity
 import com.pidulgi.server.member.entity.type.Gender
 import com.pidulgi.server.member.entity.type.MemberRole
 import com.pidulgi.server.member.entity.vo.*
@@ -86,15 +87,12 @@ class Member(
     @Column(name = "role", nullable = false)
     var role: MemberRole = MemberRole.MEMBER,
 
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
     @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "deleted_at", nullable = true)
     var deletedAt: LocalDateTime? = null
-) {
+) : BaseEntity() {
 
     fun activate(profileKey: String?, nickname: MemberNickname, birthYear: MemberBirthYear, bio: MemberBio?) {
         this.profileKey = profileKey

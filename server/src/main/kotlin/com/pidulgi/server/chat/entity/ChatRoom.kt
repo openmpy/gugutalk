@@ -1,6 +1,7 @@
 package com.pidulgi.server.chat.entity
 
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.common.jpa.BaseEntity
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
 import java.time.LocalDateTime
@@ -37,15 +38,12 @@ class ChatRoom(
     @Column(name = "member2_unread_count")
     var member2UnreadCount: Int = 0,
 
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
     @Column(name = "last_message_at")
     var lastMessageAt: LocalDateTime? = null,
 
     @Column(name = "deleted_at")
     var deletedAt: LocalDateTime? = null,
-) {
+) : BaseEntity() {
 
     companion object {
         fun of(memberA: Long, memberB: Long): ChatRoom {
