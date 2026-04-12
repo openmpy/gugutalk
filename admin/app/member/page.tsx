@@ -18,6 +18,17 @@ export default function MemberPage() {
       <div className="flex items-center justify-center bg-slate-300 py-1">
         <h1 className="font-bold">회원 관리</h1>
       </div>
+      <div className="flex items-center">
+        <button className="flex-1 px-2 py-1 bg-slate-400 text-white border-r border-r-slate-300">
+          전체
+        </button>
+        <button className="flex-1 px-2 py-1 bg-slate-400 text-white border-r border-r-slate-300">
+          남자
+        </button>
+        <button className="flex-1 px-2 py-1 bg-slate-400 text-white">
+          여자
+        </button>
+      </div>
       <div className="flex flex-wrap items-center">
         <select className="h-9 w-[85px] shrink-0 border border-l-0 border-slate-300 bg-white px-2 text-sm focus:outline-none">
           <option value="nickname">닉네임</option>
@@ -43,6 +54,8 @@ export default function MemberPage() {
                 width={100}
                 height={100}
                 className="w-[85px] h-[85px] shrink-0"
+                loading="eager"
+                priority
               />
               <div className="text-xs p-2 flex-1">
                 <div className="flex items-center justify-between">
