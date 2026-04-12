@@ -19,16 +19,16 @@ export default function BanPage() {
         <button className="flex-1 px-2 py-1 bg-red-500 text-white">추가</button>
       </div>
       <div className="flex flex-wrap items-center">
-        <select className="h-9 w-[85px] shrink-0 border border-l-0 border-slate-300 bg-white px-2 text-sm focus:outline-none">
+        <select className="h-9 w-[85px] shrink-0 border border-l-0 border-slate-300 bg-white px-2 text-base focus:outline-none">
           <option value="uuid">UUID</option>
           <option value="phone">휴대폰</option>
         </select>
         <input
           type="text"
           placeholder="검색어를 입력해주세요."
-          className="h-9 min-w-0 flex-1 border border-l-0 border-r-0 border-slate-300 pl-2 text-sm focus:outline-none"
+          className="h-9 min-w-0 flex-1 border border-l-0 border-r-0 border-slate-300 pl-2 text-base focus:outline-none"
         />
-        <button className="h-9 shrink-0 text-slate-300 border border-l-0 border-r-0 border-slate-300 px-2 text-sm">
+        <button className="h-9 shrink-0 text-slate-300 border border-l-0 border-r-0 border-slate-300 px-2 text-base">
           <IoSearch className="w-4 h-4" />
         </button>
       </div>
