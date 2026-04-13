@@ -1,5 +1,6 @@
 "use client";
 
+import BanAddPanel from "@/component/BanAddPanel";
 import {
   formatAdminReportStatusLabel,
   type AdminReportListStatus,
@@ -10,11 +11,19 @@ import { useCallback, useState } from "react";
 type Props = {
   reportId: number;
   status: AdminReportListStatus;
+  reportedUuid: string;
+  reportedPhoneNumber: string;
 };
 
-export default function ReportAdminStatusBar({ reportId, status }: Props) {
+export default function ReportAdminStatusBar({
+  reportId,
+  status,
+  reportedUuid,
+  reportedPhoneNumber,
+}: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<AdminReportListStatus | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const run = useCallback(
     async (next: AdminReportListStatus) => {
@@ -42,6 +51,12 @@ export default function ReportAdminStatusBar({ reportId, status }: Props) {
 
   return (
     <div className="flex flex-wrap gap-1">
+      <BanAddPanel
+        controlledOpen={reportOpen}
+        onRequestClose={() => setReportOpen(false)}
+        initialUuid={reportedUuid}
+        initialPhoneNumber={reportedPhoneNumber}
+      />
       <button
         type="button"
         disabled={busy !== null}
@@ -65,6 +80,14 @@ export default function ReportAdminStatusBar({ reportId, status }: Props) {
         className="rounded-md bg-purple-500 px-2 py-1 text-white disabled:opacity-50"
       >
         {busy === "RESOLVE" ? "처리 중…" : "처분"}
+      </button>
+      <button
+        type="button"
+        disabled={busy !== null}
+        onClick={() => setReportOpen(true)}
+        className="rounded-md bg-red-500 px-2 py-1 text-white disabled:opacity-50"
+      >
+        신고
       </button>
     </div>
   );

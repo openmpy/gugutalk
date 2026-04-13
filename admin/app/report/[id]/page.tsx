@@ -32,7 +32,12 @@ export default async function ReportDetailPage({
     <div>
       <div className="flex items-center justify-between gap-1 text-xs px-2 bg-slate-400 py-1">
         <ListButton href="/report" />
-        <ReportAdminStatusBar reportId={r.reportId} status={r.status} />
+        <ReportAdminStatusBar
+          reportId={r.reportId}
+          status={r.status}
+          reportedUuid={r.reportedUuid}
+          reportedPhoneNumber={r.reportedPhoneNumber}
+        />
       </div>
       <div>
         <div className="flex items-center justify-center bg-slate-300 py-1">
