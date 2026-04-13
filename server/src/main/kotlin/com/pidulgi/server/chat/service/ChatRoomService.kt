@@ -20,8 +20,11 @@ import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.dto.CursorSimilarityResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.repository.MemberRepository
+import com.pidulgi.server.point.entity.PointTransaction
 import com.pidulgi.server.point.entity.type.PointSource
+import com.pidulgi.server.point.entity.type.TransactionType
 import com.pidulgi.server.point.repository.PointRepository
+import com.pidulgi.server.point.repository.PointTransactionRepository
 import com.pidulgi.server.social.repository.BlockRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
@@ -38,6 +41,7 @@ class ChatRoomService(
     private val messageRepository: MessageRepository,
     private val memberRepository: MemberRepository,
     private val pointRepository: PointRepository,
+    private val pointTransactionRepository: PointTransactionRepository,
     private val blockRepository: BlockRepository,
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
@@ -61,7 +65,19 @@ class ChatRoomService(
         val chatRoom = findChatRoom(command.senderId, command.targetId)
             ?: chatRoomRepository.save(ChatRoom.of(command.senderId, command.targetId))
 
+        // 포인트
         point.use(PointSource.SEND_MESSAGE.point)
+
+        val pointTransaction = PointTransaction(
+            memberId = command.senderId,
+            type = TransactionType.USE,
+            source = PointSource.SEND_MESSAGE,
+            amount = PointSource.SEND_MESSAGE.point,
+            balanceSnapshot = point.balance,
+            description = PointSource.SEND_MESSAGE.description
+        )
+        pointTransactionRepository.save(pointTransaction)
+
         return ChatRoomCreateResponse(chatRoom.id)
     }
 
