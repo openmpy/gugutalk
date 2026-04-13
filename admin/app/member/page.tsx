@@ -77,7 +77,7 @@ export default function MemberPage() {
             </div>
             <div className="flex items-center justify-end gap-1 text-xs pr-2 bg-slate-300 py-1">
               <button className="bg-green-600 text-white px-2 py-1 rounded-md">
-                이미지 변경
+                이미지 제거
               </button>
               <button className="bg-blue-500 text-white px-2 py-1 rounded-md">
                 닉네임 변경

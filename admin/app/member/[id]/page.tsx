@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { HiMiniXMark, HiMinus, HiPlus } from "react-icons/hi2";
 
-export default async function MemberPage({
+export default async function MemberDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -18,7 +18,7 @@ export default async function MemberPage({
         </div>
         <div className="flex gap-1">
           <button className="bg-green-600 text-white px-2 py-1 rounded-md">
-            이미지 변경
+            이미지 제거
           </button>
           <button className="bg-blue-500 text-white px-2 py-1 rounded-md">
             닉네임 변경
@@ -82,69 +82,71 @@ export default async function MemberPage({
         <div className="flex items-center justify-center bg-slate-300 py-1">
           <h2 className="font-bold">이미지</h2>
         </div>
-        <div className="p-2 flex flex-col gap-1">
-          <h3 className="font-bold text-sm">공개 사진</h3>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Image
-                src="https://picsum.photos/100"
-                alt="member"
-                width={100}
-                height={100}
-                className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300"
-                loading="eager"
-                priority
-              />
-              <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full">
-                <HiMiniXMark className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="relative">
-              <Image
-                src="https://picsum.photos/100"
-                alt="member"
-                width={100}
-                height={100}
-                className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300"
-                loading="eager"
-                priority
-              />
-              <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full">
-                <HiMiniXMark className="w-4 h-4" />
-              </button>
+        <div className="p-2 flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <h3 className="font-bold text-sm">공개 사진</h3>
+            <div className="flex gap-2">
+              <div className="relative">
+                <Image
+                  src="https://picsum.photos/100"
+                  alt="member"
+                  width={100}
+                  height={100}
+                  className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300"
+                  loading="eager"
+                  priority
+                />
+                <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full">
+                  <HiMiniXMark className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="relative">
+                <Image
+                  src="https://picsum.photos/100"
+                  alt="member"
+                  width={100}
+                  height={100}
+                  className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300"
+                  loading="eager"
+                  priority
+                />
+                <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full">
+                  <HiMiniXMark className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="p-2 flex flex-col gap-1">
-          <h3 className="font-bold text-sm">비밀 사진</h3>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Image
-                src="https://picsum.photos/100"
-                alt="member"
-                width={100}
-                height={100}
-                className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300"
-                loading="eager"
-                priority
-              />
-              <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full">
-                <HiMiniXMark className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="relative">
-              <Image
-                src="https://picsum.photos/100"
-                alt="member"
-                width={100}
-                height={100}
-                className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300"
-                loading="eager"
-                priority
-              />
-              <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full">
-                <HiMiniXMark className="w-4 h-4" />
-              </button>
+          <div className="flex flex-col gap-1">
+            <h3 className="font-bold text-sm">비밀 사진</h3>
+            <div className="flex gap-2">
+              <div className="relative">
+                <Image
+                  src="https://picsum.photos/100"
+                  alt="member"
+                  width={100}
+                  height={100}
+                  className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300"
+                  loading="eager"
+                  priority
+                />
+                <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full">
+                  <HiMiniXMark className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="relative">
+                <Image
+                  src="https://picsum.photos/100"
+                  alt="member"
+                  width={100}
+                  height={100}
+                  className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300"
+                  loading="eager"
+                  priority
+                />
+                <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full">
+                  <HiMiniXMark className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { IoSearch } from "react-icons/io5";
 
 export default function ReportPage() {
@@ -47,7 +48,12 @@ export default function ReportPage() {
             <div className="flex items-center">
               <div className="text-xs p-2 flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="font-bold text-sm">{report.type}</p>
+                  <Link
+                    href={`/report/${report.id}`}
+                    className="font-bold text-sm"
+                  >
+                    {report.type}
+                  </Link>
                   <p>{report.createdAt}</p>
                 </div>
                 <p>신고자: {report.reporterNickname}</p>
