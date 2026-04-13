@@ -24,6 +24,7 @@ import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.repository.PrivateImageGrantRepository
 import com.pidulgi.server.member.service.event.MemberWithdrawEvent
 import com.pidulgi.server.member.service.extension.toMemberDiscoveryResponse
+import com.pidulgi.server.member.service.extension.toResponses
 import com.pidulgi.server.member.service.query.SearchByNicknameQuery
 import com.pidulgi.server.social.repository.BlockRepository
 import com.pidulgi.server.social.repository.LikeRepository
@@ -64,9 +65,7 @@ class MemberService(
         val memberImages = memberImageRepository.findAllByMemberId(memberId).sortedBy { it.sortOrder }
 
         val (publicImages, privateImages) = memberImages.partition { it.type == ImageType.PUBLIC }
-        val publicImagesResponse = publicImages.map {
-            MemberImageResponse(it.id, it.sortOrder, "$endpoint${it.key}")
-        }
+        val publicImagesResponse = publicImages.toResponses(endpoint)
         val privateImagesResponse = privateImages.map {
             MemberImageResponse(it.id, it.sortOrder, s3Service.getPresignedUrl(it.key))
         }
@@ -90,11 +89,9 @@ class MemberService(
     fun getMember(memberId: Long, targetId: Long): MemberGetResponse {
         val member = getMember(memberId)
         val target = getMember(targetId)
-        val memberImages = memberImageRepository.findAllByMemberIdAndTypeOrderBySortOrder(
+        val memberImageResponses = memberImageRepository.findAllByMemberIdAndTypeOrderBySortOrder(
             target.id, ImageType.PUBLIC
-        ).map {
-            MemberImageResponse(it.id, it.sortOrder, endpoint + it.key)
-        }
+        ).toResponses(endpoint)
 
         val isLiked = likeRepository.existsByLikerIdAndLikedId(memberId, targetId)
         val isBlocked = blockRepository.existsByBlockerIdAndBlockedId(memberId, targetId)
@@ -107,7 +104,7 @@ class MemberService(
 
         return MemberGetResponse(
             memberId = target.id,
-            images = memberImages,
+            images = memberImageResponses,
             nickname = target.nickname.value,
             gender = target.gender,
             age = AgeCalculator.calculate(target.birthYear.value),
