@@ -2,6 +2,7 @@ package com.pidulgi.server.admin.controller
 
 import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
+import com.pidulgi.server.admin.dto.response.AdminGetReportDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetReportResponse
 import com.pidulgi.server.admin.service.AdminService
 import com.pidulgi.server.admin.service.query.AdminGetMembersQuery
@@ -85,5 +86,13 @@ class AdminController(
     ): ResponseEntity<Unit> {
         adminService.deleteMemberImage(memberId, imageId)
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/v1/admin/reports/{reportId}")
+    fun getReport(
+        @PathVariable reportId: Long,
+    ): ResponseEntity<AdminGetReportDetailResponse> {
+        val response = adminService.getReport(reportId)
+        return ResponseEntity.ok(response)
     }
 }

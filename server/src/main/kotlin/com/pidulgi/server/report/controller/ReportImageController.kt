@@ -2,7 +2,7 @@ package com.pidulgi.server.report.controller
 
 import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.common.s3.dto.response.PresignedUrlsResponse
-import com.pidulgi.server.report.dto.ReportGetPresignedUrlsRequest
+import com.pidulgi.server.report.dto.request.ReportGetPresignedUrlsRequest
 import com.pidulgi.server.report.service.ReportImageService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping

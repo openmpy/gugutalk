@@ -2,6 +2,7 @@ package com.pidulgi.server.admin.service
 
 import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
+import com.pidulgi.server.admin.dto.response.AdminGetReportDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetReportResponse
 import com.pidulgi.server.admin.service.extension.toAdminGetMemberResponse
 import com.pidulgi.server.admin.service.extension.toAdminGetReportResponse
@@ -19,7 +20,9 @@ import com.pidulgi.server.member.service.extension.toResponses
 import com.pidulgi.server.point.repository.PointRepository
 import com.pidulgi.server.point.repository.PointTransactionRepository
 import com.pidulgi.server.point.service.extension.toResponse
+import com.pidulgi.server.report.repository.ReportImageRepository
 import com.pidulgi.server.report.repository.ReportRepository
+import com.pidulgi.server.report.service.extension.toResponses
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -37,6 +40,7 @@ class AdminService(
     private val pointRepository: PointRepository,
     private val pointTransactionRepository: PointTransactionRepository,
     private val reportRepository: ReportRepository,
+    private val reportImageRepository: ReportImageRepository,
     private val s3Service: S3Service,
 ) {
 
@@ -164,6 +168,31 @@ class AdminService(
         if (memberImage.type == ImageType.PUBLIC && memberImage.sortOrder == 0) {
             member.updateProfileKey(remainingImages.firstOrNull()?.key)
         }
+    }
+
+    @Transactional(readOnly = true)
+    fun getReport(reportId: Long): AdminGetReportDetailResponse {
+        val report = (reportRepository.findByIdOrNull(reportId)
+            ?: throw CustomException("존재하지 않는 신고 정보입니다."))
+
+        val reportImageResponses = reportImageRepository.findAllByReportId(report.id)
+            .map { it.toResponses(s3Service.getPresignedUrl(it.key)) }
+
+        return AdminGetReportDetailResponse(
+            reportId = report.id,
+            reporterId = report.reporterId,
+            reporterUuid = report.reporterUuid,
+            reporterPhoneNumber = report.reporterPhoneNumber,
+            reporterNickname = report.reporterNickname,
+            reportedId = report.reportedId,
+            reportedUuid = report.reportedUuid,
+            reportedPhoneNumber = report.reportedPhoneNumber,
+            reportedNickname = report.reportedNickname,
+            type = report.type,
+            reason = report.reason,
+            createdAt = report.createdAt,
+            images = reportImageResponses,
+        )
     }
 
     private fun findMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)

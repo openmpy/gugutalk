@@ -1,7 +1,7 @@
 package com.pidulgi.server.report.controller
 
 import com.pidulgi.server.common.auth.Login
-import com.pidulgi.server.report.dto.ReportCreateRequest
+import com.pidulgi.server.report.dto.request.ReportCreateRequest
 import com.pidulgi.server.report.service.ReportService
 import com.pidulgi.server.report.service.command.ReportCreateCommand
 import org.springframework.http.ResponseEntity

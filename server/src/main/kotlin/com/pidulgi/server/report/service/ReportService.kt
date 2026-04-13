@@ -3,7 +3,7 @@ package com.pidulgi.server.report.service
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.repository.MemberRepository
-import com.pidulgi.server.report.dto.ReportCreateRequest
+import com.pidulgi.server.report.dto.request.ReportCreateRequest
 import com.pidulgi.server.report.entity.Report
 import com.pidulgi.server.report.entity.type.ReportType
 import com.pidulgi.server.report.repository.ReportImageRepository

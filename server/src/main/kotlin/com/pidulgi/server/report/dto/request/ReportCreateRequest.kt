@@ -1,4 +1,4 @@
-package com.pidulgi.server.report.dto
+package com.pidulgi.server.report.dto.request
 
 data class ReportCreateRequest(
 
