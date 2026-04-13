@@ -1,5 +1,7 @@
 package com.pidulgi.server.common.data
 
+import com.pidulgi.server.ban.entity.Ban
+import com.pidulgi.server.ban.repository.BanRepository
 import com.pidulgi.server.chat.entity.ChatRoom
 import com.pidulgi.server.chat.entity.Message
 import com.pidulgi.server.chat.entity.type.MessageType
@@ -29,6 +31,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 import java.util.*
 
 @ConditionalOnProperty(name = ["app.dummy-data.init"], havingValue = "true")
@@ -75,6 +78,7 @@ class DummyDataInit {
         reportRepository: ReportRepository,
         chatRoomRepository: ChatRoomRepository,
         messageRepository: MessageRepository,
+        banRepository: BanRepository,
     ): CommandLineRunner {
         return CommandLineRunner {
             // 회원
@@ -189,6 +193,20 @@ class DummyDataInit {
                 }
             }
 
+            // 정지
+            if (banRepository.count() == 0L) {
+                val bans = (1 until DUMMY_MEMBER_COUNT + 1).map { i ->
+                    Ban(
+                        uuid = "uuid$i",
+                        phoneNumber = "010$i",
+                        type = ReportType.SPAM,
+                        reason = "사유$i",
+                        expiredAt = LocalDateTime.now().minusDays(i.toLong()),
+                    )
+                }
+                banRepository.saveAll(bans)
+            }
+
             // 로그
             log.info { "회원 더미 데이터 (${memberRepository.count()})개" }
             log.info { "포인트 더미 데이터 (${pointRepository.count()})개" }
@@ -198,6 +216,7 @@ class DummyDataInit {
             log.info { "신고 더미 데이터 (${reportRepository.count()})개" }
             log.info { "채팅방 더미 데이터 (${chatRoomRepository.count()})개" }
             log.info { "쪽지 더미 데이터 (${messageRepository.count()})개" }
+            log.info { "정지 더미 데이터 (${banRepository.count()})개" }
         }
     }
 }
