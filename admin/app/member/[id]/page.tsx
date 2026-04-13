@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { HiMiniXMark, HiMinus, HiPlus } from "react-icons/hi2";
+import { HiMinus, HiPlus } from "react-icons/hi2";
 import ListButton from "@/component/ListButton";
+import MemberAdminImageDeleteButton from "@/component/MemberAdminImageDeleteButton";
 import MemberAdminSanitizeBar from "@/component/MemberAdminSanitizeBar";
 import {
   adminMemberGenderLabel,
@@ -148,13 +149,7 @@ export default async function MemberDetailPage({
                       className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300 object-cover"
                       unoptimized
                     />
-                    <button
-                      type="button"
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full"
-                      aria-label="이미지 삭제"
-                    >
-                      <HiMiniXMark className="w-4 h-4" />
-                    </button>
+                    <MemberAdminImageDeleteButton memberId={m.memberId} imageId={img.imageId} />
                   </div>
                 ))}
               </div>
@@ -176,13 +171,7 @@ export default async function MemberDetailPage({
                       className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300 object-cover"
                       unoptimized
                     />
-                    <button
-                      type="button"
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full"
-                      aria-label="이미지 삭제"
-                    >
-                      <HiMiniXMark className="w-4 h-4" />
-                    </button>
+                    <MemberAdminImageDeleteButton memberId={m.memberId} imageId={img.imageId} />
                   </div>
                 ))}
               </div>

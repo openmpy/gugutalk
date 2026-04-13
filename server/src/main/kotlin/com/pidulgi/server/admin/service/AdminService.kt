@@ -149,6 +149,10 @@ class AdminService(
         val memberImage = (memberImageRepository.findByIdOrNull(imageId)
             ?: throw CustomException("존재하지 않는 회원 이미지입니다."))
 
+        if (member.id != memberImage.memberId) {
+            throw CustomException("해당 회원의 이미지가 아닙니다.")
+        }
+
         memberImageRepository.delete(memberImage)
         s3Service.delete(memberImage.key)
 
