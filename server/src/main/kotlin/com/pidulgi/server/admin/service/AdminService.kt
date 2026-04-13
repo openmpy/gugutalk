@@ -11,6 +11,7 @@ import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.s3.S3Service
 import com.pidulgi.server.member.dto.response.MemberImageResponse
+import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
@@ -85,8 +86,7 @@ class AdminService(
 
     @Transactional(readOnly = true)
     fun getMember(memberId: Long): AdminGetMemberDetailResponse {
-        val member = (memberRepository.findByIdOrNull(memberId)
-            ?: throw CustomException("존재하지 않는 회원입니다."))
+        val member = findMember(memberId)
 
         // 이미지
         val (publicImages, privateImages) = memberImageRepository
@@ -124,4 +124,25 @@ class AdminService(
             pointTransactions = pointTransactionsResponse
         )
     }
+
+    @Transactional
+    fun sanitizeNickname(memberId: Long) {
+        val member = findMember(memberId)
+        member.sanitizeNickname()
+    }
+
+    @Transactional
+    fun sanitizeComment(memberId: Long) {
+        val member = findMember(memberId)
+        member.sanitizeComment()
+    }
+
+    @Transactional
+    fun sanitizeBio(memberId: Long) {
+        val member = findMember(memberId)
+        member.sanitizeBio()
+    }
+
+    private fun findMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)
+        ?: throw CustomException("존재하지 않는 회원입니다."))
 }

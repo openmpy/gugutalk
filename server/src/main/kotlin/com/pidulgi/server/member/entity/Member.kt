@@ -110,16 +110,6 @@ class Member(
         this.updatedAt = LocalDateTime.now()
     }
 
-    fun updateNickname(nickname: MemberNickname) {
-        this.nickname = nickname
-        this.updatedAt = LocalDateTime.now()
-    }
-
-    fun updateBio(bio: MemberBio?) {
-        this.bio = bio
-        this.updatedAt = LocalDateTime.now()
-    }
-
     fun updateComment(comment: MemberComment) {
         this.comment = comment
         this.updatedAt = LocalDateTime.now()
@@ -133,11 +123,22 @@ class Member(
         this.updatedAt = LocalDateTime.now()
     }
 
-    fun updateProfileKey(profileKey: String?) {
-        this.profileKey = profileKey
-    }
-
     fun toggleChatEnabled() {
         this.isChatEnabled = !isChatEnabled
+    }
+
+    // 관리자
+    fun sanitizeNickname() {
+        this.nickname = MemberNickname(
+            "닉네임_" + UUID.randomUUID().toString().replace("-", "").substring(0, 6)
+        )
+    }
+
+    fun sanitizeComment() {
+        this.comment = MemberComment("부적절한 코멘트입니다.")
+    }
+
+    fun sanitizeBio() {
+        this.bio = MemberBio("부적절한 자기소개입니다.")
     }
 }

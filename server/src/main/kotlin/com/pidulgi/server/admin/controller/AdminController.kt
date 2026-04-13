@@ -53,4 +53,28 @@ class AdminController(
         val response = adminService.getMember(memberId)
         return ResponseEntity.ok(response)
     }
+
+    @PutMapping("/v1/admin/members/{memberId}/nickname")
+    fun sanitizeNickname(
+        @PathVariable memberId: Long,
+    ): ResponseEntity<Unit> {
+        adminService.sanitizeNickname(memberId)
+        return ResponseEntity.ok().build()
+    }
+
+    @PutMapping("/v1/admin/members/{memberId}/comment")
+    fun sanitizeComment(
+        @PathVariable memberId: Long,
+    ): ResponseEntity<Unit> {
+        adminService.sanitizeComment(memberId)
+        return ResponseEntity.ok().build()
+    }
+
+    @PutMapping("/v1/admin/members/{memberId}/bio")
+    fun sanitizeBio(
+        @PathVariable memberId: Long,
+    ): ResponseEntity<Unit> {
+        adminService.sanitizeBio(memberId)
+        return ResponseEntity.ok().build()
+    }
 }
