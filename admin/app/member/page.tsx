@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { IoSearch } from "react-icons/io5";
 
 export default function MemberPage() {
@@ -59,7 +60,12 @@ export default function MemberPage() {
               />
               <div className="text-xs p-2 flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="font-bold text-sm">{member.nickname}</p>
+                  <Link
+                    href={`/member/${member.id}`}
+                    className="font-bold text-sm"
+                  >
+                    {member.nickname}
+                  </Link>
                   <p>{member.time}</p>
                 </div>
                 <p>{member.phone}</p>
