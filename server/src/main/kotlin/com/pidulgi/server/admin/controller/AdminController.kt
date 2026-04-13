@@ -1,5 +1,6 @@
 package com.pidulgi.server.admin.controller
 
+import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
 import com.pidulgi.server.admin.dto.response.AdminGetReportResponse
 import com.pidulgi.server.admin.service.AdminService
@@ -7,10 +8,7 @@ import com.pidulgi.server.admin.service.query.AdminGetMembersQuery
 import com.pidulgi.server.admin.service.query.AdminGetReportsQuery
 import com.pidulgi.server.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 
 @RequestMapping("/api")
@@ -45,6 +43,14 @@ class AdminController(
     ): ResponseEntity<CursorResponse<AdminGetReportResponse>> {
         val query = AdminGetReportsQuery(type, keyword, status, cursorId, cursorDate, size)
         val response = adminService.getReports(query)
+        return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/v1/admin/members/{memberId}")
+    fun getMember(
+        @PathVariable memberId: Long,
+    ): ResponseEntity<AdminGetMemberDetailResponse> {
+        val response = adminService.getMember(memberId)
         return ResponseEntity.ok(response)
     }
 }
