@@ -20,6 +20,7 @@ import com.pidulgi.server.member.service.extension.toResponses
 import com.pidulgi.server.point.repository.PointRepository
 import com.pidulgi.server.point.repository.PointTransactionRepository
 import com.pidulgi.server.point.service.extension.toResponse
+import com.pidulgi.server.report.entity.type.ReportStatus
 import com.pidulgi.server.report.repository.ReportImageRepository
 import com.pidulgi.server.report.repository.ReportRepository
 import com.pidulgi.server.report.service.extension.toResponses
@@ -190,9 +191,19 @@ class AdminService(
             reportedNickname = report.reportedNickname,
             type = report.type,
             reason = report.reason,
+            status = report.status,
             createdAt = report.createdAt,
             images = reportImageResponses,
         )
+    }
+
+    @Transactional
+    fun updateReport(reportId: Long, status: String) {
+        val report = (reportRepository.findByIdOrNull(reportId)
+            ?: throw CustomException("존재하지 않는 신고 정보입니다."))
+
+        val reportStatus = ReportStatus.from(status)
+        report.updateStatus(reportStatus)
     }
 
     private fun findMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)

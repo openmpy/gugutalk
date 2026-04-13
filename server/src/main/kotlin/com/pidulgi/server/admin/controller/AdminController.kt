@@ -95,4 +95,13 @@ class AdminController(
         val response = adminService.getReport(reportId)
         return ResponseEntity.ok(response)
     }
+
+    @PutMapping("/v1/admin/reports/{reportId}")
+    fun updateReport(
+        @PathVariable reportId: Long,
+        @RequestParam(required = true) status: String,
+    ): ResponseEntity<Unit> {
+        adminService.updateReport(reportId, status)
+        return ResponseEntity.ok().build()
+    }
 }

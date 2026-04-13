@@ -1,7 +1,9 @@
 import ListButton from "@/component/ListButton";
+import ReportAdminStatusBar from "@/component/ReportAdminStatusBar";
 import { formatAdminMemberDateTime } from "@/lib/members";
 import {
   fetchAdminReportDetail,
+  formatAdminReportStatusLabel,
   formatAdminReportTypeLabel,
 } from "@/lib/reports";
 import Image from "next/image";
@@ -30,14 +32,7 @@ export default async function ReportDetailPage({
     <div>
       <div className="flex items-center justify-between gap-1 text-xs px-2 bg-slate-400 py-1">
         <ListButton href="/report" />
-        <div className="flex gap-1">
-          <button className="bg-red-500 text-white px-2 py-1 rounded-md">
-            반려
-          </button>
-          <button className="bg-blue-500 text-white px-2 py-1 rounded-md">
-            처분
-          </button>
-        </div>
+        <ReportAdminStatusBar reportId={r.reportId} status={r.status} />
       </div>
       <div>
         <div className="flex items-center justify-center bg-slate-300 py-1">
@@ -93,6 +88,10 @@ export default async function ReportDetailPage({
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">ID</p>
             <p className="text-sm font-mono">{r.reportId}</p>
+          </div>
+          <div className="flex flex-col border-b border-slate-200 px-2 py-1">
+            <p className="text-sm font-bold">상태</p>
+            <p className="text-sm">{formatAdminReportStatusLabel(r.status)}</p>
           </div>
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">유형</p>

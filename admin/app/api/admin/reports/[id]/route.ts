@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildAdminReportDetailUpstreamUrl } from "@/lib/reports";
+import {
+  buildAdminReportDetailUpstreamUrl,
+  buildAdminReportUpdateUpstreamUrl,
+  normalizeAdminReportStatus,
+} from "@/lib/reports";
 
 export async function GET(
   _req: NextRequest,
@@ -20,4 +24,25 @@ export async function GET(
       "Content-Type": res.headers.get("content-type") || "application/json",
     },
   });
+}
+
+export async function PUT(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
+  const { id } = await context.params;
+  const reportId = Number(id);
+  if (!Number.isFinite(reportId) || reportId < 1) {
+    return NextResponse.json({ message: "Invalid report id" }, { status: 400 });
+  }
+
+  const raw = req.nextUrl.searchParams.get("status");
+  if (!raw?.trim()) {
+    return NextResponse.json({ message: "status is required" }, { status: 400 });
+  }
+
+  const status = normalizeAdminReportStatus(raw);
+  const url = buildAdminReportUpdateUpstreamUrl(reportId, status);
+  const res = await fetch(url, { method: "PUT", cache: "no-store" });
+  return new NextResponse(null, { status: res.status });
 }

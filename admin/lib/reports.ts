@@ -16,6 +16,9 @@ export type AdminReportImageResponse = {
   url: string;
 };
 
+const STATUSES = ["PENDING", "REJECT", "RESOLVE"] as const;
+export type AdminReportListStatus = (typeof STATUSES)[number];
+
 export type AdminGetReportDetailResponse = {
   reportId: number;
   reporterId: number;
@@ -28,15 +31,13 @@ export type AdminGetReportDetailResponse = {
   reportedNickname: string;
   type: string;
   reason: string | null;
+  status: AdminReportListStatus;
   createdAt: string;
   images: AdminReportImageResponse[];
 };
 
 const SEARCH_TYPES = ["NICKNAME", "UUID", "PHONE"] as const;
 export type AdminReportSearchType = (typeof SEARCH_TYPES)[number];
-
-const STATUSES = ["PENDING", "REJECT", "RESOLVE"] as const;
-export type AdminReportListStatus = (typeof STATUSES)[number];
 
 export function normalizeAdminReportType(
   value: string | undefined,
@@ -67,6 +68,28 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 
 export function formatAdminReportTypeLabel(apiType: string): string {
   return REPORT_TYPE_LABELS[apiType.toUpperCase()] ?? apiType;
+}
+
+const REPORT_STATUS_LABELS: Record<AdminReportListStatus, string> = {
+  PENDING: "대기",
+  REJECT: "반려",
+  RESOLVE: "처분",
+};
+
+export function formatAdminReportStatusLabel(status: string): string {
+  const upper = status.toUpperCase() as AdminReportListStatus;
+  return REPORT_STATUS_LABELS[upper] ?? status;
+}
+
+export function buildAdminReportUpdateUpstreamUrl(
+  reportId: number,
+  status: AdminReportListStatus,
+): string {
+  const base = process.env.ADMIN_API_BASE_URL ?? "http://127.0.0.1:8080";
+  const root = base.endsWith("/") ? base : `${base}/`;
+  const url = new URL(`/api/v1/admin/reports/${reportId}`, root);
+  url.searchParams.set("status", status);
+  return url.toString();
 }
 
 export function buildAdminReportsUpstreamUrl(params: {
