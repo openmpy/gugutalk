@@ -8,6 +8,10 @@ button:hover {
   opacity: 0.8;
 }
 
+button.modal-backdrop:hover {
+  opacity: 1;
+}
+
 a:hover {
   opacity: 0.8;
 }

@@ -1,3 +1,4 @@
+import BanAddPanel from "@/component/BanAddPanel";
 import Link from "next/link";
 import { IoSearch } from "react-icons/io5";
 
@@ -16,9 +17,7 @@ export default function BanPage() {
       <div className="flex items-center justify-center bg-slate-300 py-1">
         <h1 className="font-bold">정지 내역</h1>
       </div>
-      <div className="flex items-center">
-        <button className="flex-1 px-2 py-1 bg-red-500 text-white">추가</button>
-      </div>
+      <BanAddPanel />
       <div className="flex flex-wrap items-center">
         <select className="h-9 w-[85px] shrink-0 border border-l-0 border-slate-300 bg-white px-2 text-base focus:outline-none">
           <option value="uuid">UUID</option>
