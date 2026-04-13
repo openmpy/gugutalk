@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
 import { IoClose } from "react-icons/io5";
 
@@ -17,9 +18,26 @@ const fieldClass =
 
 const labelClass = "text-xs font-semibold text-slate-600";
 
-export default function BanAddPanel() {
+type BanAddPanelProps = {
+  /** 부모가 열림 상태를 제어할 때(회원 상세 등). 미지정이면 페이지용 내부 상태 사용 */
+  controlledOpen?: boolean;
+  onRequestClose?: () => void;
+  initialUuid?: string;
+  initialPhoneNumber?: string;
+};
+
+export default function BanAddPanel({
+  controlledOpen,
+  onRequestClose,
+  initialUuid,
+  initialPhoneNumber,
+}: BanAddPanelProps = {}) {
+  const router = useRouter();
   const formId = useId();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
   const [type, setType] =
     useState<(typeof REPORT_TYPE_OPTIONS)[number]["value"]>("SPAM");
   const [uuid, setUuid] = useState("");
@@ -27,7 +45,13 @@ export default function BanAddPanel() {
   const [reason, setReason] = useState("");
   const [days, setDays] = useState("7");
 
-  const close = useCallback(() => setOpen(false), []);
+  const close = useCallback(() => {
+    if (isControlled) {
+      onRequestClose?.();
+    } else {
+      setInternalOpen(false);
+    }
+  }, [isControlled, onRequestClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -40,6 +64,12 @@ export default function BanAddPanel() {
 
   useEffect(() => {
     if (!open) return;
+    if (initialUuid !== undefined) setUuid(initialUuid);
+    if (initialPhoneNumber !== undefined) setPhoneNumber(initialPhoneNumber);
+  }, [open, initialUuid, initialPhoneNumber]);
+
+  useEffect(() => {
+    if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -47,25 +77,61 @@ export default function BanAddPanel() {
     };
   }, [open]);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setType("SPAM");
-    setUuid("");
-    setPhoneNumber("");
-    setReason("");
-    setDays("7");
-    close();
+    if (submitting) return;
+    const daysNum = Number(days);
+    if (!Number.isFinite(daysNum) || daysNum < 1) {
+      window.alert("정지 일수를 확인해 주세요.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/admin/bans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uuid: uuid.trim(),
+          phoneNumber: phoneNumber.trim(),
+          type,
+          reason: reason.trim() === "" ? null : reason.trim(),
+          days: daysNum,
+        }),
+      });
+      if (!res.ok) {
+        let msg = `등록 실패 (${res.status})`;
+        try {
+          const err = (await res.json()) as { message?: string };
+          if (err.message) msg = err.message;
+        } catch {
+          /* ignore */
+        }
+        window.alert(msg);
+        return;
+      }
+      setType("SPAM");
+      setUuid("");
+      setPhoneNumber("");
+      setReason("");
+      setDays("7");
+      close();
+      router.refresh();
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center py-1 text-white bg-red-500"
-      >
-        추가
-      </button>
+      {!isControlled ? (
+        <button
+          type="button"
+          onClick={() => setInternalOpen(true)}
+          className="flex w-full items-center justify-center py-1 text-white bg-red-500"
+        >
+          추가
+        </button>
+      ) : null}
 
       {open ? (
         <div
@@ -198,16 +264,18 @@ export default function BanAddPanel() {
               <div className="flex shrink-0 gap-2 border-t border-slate-200 bg-slate-50 px-2 py-3 md:rounded-b-md">
                 <button
                   type="button"
+                  disabled={submitting}
                   onClick={close}
-                  className="flex-1 rounded-lg bg-slate-300 px-3 py-2.5 text-sm font-semibold"
+                  className="flex-1 rounded-lg bg-slate-300 px-3 py-2.5 text-sm font-semibold disabled:opacity-50"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 rounded-lg bg-red-500 px-3 py-2.5 text-sm font-semibold text-white"
+                  disabled={submitting}
+                  className="flex-1 rounded-lg bg-red-500 px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
                 >
-                  등록
+                  {submitting ? "등록 중…" : "등록"}
                 </button>
               </div>
             </form>

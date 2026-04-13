@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  buildAdminBanAddUpstreamUrl,
   buildAdminBansUpstreamUrl,
   normalizeAdminBanType,
 } from "@/lib/bans";
+
+export async function POST(req: NextRequest) {
+  const body = await req.text();
+  const res = await fetch(buildAdminBanAddUpstreamUrl(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+    cache: "no-store",
+  });
+  const text = await res.text();
+  return new NextResponse(text.length > 0 ? text : null, {
+    status: res.status,
+    headers: {
+      "Content-Type": res.headers.get("content-type") || "application/json",
+    },
+  });
+}
 
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;

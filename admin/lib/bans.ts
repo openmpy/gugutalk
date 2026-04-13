@@ -19,6 +19,14 @@ export function normalizeAdminBanType(
   return upper === "PHONE" ? "PHONE" : "UUID";
 }
 
+export function buildAdminBanAddUpstreamUrl(): string {
+  const base = process.env.ADMIN_API_BASE_URL ?? "http://127.0.0.1:8080";
+  return new URL(
+    "/api/v1/admin/bans",
+    base.endsWith("/") ? base : `${base}/`,
+  ).toString();
+}
+
 export function buildAdminBansUpstreamUrl(params: {
   type: AdminBanSearchType;
   keyword: string;

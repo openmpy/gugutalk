@@ -1,14 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import BanAddPanel from "@/component/BanAddPanel";
 
-type Props = { memberId: number };
+type Props = { memberId: number; uuid: string; phoneNumber: string };
 
-export default function MemberAdminSanitizeBar({ memberId }: Props) {
+export default function MemberAdminSanitizeBar({
+  memberId,
+  uuid,
+  phoneNumber,
+}: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<"nickname" | "comment" | "bio" | null>(null);
+  const [banOpen, setBanOpen] = useState(false);
 
   const run = useCallback(
     async (field: "nickname" | "comment" | "bio") => {
@@ -33,6 +38,12 @@ export default function MemberAdminSanitizeBar({ memberId }: Props) {
 
   return (
     <div className="flex flex-wrap gap-1">
+      <BanAddPanel
+        controlledOpen={banOpen}
+        onRequestClose={() => setBanOpen(false)}
+        initialUuid={uuid}
+        initialPhoneNumber={phoneNumber}
+      />
       <button
         type="button"
         disabled={busy !== null}
@@ -57,9 +68,13 @@ export default function MemberAdminSanitizeBar({ memberId }: Props) {
       >
         {busy === "bio" ? "처리 중…" : "자기소개 변경"}
       </button>
-      <Link href="/ban" className="rounded-md bg-red-500 px-2 py-1 text-white">
+      <button
+        type="button"
+        onClick={() => setBanOpen(true)}
+        className="rounded-md bg-red-500 px-2 py-1 text-white"
+      >
         정지
-      </Link>
+      </button>
     </div>
   );
 }

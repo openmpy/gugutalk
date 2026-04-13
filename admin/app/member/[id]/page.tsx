@@ -79,7 +79,11 @@ export default async function MemberDetailPage({
     <div>
       <div className="flex items-center justify-between gap-1 text-xs px-2 bg-slate-400 py-1">
         <ListButton href="/member" />
-        <MemberAdminSanitizeBar memberId={m.memberId} />
+        <MemberAdminSanitizeBar
+          memberId={m.memberId}
+          uuid={m.uuid}
+          phoneNumber={m.phoneNumber}
+        />
       </div>
       <div>
         <div className="flex items-center justify-center bg-slate-300 py-1">
