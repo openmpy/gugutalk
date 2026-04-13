@@ -12,6 +12,39 @@ export type AdminGetMemberResponse = {
   updatedAt: string;
 };
 
+export type AdminMemberImageResponse = {
+  imageId: number;
+  index: number;
+  url: string;
+};
+
+export type AdminPointTransactionType = "EARN" | "USE";
+
+export type AdminPointTransactionResponse = {
+  pointTransactionId: number;
+  type: AdminPointTransactionType;
+  amount: number;
+  description: string | null;
+  createdAt: string;
+};
+
+export type AdminGetMemberDetailResponse = {
+  memberId: number;
+  uuid: string;
+  phoneNumber: string;
+  nickname: string;
+  gender: AdminMemberGender;
+  birthYear: number;
+  comment: string | null;
+  bio: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publicImages: AdminMemberImageResponse[];
+  privateImages: AdminMemberImageResponse[];
+  point: number;
+  pointTransactions: AdminPointTransactionResponse[];
+};
+
 export type CursorResponse<T> = {
   payload: T[];
   nextId: number | null;
@@ -61,6 +94,48 @@ export function formatAdminMemberUpdatedAt(iso: string): string {
   const h = (map.hour ?? "").padStart(2, "0");
   const min = (map.minute ?? "").padStart(2, "0");
   return `${y}.${m}.${day}. ${h}:${min}`;
+}
+
+/** 생성·수정일 등 초 단위까지 (서울, 24시) */
+export function formatAdminMemberDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(d);
+
+  const map: Partial<Record<Intl.DateTimeFormatPartTypes, string>> = {};
+  for (const p of parts) {
+    if (p.type !== "literal") map[p.type] = p.value;
+  }
+
+  const y = map.year ?? "";
+  const mo = (map.month ?? "").padStart(2, "0");
+  const day = (map.day ?? "").padStart(2, "0");
+  const h = (map.hour ?? "").padStart(2, "0");
+  const min = (map.minute ?? "").padStart(2, "0");
+  const sec = (map.second ?? "").padStart(2, "0");
+  return `${y}.${mo}.${day}. ${h}:${min}:${sec}`;
+}
+
+export function adminMemberGenderLabel(gender: AdminMemberGender): string {
+  if (gender === "MALE") return "남자";
+  if (gender === "FEMALE") return "여자";
+  return gender;
+}
+
+export function buildAdminMemberDetailUpstreamUrl(memberId: number): string {
+  const base = process.env.ADMIN_API_BASE_URL ?? "http://127.0.0.1:8080";
+  const root = base.endsWith("/") ? base : `${base}/`;
+  return new URL(`/api/v1/admin/members/${memberId}`, root).toString();
 }
 
 export function buildAdminMembersUpstreamUrl(params: {
@@ -117,5 +192,15 @@ export async function fetchAdminMembers(params: {
   if (!res.ok) return { ok: false, status: res.status };
 
   const data = (await res.json()) as CursorResponse<AdminGetMemberResponse>;
+  return { ok: true, data };
+}
+
+export async function fetchAdminMemberDetail(
+  memberId: number,
+): Promise<{ ok: true; data: AdminGetMemberDetailResponse } | { ok: false; status: number }> {
+  const res = await fetch(buildAdminMemberDetailUpstreamUrl(memberId), { cache: "no-store" });
+  if (!res.ok) return { ok: false, status: res.status };
+
+  const data = (await res.json()) as AdminGetMemberDetailResponse;
   return { ok: true, data };
 }

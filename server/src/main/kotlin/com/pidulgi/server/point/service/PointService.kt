@@ -99,5 +99,5 @@ class PointService(
     }
 
     private fun getPoint(memberId: Long): Point = (pointRepository.findByMemberId(memberId)
-        ?: throw CustomException("존재하지 않는 포인트 정보입니다."))
+        ?: throw CustomException("포인트 정보를 찾을 수 없습니다."))
 }

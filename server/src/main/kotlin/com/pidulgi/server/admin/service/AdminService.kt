@@ -15,6 +15,7 @@ import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.service.extension.toResponses
+import com.pidulgi.server.point.repository.PointRepository
 import com.pidulgi.server.point.repository.PointTransactionRepository
 import com.pidulgi.server.point.service.extension.toResponse
 import com.pidulgi.server.report.repository.ReportRepository
@@ -32,6 +33,7 @@ class AdminService(
 
     private val memberRepository: MemberRepository,
     private val memberImageRepository: MemberImageRepository,
+    private val pointRepository: PointRepository,
     private val pointTransactionRepository: PointTransactionRepository,
     private val reportRepository: ReportRepository,
     private val s3Service: S3Service,
@@ -86,6 +88,7 @@ class AdminService(
         val member = (memberRepository.findByIdOrNull(memberId)
             ?: throw CustomException("존재하지 않는 회원입니다."))
 
+        // 이미지
         val (publicImages, privateImages) = memberImageRepository
             .findAllByMemberId(member.id)
             .sortedBy { it.sortOrder }
@@ -95,6 +98,10 @@ class AdminService(
         val privateImagesResponse = privateImages.map {
             MemberImageResponse(it.id, it.sortOrder, s3Service.getPresignedUrl(it.key))
         }
+
+        // 포인트
+        val point = (pointRepository.findByMemberId(member.id)
+            ?: throw CustomException("포인트 정보를 찾을 수 없습니다."))
 
         val pageRequest = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt"))
         val pointTransactionsResponse = pointTransactionRepository.findAllByMemberId(member.id, pageRequest)
@@ -113,6 +120,7 @@ class AdminService(
             createdAt = member.createdAt,
             publicImages = publicImageResponse,
             privateImages = privateImagesResponse,
+            point = point.balance,
             pointTransactions = pointTransactionsResponse
         )
     }

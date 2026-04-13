@@ -22,6 +22,7 @@ data class AdminGetMemberDetailResponse(
     val publicImages: List<MemberImageResponse>,
     val privateImages: List<MemberImageResponse>,
 
-    // 포인트 내역
+    // 포인트
+    val point: Long,
     val pointTransactions: List<PointTransactionResponse>,
 )
