@@ -92,7 +92,7 @@ export default async function ReportPage({
         />
         <button
           type="submit"
-          className="h-9 shrink-0 border border-l-0 border-slate-300 px-2 text-base text-slate-600"
+          className="h-9 shrink-0 border border-l-0 border-r-0 border-slate-300 px-2 text-base text-slate-600"
           aria-label="검색"
         >
           <IoSearch className="h-4 w-4" />
@@ -100,11 +100,14 @@ export default async function ReportPage({
       </form>
       {!result.ok ? (
         <p className="px-2 py-4 text-sm text-red-600">
-          신고 목록을 불러오지 못했습니다. (HTTP {result.status}) 서버 주소는 환경 변수{" "}
-          <span className="font-mono">ADMIN_API_BASE_URL</span> 로 설정할 수 있습니다.
+          신고 목록을 불러오지 못했습니다. (HTTP {result.status}) 서버 주소는
+          환경 변수 <span className="font-mono">ADMIN_API_BASE_URL</span> 로
+          설정할 수 있습니다.
         </p>
       ) : result.data.payload.length === 0 ? (
-        <p className="px-2 py-4 text-center text-sm text-slate-600">조회된 신고가 없습니다.</p>
+        <p className="px-2 py-4 text-center text-sm text-slate-600">
+          조회된 신고가 없습니다.
+        </p>
       ) : (
         <ReportListLoadMore
           key={JSON.stringify({ type, keyword, status })}

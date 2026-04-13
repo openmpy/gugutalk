@@ -3,6 +3,7 @@ package com.pidulgi.server.ban.repository.impl
 import com.pidulgi.server.ban.repository.BanCustomRepository
 import com.pidulgi.server.ban.repository.result.BanAdminItemResult
 import com.pidulgi.server.common.exception.CustomException
+import com.pidulgi.server.report.entity.type.ReportType
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
@@ -38,10 +39,11 @@ class BanCustomRepositoryImpl(
 
         val sql = """
             SELECT b.id,
-                   b.uuid,
-                   b.reason,
-                   b.created_at,
-                   b.expired_at
+                b.type,
+                b.uuid,
+                b.reason,
+                b.created_at,
+                b.expired_at
             FROM ban b
             WHERE 1 = 1
                 $keywordCondition
@@ -67,10 +69,11 @@ class BanCustomRepositoryImpl(
     private fun toBanAdminItemResult(row: Array<Any?>): BanAdminItemResult {
         return BanAdminItemResult(
             banId = (row[0] as Number).toLong(),
-            uuid = row[1] as String,
-            reason = row[2] as? String,
-            createdAt = row[3] as LocalDateTime,
-            expiredAt = row[4] as LocalDateTime,
+            type = ReportType.valueOf(row[1] as String),
+            uuid = row[2] as String,
+            reason = row[3] as? String,
+            createdAt = row[4] as LocalDateTime,
+            expiredAt = row[5] as LocalDateTime,
         )
     }
 }

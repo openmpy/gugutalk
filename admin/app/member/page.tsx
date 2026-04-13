@@ -91,7 +91,7 @@ export default async function MemberPage({
         />
         <button
           type="submit"
-          className="h-9 shrink-0 border border-l-0 border-slate-300 px-2 text-base text-slate-600"
+          className="h-9 shrink-0 border border-l-0 border-r-0 border-slate-300 px-2 text-base text-slate-600"
           aria-label="검색"
         >
           <IoSearch className="h-4 w-4" />

@@ -1,10 +1,12 @@
 package com.pidulgi.server.ban.dto.response
 
+import com.pidulgi.server.report.entity.type.ReportType
 import java.time.LocalDateTime
 
 data class BanGetResponse(
 
     val banId: Long,
+    val type: ReportType,
     val uuid: String,
     val reason: String?,
     val createdAt: LocalDateTime,

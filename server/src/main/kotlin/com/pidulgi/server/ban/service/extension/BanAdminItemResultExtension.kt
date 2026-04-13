@@ -6,6 +6,7 @@ import com.pidulgi.server.ban.repository.result.BanAdminItemResult
 fun BanAdminItemResult.toGetResponse() = BanGetResponse(
 
     banId = this.banId,
+    type = this.type,
     uuid = this.uuid,
     reason = this.reason,
     createdAt = this.createdAt,
