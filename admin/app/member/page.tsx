@@ -104,7 +104,7 @@ export default async function MemberPage({
           설정할 수 있습니다.
         </p>
       ) : result.data.payload.length === 0 ? (
-        <p className="px-2 py-4 text-sm text-slate-600">
+        <p className="px-2 py-4 text-sm text-slate-600 text-center">
           조회된 회원이 없습니다.
         </p>
       ) : (
