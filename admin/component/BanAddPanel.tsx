@@ -39,7 +39,7 @@ export default function BanAddPanel({
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
   const [type, setType] =
-    useState<(typeof REPORT_TYPE_OPTIONS)[number]["value"]>("SPAM");
+    useState<(typeof REPORT_TYPE_OPTIONS)[number]["value"]>("ABUSE");
   const [uuid, setUuid] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [reason, setReason] = useState("");
