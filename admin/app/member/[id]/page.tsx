@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { HiMiniXMark } from "react-icons/hi2";
+import { HiMiniXMark, HiMinus, HiPlus } from "react-icons/hi2";
 
 export default async function MemberPage({
   params,
@@ -156,47 +156,51 @@ export default async function MemberPage({
         <div className="flex items-center justify-end bg-slate-200 py-1 px-2">
           <p className="text-sm">포인트: 100P</p>
         </div>
-        <div className="w-full overflow-x-auto">
-          <table className="w-full min-w-max text-sm border-collapse">
-            <thead className="bg-slate-100">
-              <tr>
-                <th className="text-center py-1 px-2 w-16">유형</th>
-                <th className="text-center py-1 px-2 w-16">수치</th>
-                <th className="text-center py-1 px-2 w-48">내용</th>
-                <th className="text-left py-1 px-2 w-44">일시</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-slate-100">
-                <td className="px-2 py-1 text-center w-16">
-                  <span className="inline-block rounded-md bg-green-100 text-green-700 text-xs font-semibold px-2 py-1">
-                    획득
-                  </span>
-                </td>
-                <td className="text-center py-1 px-2 font-bold text-green-600 w-16">
-                  +20
-                </td>
-                <td className="text-center py-1 px-2 w-48">출석 체크</td>
-                <td className="text-left py-1 px-2 w-44">
+        <div className="p-2">
+          <ul className="overflow-hidden rounded-md border border-slate-200 bg-white divide-y divide-slate-100">
+            <li className="flex items-center gap-3 px-3 py-3">
+              <div
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
+                aria-hidden
+              >
+                <HiPlus className="h-5 w-5" strokeWidth={2.25} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-slate-800">
+                  출석 체크
+                </p>
+                <p className="mt-0.5 text-xs text-slate-500 tabular-nums">
+                  <span className="text-emerald-600 font-medium">획득</span>
+                  <span className="mx-1.5 text-slate-300">·</span>
                   2026-01-01 12:00:00
-                </td>
-              </tr>
-              <tr className="border-b border-slate-100">
-                <td className="px-2 py-1 text-center w-16">
-                  <span className="inline-block rounded-md bg-red-100 text-red-700 text-xs font-semibold px-2 py-1">
-                    사용
-                  </span>
-                </td>
-                <td className="text-center py-1 px-2 font-bold text-red-600 w-16">
-                  -20
-                </td>
-                <td className="text-center py-1 px-2 w-48">출석 체크</td>
-                <td className="text-left py-1 px-2 w-44">
+                </p>
+              </div>
+              <p className="shrink-0 text-sm font-bold tabular-nums text-emerald-600">
+                +20
+              </p>
+            </li>
+            <li className="flex items-center gap-3 px-3 py-3">
+              <div
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-700"
+                aria-hidden
+              >
+                <HiMinus className="h-5 w-5" strokeWidth={2.25} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-slate-800">
+                  출석 체크
+                </p>
+                <p className="mt-0.5 text-xs text-slate-500 tabular-nums">
+                  <span className="text-rose-600 font-medium">사용</span>
+                  <span className="mx-1.5 text-slate-300">·</span>
                   2026-01-01 12:00:00
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </p>
+              </div>
+              <p className="shrink-0 text-sm font-bold tabular-nums text-rose-600">
+                -20
+              </p>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
