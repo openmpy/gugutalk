@@ -1,5 +1,6 @@
 package com.pidulgi.server.member.repository
 
+import com.pidulgi.server.member.repository.result.MemberAdminItemResult
 import com.pidulgi.server.member.repository.result.MemberItemResult
 import com.pidulgi.server.member.repository.result.MemberSearchItemResult
 import org.locationtech.jts.geom.Point
@@ -38,4 +39,13 @@ interface MemberCustomRepository {
         location: Point?,
         memberId: Long
     ): Double?
+
+    fun findAllMembersForAdminByCursor(
+        type: String,
+        keyword: String,
+        gender: String,
+        cursorId: Long?,
+        cursorDate: LocalDateTime?,
+        size: Int
+    ): List<MemberAdminItemResult>
 }

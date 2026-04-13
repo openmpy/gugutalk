@@ -1,10 +1,10 @@
 package com.pidulgi.server.member.repository.impl
 
+import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.member.entity.type.Gender
-import com.pidulgi.server.member.entity.vo.MemberBirthYear
-import com.pidulgi.server.member.entity.vo.MemberComment
-import com.pidulgi.server.member.entity.vo.MemberNickname
+import com.pidulgi.server.member.entity.vo.*
 import com.pidulgi.server.member.repository.MemberCustomRepository
+import com.pidulgi.server.member.repository.result.MemberAdminItemResult
 import com.pidulgi.server.member.repository.result.MemberItemResult
 import com.pidulgi.server.member.repository.result.MemberSearchItemResult
 import jakarta.persistence.EntityManager
@@ -248,6 +248,72 @@ class MemberCustomRepositoryImpl(
         return (result.firstOrNull() as? Number)?.toDouble()
     }
 
+    override fun findAllMembersForAdminByCursor(
+        type: String,
+        keyword: String,
+        gender: String,
+        cursorId: Long?,
+        cursorDate: LocalDateTime?,
+        size: Int
+    ): List<MemberAdminItemResult> {
+        val normalizedType = type.uppercase()
+
+        val cursorCondition = if (cursorId != null && cursorDate != null) {
+            """
+            AND (
+                m.updated_at < :cursorDate OR (m.updated_at = :cursorDate AND m.id < :cursorId)
+            )
+            """.trimIndent()
+        } else ""
+
+        val genderCondition = when (gender.uppercase()) {
+            "MALE", "FEMALE" -> "AND m.gender = :gender"
+            else -> ""
+        }
+
+        val keywordCondition = when (normalizedType) {
+            "UUID" -> "AND m.uuid ILIKE :keyword"
+            "NICKNAME" -> "AND m.nickname ILIKE :keyword"
+            "PHONE" -> "AND m.phone_number ILIKE :keyword"
+            else -> throw CustomException("지원하지 않는 검색 유형입니다. ($type)")
+        }
+
+        val sql = """
+            SELECT m.id,
+                   m.uuid,
+                   m.phone_number,
+                   m.profile_key,
+                   m.nickname,
+                   m.gender,
+                   m.birth_year,
+                   m.comment,
+                   m.updated_at
+            FROM member m
+            WHERE m.deleted_at IS NULL
+                $genderCondition
+                $keywordCondition
+                $cursorCondition
+            ORDER BY m.updated_at DESC, m.id DESC
+            LIMIT :size
+        """.trimIndent()
+
+        val query = entityManager.createNativeQuery(sql).apply {
+            setParameter("size", size)
+            setParameter("keyword", "%$keyword%")
+
+            if (gender.uppercase() == "MALE" || gender.uppercase() == "FEMALE") {
+                setParameter("gender", gender.uppercase())
+            }
+            if (cursorId != null && cursorDate != null) {
+                setParameter("cursorId", cursorId)
+                setParameter("cursorDate", cursorDate)
+            }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        return (query.resultList as List<Array<Any?>>).map(::toMemberAdminItemResult)
+    }
+
     private fun toMemberItemResult(row: Array<Any?>): MemberItemResult {
         return MemberItemResult(
             memberId = (row[0] as Number).toLong(),
@@ -274,6 +340,20 @@ class MemberCustomRepositoryImpl(
             distance = (row[7] as? Number)?.toDouble(),
             likes = (row[8] as Number).toInt(),
             similarityScore = (row[9] as Number).toDouble(),
+        )
+    }
+
+    private fun toMemberAdminItemResult(row: Array<Any?>): MemberAdminItemResult {
+        return MemberAdminItemResult(
+            memberId = (row[0] as Number).toLong(),
+            uuid = MemberUuid(row[1] as String),
+            phoneNumber = MemberPhoneNumber(row[2] as String),
+            profileKey = row[3] as? String,
+            nickname = MemberNickname(row[4] as String),
+            gender = Gender.valueOf(row[5] as String),
+            birthYear = MemberBirthYear((row[6] as Number).toInt()),
+            comment = MemberComment(row[7] as String),
+            updatedAt = row[8] as LocalDateTime,
         )
     }
 }
