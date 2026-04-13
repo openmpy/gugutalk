@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { HiMiniXMark, HiMinus, HiPlus } from "react-icons/hi2";
+import ListButton from "@/component/ListButton";
 
 export default async function MemberDetailPage({
   params,
@@ -11,11 +12,7 @@ export default async function MemberDetailPage({
   return (
     <div>
       <div className="flex items-center justify-between gap-1 text-xs px-2 bg-slate-400 py-1">
-        <div>
-          <button className="bg-slate-600 text-white px-2 py-1 rounded-md">
-            목록
-          </button>
-        </div>
+        <ListButton href="/member" />
         <div className="flex gap-1">
           <button className="bg-green-600 text-white px-2 py-1 rounded-md">
             이미지 제거

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { HiMiniXMark } from "react-icons/hi2";
+import ListButton from "@/component/ListButton";
 
 export default async function ReportDetailPage({
   params,
@@ -11,11 +12,7 @@ export default async function ReportDetailPage({
   return (
     <div>
       <div className="flex items-center justify-between gap-1 text-xs px-2 bg-slate-400 py-1">
-        <div>
-          <button className="bg-slate-600 text-white px-2 py-1 rounded-md">
-            목록
-          </button>
-        </div>
+        <ListButton href="/report" />
         <div className="flex gap-1">
           <button className="bg-red-500 text-white px-2 py-1 rounded-md">
             반려

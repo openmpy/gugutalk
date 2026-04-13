@@ -1,3 +1,5 @@
+import ListButton from "@/component/ListButton";
+
 const banHistorySamples = [
   {
     type: "도배",
@@ -25,11 +27,7 @@ export default async function BanDetailPage({
   return (
     <div>
       <div className="flex items-center justify-between gap-1 text-xs px-2 bg-slate-400 py-1">
-        <div>
-          <button className="bg-slate-600 text-white px-2 py-1 rounded-md">
-            목록
-          </button>
-        </div>
+        <ListButton href="/ban" />
         <div className="flex gap-1">
           <button className="bg-blue-500 text-white px-2 py-1 rounded-md">
             해제
