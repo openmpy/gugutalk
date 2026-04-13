@@ -131,7 +131,6 @@ class Member(
         this.isChatEnabled = !isChatEnabled
     }
 
-    // 관리자
     fun sanitizeNickname() {
         this.nickname = MemberNickname(
             "닉네임_" + UUID.randomUUID().toString().replace("-", "").substring(0, 6)
