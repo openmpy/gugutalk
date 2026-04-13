@@ -143,6 +143,25 @@ class AdminService(
         member.sanitizeBio()
     }
 
+    @Transactional
+    fun deleteMemberImage(memberId: Long, imageId: Long) {
+        val member = findMember(memberId)
+        val memberImage = (memberImageRepository.findByIdOrNull(imageId)
+            ?: throw CustomException("존재하지 않는 회원 이미지입니다."))
+
+        memberImageRepository.delete(memberImage)
+        s3Service.delete(memberImage.key)
+
+        val remainingImages = memberImageRepository.findAllByMemberIdAndTypeOrderBySortOrder(memberId, memberImage.type)
+        remainingImages.forEachIndexed { index, image ->
+            image.updateSortOrder(index)
+        }
+
+        if (memberImage.type == ImageType.PUBLIC && memberImage.sortOrder == 0) {
+            member.updateProfileKey(remainingImages.firstOrNull()?.key)
+        }
+    }
+
     private fun findMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)
         ?: throw CustomException("존재하지 않는 회원입니다."))
 }

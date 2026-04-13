@@ -123,6 +123,10 @@ class Member(
         this.updatedAt = LocalDateTime.now()
     }
 
+    fun updateProfileKey(profileKey: String?) {
+        this.profileKey = profileKey
+    }
+
     fun toggleChatEnabled() {
         this.isChatEnabled = !isChatEnabled
     }

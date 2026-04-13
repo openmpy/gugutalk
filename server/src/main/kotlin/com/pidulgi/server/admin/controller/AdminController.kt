@@ -77,4 +77,13 @@ class AdminController(
         adminService.sanitizeBio(memberId)
         return ResponseEntity.ok().build()
     }
+
+    @DeleteMapping("/v1/admin/members/{memberId}/images/{imageId}")
+    fun deleteMemberImage(
+        @PathVariable memberId: Long,
+        @PathVariable imageId: Long,
+    ): ResponseEntity<Unit> {
+        adminService.deleteMemberImage(memberId, imageId)
+        return ResponseEntity.ok().build()
+    }
 }
