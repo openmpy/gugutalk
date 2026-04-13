@@ -1,6 +1,11 @@
-import Image from "next/image";
-import { HiMiniXMark } from "react-icons/hi2";
 import ListButton from "@/component/ListButton";
+import { formatAdminMemberDateTime } from "@/lib/members";
+import {
+  fetchAdminReportDetail,
+  formatAdminReportTypeLabel,
+} from "@/lib/reports";
+import Image from "next/image";
+import { notFound } from "next/navigation";
 
 export default async function ReportDetailPage({
   params,
@@ -8,6 +13,18 @@ export default async function ReportDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const reportId = Number(id);
+  if (!Number.isFinite(reportId) || reportId < 1) {
+    notFound();
+  }
+
+  const result = await fetchAdminReportDetail(reportId);
+  if (!result.ok) {
+    notFound();
+  }
+
+  const r = result.data;
+  const sortedImages = [...r.images].sort((a, b) => a.index - b.index);
 
   return (
     <div>
@@ -29,19 +46,19 @@ export default async function ReportDetailPage({
         <div className="flex flex-col gap-1">
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">ID</p>
-            <p className="text-sm font-mono">{id}</p>
+            <p className="text-sm font-mono">{r.reporterId}</p>
           </div>
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">UUID</p>
-            <p className="text-sm">uuid</p>
+            <p className="text-sm break-all">{r.reporterUuid}</p>
           </div>
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">휴대폰</p>
-            <p className="text-sm">010-1234-5678</p>
+            <p className="text-sm">{r.reporterPhoneNumber}</p>
           </div>
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">닉네임</p>
-            <p className="text-sm">닉네임</p>
+            <p className="text-sm">{r.reporterNickname}</p>
           </div>
         </div>
       </div>
@@ -52,19 +69,19 @@ export default async function ReportDetailPage({
         <div className="flex flex-col gap-1">
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">ID</p>
-            <p className="text-sm font-mono">{id}</p>
+            <p className="text-sm font-mono">{r.reportedId}</p>
           </div>
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">UUID</p>
-            <p className="text-sm">uuid</p>
+            <p className="text-sm break-all">{r.reportedUuid}</p>
           </div>
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">휴대폰</p>
-            <p className="text-sm">010-1234-5678</p>
+            <p className="text-sm">{r.reportedPhoneNumber}</p>
           </div>
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">닉네임</p>
-            <p className="text-sm">닉네임</p>
+            <p className="text-sm">{r.reportedNickname}</p>
           </div>
         </div>
       </div>
@@ -75,19 +92,21 @@ export default async function ReportDetailPage({
         <div className="flex flex-col gap-1">
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">ID</p>
-            <p className="text-sm font-mono">{id}</p>
+            <p className="text-sm font-mono">{r.reportId}</p>
           </div>
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">유형</p>
-            <p className="text-sm">도배</p>
+            <p className="text-sm">{formatAdminReportTypeLabel(r.type)}</p>
           </div>
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">사유</p>
-            <p className="text-sm">사유</p>
+            <p className="text-sm whitespace-pre-wrap">
+              {r.reason?.trim() || "—"}
+            </p>
           </div>
           <div className="flex flex-col border-b border-slate-200 px-2 py-1">
             <p className="text-sm font-bold">신고일</p>
-            <p className="text-sm">2026-04-12 12:00:00</p>
+            <p className="text-sm">{formatAdminMemberDateTime(r.createdAt)}</p>
           </div>
         </div>
       </div>
@@ -96,36 +115,24 @@ export default async function ReportDetailPage({
           <h2 className="font-bold">증거 자료</h2>
         </div>
         <div className="p-2 flex flex-col">
-          <div className="flex gap-2">
-            <div className="relative">
-              <Image
-                src="https://picsum.photos/100"
-                alt="member"
-                width={100}
-                height={100}
-                className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300"
-                loading="eager"
-                priority
-              />
-              <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full">
-                <HiMiniXMark className="w-4 h-4" />
-              </button>
+          {sortedImages.length === 0 ? (
+            <p className="text-sm text-slate-500">첨부된 이미지가 없습니다.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {sortedImages.map((img) => (
+                <div key={img.imageId} className="relative">
+                  <Image
+                    src={img.url}
+                    alt=""
+                    width={100}
+                    height={100}
+                    className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300 object-cover"
+                    unoptimized
+                  />
+                </div>
+              ))}
             </div>
-            <div className="relative">
-              <Image
-                src="https://picsum.photos/100"
-                alt="member"
-                width={100}
-                height={100}
-                className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300"
-                loading="eager"
-                priority
-              />
-              <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full">
-                <HiMiniXMark className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

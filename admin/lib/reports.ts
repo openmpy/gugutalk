@@ -10,6 +10,28 @@ export type AdminGetReportResponse = {
   createdAt: string;
 };
 
+export type AdminReportImageResponse = {
+  imageId: number;
+  index: number;
+  url: string;
+};
+
+export type AdminGetReportDetailResponse = {
+  reportId: number;
+  reporterId: number;
+  reporterUuid: string;
+  reporterPhoneNumber: string;
+  reporterNickname: string;
+  reportedId: number;
+  reportedUuid: string;
+  reportedPhoneNumber: string;
+  reportedNickname: string;
+  type: string;
+  reason: string | null;
+  createdAt: string;
+  images: AdminReportImageResponse[];
+};
+
 const SEARCH_TYPES = ["NICKNAME", "UUID", "PHONE"] as const;
 export type AdminReportSearchType = (typeof SEARCH_TYPES)[number];
 
@@ -71,6 +93,12 @@ export function buildAdminReportsUpstreamUrl(params: {
   return url.toString();
 }
 
+export function buildAdminReportDetailUpstreamUrl(reportId: number): string {
+  const base = process.env.ADMIN_API_BASE_URL ?? "http://127.0.0.1:8080";
+  const root = base.endsWith("/") ? base : `${base}/`;
+  return new URL(`/api/v1/admin/reports/${reportId}`, root).toString();
+}
+
 export function adminReportsProxyQuery(params: {
   type: AdminReportSearchType;
   keyword: string;
@@ -108,5 +136,20 @@ export async function fetchAdminReports(params: {
   if (!res.ok) return { ok: false, status: res.status };
 
   const data = (await res.json()) as CursorResponse<AdminGetReportResponse>;
+  return { ok: true, data };
+}
+
+export async function fetchAdminReportDetail(
+  reportId: number,
+): Promise<
+  | { ok: true; data: AdminGetReportDetailResponse }
+  | { ok: false; status: number }
+> {
+  const res = await fetch(buildAdminReportDetailUpstreamUrl(reportId), {
+    cache: "no-store",
+  });
+  if (!res.ok) return { ok: false, status: res.status };
+
+  const data = (await res.json()) as AdminGetReportDetailResponse;
   return { ok: true, data };
 }
