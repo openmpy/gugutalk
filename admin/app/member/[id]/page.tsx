@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { HiMiniXMark, HiMinus, HiPlus } from "react-icons/hi2";
 import ListButton from "@/component/ListButton";
+import MemberAdminSanitizeBar from "@/component/MemberAdminSanitizeBar";
 import {
   adminMemberGenderLabel,
   fetchAdminMemberDetail,
@@ -77,17 +78,7 @@ export default async function MemberDetailPage({
     <div>
       <div className="flex items-center justify-between gap-1 text-xs px-2 bg-slate-400 py-1">
         <ListButton href="/member" />
-        <div className="flex gap-1">
-          <button type="button" className="bg-blue-500 text-white px-2 py-1 rounded-md">
-            닉네임 변경
-          </button>
-          <button type="button" className="bg-purple-500 text-white px-2 py-1 rounded-md">
-            코멘트 변경
-          </button>
-          <button type="button" className="bg-red-500 text-white px-2 py-1 rounded-md ">
-            정지
-          </button>
-        </div>
+        <MemberAdminSanitizeBar memberId={m.memberId} />
       </div>
       <div>
         <div className="flex items-center justify-center bg-slate-300 py-1">

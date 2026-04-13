@@ -138,6 +138,17 @@ export function buildAdminMemberDetailUpstreamUrl(memberId: number): string {
   return new URL(`/api/v1/admin/members/${memberId}`, root).toString();
 }
 
+export type AdminMemberSanitizeField = "nickname" | "comment" | "bio";
+
+export function buildAdminMemberSanitizeUpstreamUrl(
+  memberId: number,
+  field: AdminMemberSanitizeField,
+): string {
+  const base = process.env.ADMIN_API_BASE_URL ?? "http://127.0.0.1:8080";
+  const root = base.endsWith("/") ? base : `${base}/`;
+  return new URL(`/api/v1/admin/members/${memberId}/${field}`, root).toString();
+}
+
 export function buildAdminMembersUpstreamUrl(params: {
   type: AdminMemberSearchType;
   keyword: string;
