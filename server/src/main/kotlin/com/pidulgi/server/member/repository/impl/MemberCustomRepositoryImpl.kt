@@ -273,8 +273,8 @@ class MemberCustomRepositoryImpl(
 
         val keywordCondition = when (normalizedType) {
             "UUID" -> "AND m.uuid ILIKE :keyword"
-            "NICKNAME" -> "AND m.nickname ILIKE :keyword"
             "PHONE" -> "AND m.phone_number ILIKE :keyword"
+            "NICKNAME" -> "AND m.nickname ILIKE :keyword"
             else -> throw CustomException("지원하지 않는 검색 유형입니다. ($type)")
         }
 

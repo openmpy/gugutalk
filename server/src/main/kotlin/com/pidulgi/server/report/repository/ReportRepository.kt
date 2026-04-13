@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
-interface ReportRepository : JpaRepository<Report, Long> {
+interface ReportRepository : JpaRepository<Report, Long>, ReportCustomRepository {
 
     @Query(
         value = """
