@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   adminMembersProxyQuery,
   formatAdminMemberUpdatedAt,
@@ -33,6 +33,15 @@ export default function MemberListLoadMore({
   const [hasNext, setHasNext] = useState(initial.hasNext);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setItems(initial.payload);
+    setNextId(initial.nextId);
+    setNextDateAt(initial.nextDateAt);
+    setHasNext(initial.hasNext);
+    setLoadError(null);
+    setLoading(false);
+  }, [initial.payload, initial.nextId, initial.nextDateAt, initial.hasNext]);
 
   async function loadMore() {
     if (nextId == null || nextDateAt == null || loading) return;
