@@ -8,12 +8,18 @@ import com.pidulgi.server.admin.service.extension.toAdminGetMemberResponse
 import com.pidulgi.server.admin.service.extension.toAdminGetReportResponse
 import com.pidulgi.server.admin.service.query.AdminGetMembersQuery
 import com.pidulgi.server.admin.service.query.AdminGetReportsQuery
+import com.pidulgi.server.auth.dto.request.LoginRequest
+import com.pidulgi.server.auth.dto.response.LoginResponse
+import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
+import com.pidulgi.server.common.auth.JwtProvider
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.common.s3.S3Service
 import com.pidulgi.server.member.dto.response.MemberImageResponse
 import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.type.ImageType
+import com.pidulgi.server.member.entity.type.MemberRole
+import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.service.extension.toResponses
@@ -24,10 +30,14 @@ import com.pidulgi.server.report.entity.type.ReportStatus
 import com.pidulgi.server.report.repository.ReportImageRepository
 import com.pidulgi.server.report.repository.ReportRepository
 import com.pidulgi.server.report.service.extension.toResponses
+import org.apache.hc.client5.http.auth.InvalidCredentialsException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -43,7 +53,11 @@ class AdminService(
     private val reportRepository: ReportRepository,
     private val reportImageRepository: ReportImageRepository,
     private val s3Service: S3Service,
+    private val redisTemplate: StringRedisTemplate,
+    private val jwtProvider: JwtProvider,
 ) {
+
+    private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
 
     @Transactional(readOnly = true)
     fun getMembers(query: AdminGetMembersQuery): CursorResponse<AdminGetMemberResponse> {
@@ -204,6 +218,34 @@ class AdminService(
 
         val reportStatus = ReportStatus.from(status)
         report.updateStatus(reportStatus)
+    }
+
+    @Transactional(readOnly = true)
+    fun login(request: LoginRequest): LoginResponse {
+        val memberPhoneNumber = MemberPhoneNumber(request.phoneNumber)
+
+        val member = (memberRepository.findByPhoneNumber(memberPhoneNumber)
+            ?: throw CustomException("다시 한번 확인해주시길 바랍니다."))
+
+        if (!passwordEncoder.matches(request.password, member.password.value)) {
+            throw InvalidCredentialsException("다시 한번 확인해주시길 바랍니다.")
+        }
+
+        if (member.role != MemberRole.ADMIN) {
+            throw CustomException("관리자 계정이 아닙니다.")
+        }
+
+        val accessToken = jwtProvider.generateAccessToken(member.id, member.role)
+        val refreshToken = jwtProvider.generateRefreshToken(member.id)
+
+        val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
+        redisTemplate.opsForValue().set(refreshTokenKey, member.id.toString())
+
+        return LoginResponse(
+            member.id,
+            accessToken,
+            refreshToken,
+        )
     }
 
     private fun findMember(memberId: Long): Member = (memberRepository.findByIdOrNull(memberId)

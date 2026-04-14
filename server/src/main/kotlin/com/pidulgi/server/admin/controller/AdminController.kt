@@ -7,6 +7,8 @@ import com.pidulgi.server.admin.dto.response.AdminGetReportResponse
 import com.pidulgi.server.admin.service.AdminService
 import com.pidulgi.server.admin.service.query.AdminGetMembersQuery
 import com.pidulgi.server.admin.service.query.AdminGetReportsQuery
+import com.pidulgi.server.auth.dto.request.LoginRequest
+import com.pidulgi.server.auth.dto.response.LoginResponse
 import com.pidulgi.server.common.dto.CursorResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -103,5 +105,13 @@ class AdminController(
     ): ResponseEntity<Unit> {
         adminService.updateReport(reportId, status)
         return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/v1/admin/login")
+    fun login(
+        @RequestBody request: LoginRequest
+    ): ResponseEntity<LoginResponse> {
+        val response = adminService.login(request)
+        return ResponseEntity.ok(response)
     }
 }
