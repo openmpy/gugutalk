@@ -6,6 +6,7 @@ enum APIError: Error {
     case decoding
     case network
     case token
+    case ban
     case unknown
 }
 
@@ -20,6 +21,8 @@ extension APIError: LocalizedError {
             return "네트워크 오류"
         case .token:
             return "토큰 오류"
+        case .ban:
+            return "정지 상태"
         case .unknown:
             return "알 수 없는 오류"
         }

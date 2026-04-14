@@ -4,7 +4,6 @@ final class MemberImageService {
 
     static let shared = MemberImageService()
 
-    let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
     func getPresignedUrls(
@@ -13,7 +12,7 @@ final class MemberImageService {
         let url = "\(baseURL)/v1/members/images/presigned"
         let body = MemberGetPresignedUrlsRequest(images: images)
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .post,
             parameters: body,
@@ -27,7 +26,7 @@ final class MemberImageService {
     ) async throws -> MemberGetPrivateImagesResponse {
         let url = "\(baseURL)/v1/members/private-images/\(granterId)"
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get,
         )

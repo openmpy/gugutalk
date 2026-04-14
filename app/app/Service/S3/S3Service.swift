@@ -5,7 +5,6 @@ final class S3Service {
 
     static let shared = S3Service()
 
-    let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
     func uploadImageToS3(
@@ -14,7 +13,7 @@ final class S3Service {
     ) async throws {
         let headers: HTTPHeaders = ["Content-Type": "image/jpeg"]
 
-        return try await AF.upload(
+        return try await APISession.plain.upload(
             data,
             to: presigned.url,
             method: .put,
@@ -29,7 +28,7 @@ final class S3Service {
     ) async throws {
         let headers: HTTPHeaders = ["Content-Type": "video/quicktime"]
 
-        return try await AF.upload(
+        return try await APISession.plain.upload(
             fileURL,
             to: presigned.url,
             method: .put,

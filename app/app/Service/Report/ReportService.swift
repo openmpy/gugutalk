@@ -4,7 +4,6 @@ final class ReportService {
 
     static let shared = ReportService()
 
-    let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
     func create(
@@ -20,7 +19,7 @@ final class ReportService {
             reason: reason
         )
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .post,
             parameters: body,

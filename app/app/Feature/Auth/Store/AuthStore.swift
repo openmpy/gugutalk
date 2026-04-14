@@ -10,6 +10,8 @@ final class AuthStore {
     private let accessTokenKey = "com.openmpy.app.token.access"
     private let refreshTokenKey = "com.openmpy.app.token.refresh"
 
+    private var _cachedUUID: String?
+
     private init() {}
     
     var memberId: Int64? {
@@ -27,8 +29,14 @@ final class AuthStore {
     }
 
     var uuid: String? {
-        get { readFromKeychain(key: uuidKey) }
+        get {
+            if let cached = _cachedUUID { return cached }
+            let value = readFromKeychain(key: uuidKey)
+            _cachedUUID = value
+            return value
+        }
         set {
+            _cachedUUID = newValue
             if let uuid = newValue {
                 saveToKeychain(key: uuidKey, value: uuid)
             } else {

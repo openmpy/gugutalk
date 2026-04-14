@@ -1,8 +1,10 @@
 package com.pidulgi.server.common.config
 
+import com.pidulgi.server.ban.repository.BanRepository
 import com.pidulgi.server.common.auth.AdminInterceptor
 import com.pidulgi.server.common.auth.AuthenticationPrincipalArgumentResolver
 import com.pidulgi.server.common.auth.JwtProvider
+import com.pidulgi.server.common.auth.MemberInterceptor
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
@@ -31,10 +33,14 @@ class WebMvcConfig(
     @Value("\${cors.max-age}")
     private val maxAge: Long,
 
+    private val banRepository: BanRepository,
     private val jwtProvider: JwtProvider,
 ) : WebMvcConfigurer {
 
     override fun addInterceptors(registry: InterceptorRegistry) {
+        registry.addInterceptor(MemberInterceptor(banRepository))
+            .addPathPatterns("/api/**")
+
         registry.addInterceptor(AdminInterceptor(jwtProvider))
             .addPathPatterns("/api/*/admin/**")
             .excludePathPatterns("/api/*/admin/login")

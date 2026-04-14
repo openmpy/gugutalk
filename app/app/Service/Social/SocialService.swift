@@ -3,14 +3,13 @@ import Alamofire
 final class SocialService {
     
     static let shared = SocialService()
-    
-    let session = Session(interceptor: AuthInterceptor())
+
     let baseURL = "http://192.168.0.15:8080/api"
     
     func like(memberId: Int64) async throws -> LikeCountResponse {
         let url = "\(baseURL)/v1/social/likes/\(memberId)"
         
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .post
         ).decodingWithErrorHandling(LikeCountResponse.self)
@@ -19,7 +18,7 @@ final class SocialService {
     func unlike(memberId: Int64) async throws -> LikeCountResponse {
         let url = "\(baseURL)/v1/social/likes/\(memberId)"
         
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .delete
         ).decodingWithErrorHandling(LikeCountResponse.self)
@@ -28,7 +27,7 @@ final class SocialService {
     func block(memberId: Int64) async throws {
         let url = "\(baseURL)/v1/social/blocks/\(memberId)"
         
-        try await session.request(
+        try await APISession.authenticated.request(
             url,
             method: .post
         ).validateWithErrorHandling()
@@ -37,7 +36,7 @@ final class SocialService {
     func unblock(memberId: Int64) async throws {
         let url = "\(baseURL)/v1/social/blocks/\(memberId)"
         
-        try await session.request(
+        try await APISession.authenticated.request(
             url,
             method: .delete
         )
@@ -57,7 +56,7 @@ final class SocialService {
             params["cursorId"] = cursorId
         }
         
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get,
             parameters: params.compactMapValues { $0 }
@@ -78,7 +77,7 @@ final class SocialService {
             params["cursorId"] = cursorId
         }
         
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get,
             parameters: params.compactMapValues { $0 }

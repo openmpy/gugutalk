@@ -4,7 +4,6 @@ final class RecentService {
 
     static let shared = RecentService()
 
-    let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
     func getRecentMembers(
@@ -24,7 +23,7 @@ final class RecentService {
             params["cursorDate"] = cursorDateAt
         }
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get,
             parameters: params.compactMapValues { $0 }

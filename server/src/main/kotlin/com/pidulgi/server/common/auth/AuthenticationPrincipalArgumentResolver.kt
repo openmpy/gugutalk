@@ -29,10 +29,10 @@ class AuthenticationPrincipalArgumentResolver(
         val accessToken = servletRequest?.let { AuthenticationExtractor.extract(it) }
 
         if (accessToken == null || jwtProvider.isBlacklist(accessToken)) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "토큰에 접근할 수 없습니다.")
         }
         if (!jwtProvider.validateToken(accessToken)) {
-            throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.")
         }
         return jwtProvider.extractMemberId(accessToken)
     }

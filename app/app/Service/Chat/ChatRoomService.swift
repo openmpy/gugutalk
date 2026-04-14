@@ -4,7 +4,6 @@ final class ChatRoomService {
 
     static let shared = ChatRoomService()
 
-    let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
     func create(
@@ -12,7 +11,7 @@ final class ChatRoomService {
     ) async throws -> ChatRoomCreateResponse {
         let url = "\(baseURL)/v1/chat-rooms?targetId=\(targetId)"
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .post
         )
@@ -24,7 +23,7 @@ final class ChatRoomService {
     ) async throws {
         let url = "\(baseURL)/v1/chat-rooms/\(chatRoomId)"
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .delete
         )
@@ -48,7 +47,7 @@ final class ChatRoomService {
             params["cursorDate"] = cursorDateAt
         }
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get,
             parameters: params.compactMapValues { $0 }
@@ -73,7 +72,7 @@ final class ChatRoomService {
             params["cursorSimilarity"] = cursorSimilarity
         }
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get,
             parameters: params.compactMapValues { $0 }
@@ -86,7 +85,7 @@ final class ChatRoomService {
     ) async throws {
         let url = "\(baseURL)/v1/chat-rooms/\(chatRoomId)"
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .put
         )

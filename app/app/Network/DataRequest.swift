@@ -23,8 +23,24 @@ extension DataRequest {
             }
 
             if let statusCode = response.response?.statusCode {
-                if statusCode == 401 {
+                switch statusCode {
+                case 401:
                     throw APIError.token
+                case 423:
+                    let message = response.data
+                        .flatMap { try? JSONDecoder().decode(ErrorResponse.self, from: $0) }
+                        .map { $0.message } ?? "정지된 기기입니다."
+
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(
+                            name: .didDeviceBanned,
+                            object: nil,
+                            userInfo: ["message": message]
+                        )
+                    }
+                    throw APIError.ban
+                default:
+                    break
                 }
             }
 
@@ -56,8 +72,24 @@ extension DataRequest {
             }
 
             if let statusCode = response.response?.statusCode {
-                if statusCode == 401 {
+                switch statusCode {
+                case 401:
                     throw APIError.token
+                case 423:
+                    let message = response.data
+                        .flatMap { try? JSONDecoder().decode(ErrorResponse.self, from: $0) }
+                        .map { $0.message } ?? "정지된 기기입니다."
+
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(
+                            name: .didDeviceBanned,
+                            object: nil,
+                            userInfo: ["message": message]
+                        )
+                    }
+                    throw APIError.ban
+                default:
+                    break
                 }
             }
 

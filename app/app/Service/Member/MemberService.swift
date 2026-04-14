@@ -4,13 +4,12 @@ final class MemberService {
 
     static let shared = MemberService()
 
-    let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
     func getMember(memberId: Int64) async throws -> MemberGetResponse {
         let url = "\(baseURL)/v1/members/\(memberId)"
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get
         )
@@ -20,7 +19,7 @@ final class MemberService {
     func getMe() async throws -> MemberGetMeResponse {
         let url = "\(baseURL)/v1/members/me"
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get
         )
@@ -34,7 +33,7 @@ final class MemberService {
         let url = "\(baseURL)/v1/members/me"
         let body = MemberWithdrawRequest(accessToken: accessToken, refreshToken: refreshToken)
 
-        try await session.request(
+        try await APISession.authenticated.request(
             url,
             method: .delete,
             parameters: body,
@@ -47,7 +46,7 @@ final class MemberService {
         let url = "\(baseURL)/v1/members/me/bump"
         let body = MemberBumpRequest(latitude: latitude, longitude: longitude)
 
-        try await session.request(
+        try await APISession.authenticated.request(
             url,
             method: .put,
             parameters: body,
@@ -60,7 +59,7 @@ final class MemberService {
         let url = "\(baseURL)/v1/members/me/comment"
         let body: [String: String] = ["comment": comment]
 
-        try await session.request(
+        try await APISession.authenticated.request(
             url,
             method: .put,
             parameters: body,
@@ -72,7 +71,7 @@ final class MemberService {
     func updateProfile(request: MemberUpdateProfileRequest) async throws {
         let url = "\(baseURL)/v1/members/me/profile"
 
-        try await session.request(
+        try await APISession.authenticated.request(
             url,
             method: .put,
             parameters: request,
@@ -98,7 +97,7 @@ final class MemberService {
             params["cursorSimilarity"] = cursorSimilarity
         }
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get,
             parameters: params
@@ -109,7 +108,7 @@ final class MemberService {
     func getChatEnabled() async throws -> MemberGetChatEnabledResponse {
         let url = "\(baseURL)/v1/members/chat-enabled"
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get
         )
@@ -119,7 +118,7 @@ final class MemberService {
     func toggleChatEnabled() async throws -> MemberGetChatEnabledResponse {
         let url = "\(baseURL)/v1/members/chat-enabled"
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .put
         )

@@ -4,7 +4,6 @@ final class MessageImageService {
 
     static let shared = MessageImageService()
 
-    let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
     func getPresignedUrls(
@@ -14,7 +13,7 @@ final class MessageImageService {
         let url = "\(baseURL)/v1/chat-rooms/\(chatRoomId)/presigned"
         let body = MessageGetPresignedUrlsRequest(medias: medias)
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .post,
             parameters: body,

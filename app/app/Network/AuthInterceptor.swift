@@ -1,9 +1,7 @@
-import SwiftUI
+import Foundation
 import Alamofire
 
 final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
-
-    @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
 
     private var isRefreshing = false
     private var pendingRetries: [(RetryResult) -> Void] = []
@@ -31,13 +29,33 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
         dueTo error: Error,
         completion: @escaping (RetryResult) -> Void
     ) {
-        // 401이 아니면 재시도 안 함
-        guard let response = request.task?.response as? HTTPURLResponse, response.statusCode == 401 else {
+        guard let response = request.task?.response as? HTTPURLResponse else {
             completion(.doNotRetry)
             return
         }
 
-        // refreshToken 없으면 재시도 안 함
+        switch response.statusCode {
+        case 401:
+            break
+        case 423:
+            let message: String
+            if let dataRequest = request as? DataRequest,
+               let data = dataRequest.data,
+               let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
+                message = errorResponse.message
+            } else {
+                message = "정지된 기기입니다."
+            }
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .didDeviceBanned, object: nil, userInfo: ["message": message])
+            }
+            completion(.doNotRetryWithError(APIError.ban))
+            return
+        default:
+            completion(.doNotRetry)
+            return
+        }
+
         guard let refreshToken = AuthStore.shared.refreshToken else {
             completion(.doNotRetryWithError(APIError.token))
             return
@@ -69,24 +87,24 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
                     encoder: JSONParameterEncoder.default
                 ).decodingWithErrorHandling(RotateTokenResponse.self)
 
-                // 새 토큰 저장
                 AuthStore.shared.accessToken = response.accessToken
                 AuthStore.shared.refreshToken = response.refreshToken
                 StompManager.shared.reconnect(accessToken: response.accessToken)
                 self.resolvePendingRetries(with: .retry)
             } catch {
-                isLoggedIn = false
                 AuthStore.shared.clearAll()
                 self.resolvePendingRetries(with: .doNotRetryWithError(APIError.token))
+
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .didSessionExpire, object: nil)
+                }
             }
         }
     }
 
     private func resolvePendingRetries(with result: RetryResult) {
         lock.lock()
-
         let retries = pendingRetries
-
         pendingRetries.removeAll()
         isRefreshing = false
         lock.unlock()

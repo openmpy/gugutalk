@@ -4,7 +4,6 @@ final class MessageService {
 
     static let shared = MessageService()
 
-    let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
     func gets(
@@ -23,7 +22,7 @@ final class MessageService {
             params["cursorDate"] = cursorDateAt
         }
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get,
             parameters: params.compactMapValues { $0 }
@@ -36,7 +35,7 @@ final class MessageService {
     ) async throws -> MessageGetMemberResponse {
         let url = "\(baseURL)/v1/chat-rooms/\(chatRoomId)/member"
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get,
         )

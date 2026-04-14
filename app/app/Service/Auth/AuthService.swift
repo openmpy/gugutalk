@@ -3,8 +3,7 @@ import Alamofire
 final class AuthService {
     
     static let shared = AuthService()
-    
-    let session = Session(interceptor: AuthInterceptor())
+
     let baseURL = "http://192.168.0.15:8080/api"
     
     func sendCodeVerificationCode(
@@ -12,7 +11,7 @@ final class AuthService {
     ) async throws {
         let url = "\(baseURL)/v1/auth/phone/send?phoneNumber=\(phoneNumber)"
         
-        return try await AF.request(
+        return try await APISession.plain.request(
             url,
             method: .post
         )
@@ -35,7 +34,7 @@ final class AuthService {
             gender: gender
         )
         
-        return try await AF.request(
+        return try await APISession.plain.request(
             url,
             method: .post,
             parameters: body,
@@ -58,7 +57,7 @@ final class AuthService {
             bio: bio
         )
         
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .put,
             parameters: body,
@@ -77,7 +76,7 @@ final class AuthService {
             birthYear: birthYear
         )
         
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .post,
             parameters: body,
@@ -110,7 +109,7 @@ final class AuthService {
     ) async throws {
         let url = "\(baseURL)/v1/auth/logout?refreshToken=\(refreshToken)"
         
-        try await session.request(
+        try await APISession.authenticated.request(
             url,
             method: .delete
         )
@@ -127,7 +126,7 @@ final class AuthService {
             refreshToken: refreshToken
         )
 
-        return try await AF.request(
+        return try await APISession.plain.request(
             url,
             method: .post,
             parameters: body,

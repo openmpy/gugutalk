@@ -4,7 +4,6 @@ final class LocationService {
 
     static let shared = LocationService()
 
-    let session = Session(interceptor: AuthInterceptor())
     let baseURL = "http://192.168.0.15:8080/api"
 
     func getLocationMembers(
@@ -24,7 +23,7 @@ final class LocationService {
             params["cursorDistance"] = cursorDistance
         }
 
-        return try await session.request(
+        return try await APISession.authenticated.request(
             url,
             method: .get,
             parameters: params.compactMapValues { $0 }

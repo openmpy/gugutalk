@@ -2,14 +2,14 @@ package com.pidulgi.server.report.entity.type
 
 import com.pidulgi.server.common.exception.CustomException
 
-enum class ReportType {
+enum class ReportType(val text: String) {
 
-    ABUSE,
-    SPAM,
-    MINOR,
-    SEXUAL,
-    FAKE,
-    ETC;
+    ABUSE("욕설 / 비방"),
+    SPAM("스팸 / 광고"),
+    MINOR("미성년자"),
+    SEXUAL("음란물"),
+    FAKE("도용"),
+    ETC("기타");
 
     companion object {
         fun from(value: String): ReportType {
