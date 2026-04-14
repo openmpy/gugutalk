@@ -205,7 +205,7 @@ class AuthService(
         )
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun login(request: LoginRequest): LoginResponse {
         val memberPhoneNumber = MemberPhoneNumber(request.phoneNumber)
 
@@ -221,6 +221,8 @@ class AuthService(
 
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
         redisTemplate.opsForValue().set(refreshTokenKey, member.id.toString())
+
+        member.updateUuid(MemberUuid(request.uuid))
 
         return LoginResponse(
             member.id,

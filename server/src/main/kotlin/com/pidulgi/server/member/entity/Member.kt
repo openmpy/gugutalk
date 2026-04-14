@@ -24,7 +24,7 @@ class Member(
         name = "value",
         column = Column(name = "uuid", nullable = false)
     )
-    val uuid: MemberUuid,
+    var uuid: MemberUuid,
 
     @Embedded
     @AttributeOverride(
@@ -108,6 +108,10 @@ class Member(
     fun bump(location: Point?) {
         this.location = location
         this.updatedAt = LocalDateTime.now()
+    }
+
+    fun updateUuid(uuid: MemberUuid) {
+        this.uuid = uuid
     }
 
     fun updateComment(comment: MemberComment) {

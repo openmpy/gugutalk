@@ -20,6 +20,7 @@ import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.entity.type.MemberRole
 import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
+import com.pidulgi.server.member.entity.vo.MemberUuid
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.service.extension.toResponses
@@ -220,7 +221,7 @@ class AdminService(
         report.updateStatus(reportStatus)
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun login(request: LoginRequest): LoginResponse {
         val memberPhoneNumber = MemberPhoneNumber(request.phoneNumber)
 
@@ -240,6 +241,8 @@ class AdminService(
 
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
         redisTemplate.opsForValue().set(refreshTokenKey, member.id.toString())
+
+        member.updateUuid(MemberUuid(request.uuid))
 
         return LoginResponse(
             member.id,

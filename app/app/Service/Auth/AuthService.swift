@@ -86,11 +86,13 @@ final class AuthService {
     }
     
     func login(
+        uuid: String,
         phoneNumber: String,
         password: String
     ) async throws -> LoginResponse {
         let url = "\(baseURL)/v1/auth/login"
         let body = LoginRequest(
+            uuid: uuid,
             phoneNumber: phoneNumber,
             password: password
         )

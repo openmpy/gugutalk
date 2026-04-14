@@ -25,6 +25,7 @@ final class LoginViewModel: ObservableObject {
         defer { isLoading = false }
 
         let response = try await authService.login(
+            uuid: AuthStore.shared.uuid ?? UUID().uuidString,
             phoneNumber: phoneNumber,
             password: password
         )
