@@ -140,6 +140,21 @@ class AuthService(
         val password = passwordEncoder.encode(request.password)
             ?: throw CustomException("비밀번호 암호화에 실패했습니다.")
 
+        // 정지 번호
+        banRepository.findByPhoneNumber(memberPhoneNumber.value)?.let {
+            throw ResponseStatusException(
+                HttpStatus.LOCKED,
+                """
+                    번호: ${it.uuid}
+                    유형: ${it.type.text}
+                    사유: ${it.reason ?: "-"}
+                    해제일: ${it.expiredAt.format(DATE_FORMATTER)}
+                    
+                    문의: $SUPPORT_EMAIL
+                """.trimIndent()
+            )
+        }
+
         val member = Member(
             uuid = MemberUuid(request.uuid),
             phoneNumber = memberPhoneNumber,
