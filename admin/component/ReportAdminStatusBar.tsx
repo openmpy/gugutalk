@@ -87,7 +87,7 @@ export default function ReportAdminStatusBar({
         onClick={() => setReportOpen(true)}
         className="rounded-md bg-red-500 px-2 py-1 text-white disabled:opacity-50"
       >
-        신고
+        정지
       </button>
     </div>
   );
