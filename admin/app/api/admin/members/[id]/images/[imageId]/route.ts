@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildAdminMemberDeleteImageUpstreamUrl } from "@/lib/members";
+import { adminUpstreamInit } from "@/lib/adminUpstream";
 
 export async function DELETE(
   _req: NextRequest,
@@ -13,6 +14,6 @@ export async function DELETE(
   }
 
   const url = buildAdminMemberDeleteImageUpstreamUrl(memberId, imgId);
-  const res = await fetch(url, { method: "DELETE", cache: "no-store" });
+  const res = await fetch(url, await adminUpstreamInit({ method: "DELETE" }));
   return new NextResponse(null, { status: res.status });
 }

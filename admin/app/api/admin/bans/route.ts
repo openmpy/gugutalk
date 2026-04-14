@@ -4,15 +4,18 @@ import {
   buildAdminBansUpstreamUrl,
   normalizeAdminBanType,
 } from "@/lib/bans";
+import { adminUpstreamInit } from "@/lib/adminUpstream";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
-  const res = await fetch(buildAdminBanAddUpstreamUrl(), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body,
-    cache: "no-store",
-  });
+  const res = await fetch(
+    buildAdminBanAddUpstreamUrl(),
+    await adminUpstreamInit({
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    }),
+  );
   const text = await res.text();
   return new NextResponse(text.length > 0 ? text : null, {
     status: res.status,
@@ -38,7 +41,7 @@ export async function GET(req: NextRequest) {
     ...(cursorId && cursorDate ? { cursorId, cursorDate } : {}),
   });
 
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(url, await adminUpstreamInit());
   const body = await res.text();
   return new NextResponse(body, {
     status: res.status,

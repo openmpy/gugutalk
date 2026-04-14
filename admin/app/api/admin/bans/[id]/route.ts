@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { adminUpstreamInit } from "@/lib/adminUpstream";
 
 function upstreamBanUrl(id: string) {
   const base = process.env.ADMIN_API_BASE_URL ?? "http://127.0.0.1:8080";
@@ -14,7 +15,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> },
 ) {
   const { id } = await ctx.params;
-  const res = await fetch(upstreamBanUrl(id), { cache: "no-store" });
+  const res = await fetch(upstreamBanUrl(id), await adminUpstreamInit());
   const body = await res.text();
   return new NextResponse(body.length > 0 ? body : null, {
     status: res.status,
@@ -29,9 +30,9 @@ export async function DELETE(
   ctx: { params: Promise<{ id: string }> },
 ) {
   const { id } = await ctx.params;
-  const res = await fetch(upstreamBanUrl(id), {
-    method: "DELETE",
-    cache: "no-store",
-  });
+  const res = await fetch(
+    upstreamBanUrl(id),
+    await adminUpstreamInit({ method: "DELETE" }),
+  );
   return new NextResponse(null, { status: res.status });
 }

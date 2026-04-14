@@ -1,10 +1,10 @@
 import MemberListLoadMore from "@/component/MemberListLoadMore";
 import {
-  fetchAdminMembers,
   normalizeAdminMemberGender,
   normalizeAdminMemberType,
   type AdminMemberSearchType,
 } from "@/lib/members";
+import { fetchAdminMembers } from "@/lib/server/memberFetches";
 import Link from "next/link";
 import { IoSearch } from "react-icons/io5";
 

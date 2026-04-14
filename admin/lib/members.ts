@@ -199,28 +199,3 @@ export function adminMembersProxyQuery(params: {
   }
   return q.toString();
 }
-
-export async function fetchAdminMembers(params: {
-  type: AdminMemberSearchType;
-  keyword: string;
-  gender: "ALL" | "MALE" | "FEMALE";
-  cursorId?: string;
-  cursorDate?: string;
-  size?: number;
-}): Promise<{ ok: true; data: CursorResponse<AdminGetMemberResponse> } | { ok: false; status: number }> {
-  const res = await fetch(buildAdminMembersUpstreamUrl(params), { cache: "no-store" });
-  if (!res.ok) return { ok: false, status: res.status };
-
-  const data = (await res.json()) as CursorResponse<AdminGetMemberResponse>;
-  return { ok: true, data };
-}
-
-export async function fetchAdminMemberDetail(
-  memberId: number,
-): Promise<{ ok: true; data: AdminGetMemberDetailResponse } | { ok: false; status: number }> {
-  const res = await fetch(buildAdminMemberDetailUpstreamUrl(memberId), { cache: "no-store" });
-  if (!res.ok) return { ok: false, status: res.status };
-
-  const data = (await res.json()) as AdminGetMemberDetailResponse;
-  return { ok: true, data };
-}

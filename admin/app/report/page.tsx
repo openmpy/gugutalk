@@ -1,11 +1,11 @@
 import ReportListLoadMore from "@/component/ReportListLoadMore";
 import {
-  fetchAdminReports,
   normalizeAdminReportStatus,
   normalizeAdminReportType,
   type AdminReportListStatus,
   type AdminReportSearchType,
 } from "@/lib/reports";
+import { fetchAdminReports } from "@/lib/server/reportFetches";
 import Link from "next/link";
 import { IoSearch } from "react-icons/io5";
 

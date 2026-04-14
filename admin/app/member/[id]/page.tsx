@@ -6,10 +6,10 @@ import MemberAdminImageDeleteButton from "@/component/MemberAdminImageDeleteButt
 import MemberAdminSanitizeBar from "@/component/MemberAdminSanitizeBar";
 import {
   adminMemberGenderLabel,
-  fetchAdminMemberDetail,
   formatAdminMemberDateTime,
   type AdminPointTransactionResponse,
 } from "@/lib/members";
+import { fetchAdminMemberDetail } from "@/lib/server/memberFetches";
 
 function PointRow({ tx }: { tx: AdminPointTransactionResponse }) {
   const isEarn = tx.type === "EARN";

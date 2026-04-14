@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildAdminMemberSanitizeUpstreamUrl } from "@/lib/members";
+import { adminUpstreamInit } from "@/lib/adminUpstream";
 
 export async function PUT(
   _req: NextRequest,
@@ -12,6 +13,6 @@ export async function PUT(
   }
 
   const url = buildAdminMemberSanitizeUpstreamUrl(memberId, "nickname");
-  const res = await fetch(url, { method: "PUT", cache: "no-store" });
+  const res = await fetch(url, await adminUpstreamInit({ method: "PUT" }));
   return new NextResponse(null, { status: res.status });
 }

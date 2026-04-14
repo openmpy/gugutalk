@@ -1,6 +1,7 @@
 import BanAddPanel from "@/component/BanAddPanel";
 import BanListLoadMore from "@/component/BanListLoadMore";
-import { fetchAdminBans, normalizeAdminBanType } from "@/lib/bans";
+import { normalizeAdminBanType } from "@/lib/bans";
+import { fetchAdminBans } from "@/lib/server/banFetches";
 import { IoSearch } from "react-icons/io5";
 
 function firstString(v: string | string[] | undefined): string | undefined {

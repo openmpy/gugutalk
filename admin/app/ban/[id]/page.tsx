@@ -1,6 +1,6 @@
 import BanRemoveButton from "@/component/BanRemoveButton";
 import ListButton from "@/component/ListButton";
-import { fetchAdminBanDetail } from "@/lib/bans";
+import { fetchAdminBanDetail } from "@/lib/server/banFetches";
 import { formatAdminMemberDateTime } from "@/lib/members";
 import { formatAdminReportTypeLabel } from "@/lib/reports";
 import { notFound } from "next/navigation";

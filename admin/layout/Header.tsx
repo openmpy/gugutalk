@@ -1,3 +1,4 @@
+import AdminLogoutButton from "@/component/AdminLogoutButton";
 import Link from "next/link";
 
 export default function Header() {
@@ -8,6 +9,7 @@ export default function Header() {
         <Link href="/member">회원</Link>
         <Link href="/report">신고</Link>
         <Link href="/ban">정지</Link>
+        <AdminLogoutButton />
       </div>
     </header>
   );

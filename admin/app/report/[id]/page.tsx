@@ -1,12 +1,12 @@
 import ListButton from "@/component/ListButton";
 import ReportAdminStatusBar from "@/component/ReportAdminStatusBar";
-import { fetchAdminBanByReportedUuid } from "@/lib/bans";
 import { formatAdminMemberDateTime } from "@/lib/members";
 import {
-  fetchAdminReportDetail,
   formatAdminReportStatusLabel,
   formatAdminReportTypeLabel,
 } from "@/lib/reports";
+import { fetchAdminBanByReportedUuid } from "@/lib/server/banFetches";
+import { fetchAdminReportDetail } from "@/lib/server/reportFetches";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";

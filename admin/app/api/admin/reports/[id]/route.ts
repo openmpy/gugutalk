@@ -4,6 +4,7 @@ import {
   buildAdminReportUpdateUpstreamUrl,
   normalizeAdminReportStatus,
 } from "@/lib/reports";
+import { adminUpstreamInit } from "@/lib/adminUpstream";
 
 export async function GET(
   _req: NextRequest,
@@ -16,7 +17,7 @@ export async function GET(
   }
 
   const url = buildAdminReportDetailUpstreamUrl(reportId);
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(url, await adminUpstreamInit());
   const body = await res.text();
   return new NextResponse(body, {
     status: res.status,
@@ -43,6 +44,6 @@ export async function PUT(
 
   const status = normalizeAdminReportStatus(raw);
   const url = buildAdminReportUpdateUpstreamUrl(reportId, status);
-  const res = await fetch(url, { method: "PUT", cache: "no-store" });
+  const res = await fetch(url, await adminUpstreamInit({ method: "PUT" }));
   return new NextResponse(null, { status: res.status });
 }
