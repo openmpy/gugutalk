@@ -16,17 +16,10 @@ extension DataRequest {
         case .failure(let error):
             print("[DEBUG] Decoding failed with error: \(error)")
 
-            if let data = response.data,
-               let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
-                print("[DEBUG] Server error response: \(errorResponse)")
-                throw APIError.server(message: errorResponse.message)
-            }
-
             if let statusCode = response.response?.statusCode {
-                switch statusCode {
-                case 401:
+                if statusCode == 401 {
                     throw APIError.token
-                case 423:
+                } else if statusCode == 423 {
                     let message = response.data
                         .flatMap { try? JSONDecoder().decode(ErrorResponse.self, from: $0) }
                         .map { $0.message } ?? "정지된 기기입니다."
@@ -39,16 +32,17 @@ extension DataRequest {
                         )
                     }
                     throw APIError.ban
-                default:
-                    break
                 }
             }
-
+            if let data = response.data,
+               let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
+                print("[DEBUG] Server error response: \(errorResponse)")
+                throw APIError.server(message: errorResponse.message)
+            }
             if response.error?.isSessionTaskError == true {
                 print("[DEBUG] Network/session error detected")
                 throw APIError.network
             }
-
             throw APIError.unknown
         }
     }
@@ -65,17 +59,10 @@ extension DataRequest {
         case .failure(let error):
             print("[DEBUG] Validation failed with error: \(error)")
 
-            if let data = response.data,
-               let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
-                print("[DEBUG] Server error response: \(errorResponse)")
-                throw APIError.server(message: errorResponse.message)
-            }
-
             if let statusCode = response.response?.statusCode {
-                switch statusCode {
-                case 401:
+                if statusCode == 401 {
                     throw APIError.token
-                case 423:
+                } else if statusCode == 423 {
                     let message = response.data
                         .flatMap { try? JSONDecoder().decode(ErrorResponse.self, from: $0) }
                         .map { $0.message } ?? "정지된 기기입니다."
@@ -88,11 +75,13 @@ extension DataRequest {
                         )
                     }
                     throw APIError.ban
-                default:
-                    break
                 }
             }
-
+            if let data = response.data,
+               let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
+                print("[DEBUG] Server error response: \(errorResponse)")
+                throw APIError.server(message: errorResponse.message)
+            }
             if let err = response.error, err.isSessionTaskError {
                 print("[DEBUG] Network/session error detected")
                 throw APIError.network

@@ -49,7 +49,7 @@ struct BlockListView: View {
                                 do {
                                     try await vm.remove(memberId: it.memberId)
                                 } catch {
-                                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                                    ToastManager.shared.show(error)
                                 }
                             }
                         }

@@ -109,7 +109,7 @@ struct ChatView: View {
                                     try await vm.delete(chatRoomId: it.chatRoomId)
                                     ToastManager.shared.show("채팅방을 삭제하셨습니다.")
                                 } catch {
-                                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                                    ToastManager.shared.show(error)
                                 }
                             }
                         } label: {

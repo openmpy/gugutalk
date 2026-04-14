@@ -18,24 +18,23 @@ class MemberInterceptor(
         response: HttpServletResponse,
         handler: Any
     ): Boolean {
-        val deviceId = request.getHeader("X-Device-Id")
+        val deviceId = request.getHeader("X-Device-Id") ?: return true
+        println("Device ID is $deviceId")
 
-        if (deviceId != null) {
-            banRepository.findByUuid(deviceId)?.let {
-                val formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")
+        banRepository.findByUuid(deviceId)?.let {
+            val formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")
 
-                throw ResponseStatusException(
-                    HttpStatus.LOCKED,
-                    """
-                    번호: ${it.uuid}
-                    유형: ${it.type.text}
-                    사유: ${it.reason ?: "-"}
-                    해제일: ${it.expiredAt.format(formatter)}
-                    
-                    문의: gugutalk@proton.me
-                """.trimIndent()
-                )
-            }
+            throw ResponseStatusException(
+                HttpStatus.LOCKED,
+                """
+                        번호: ${it.uuid}
+                        유형: ${it.type.text}
+                        사유: ${it.reason ?: "-"}
+                        해제일: ${it.expiredAt.format(formatter)}
+                        
+                        문의: gugutalk@proton.me
+                    """.trimIndent()
+            )
         }
         return true
     }

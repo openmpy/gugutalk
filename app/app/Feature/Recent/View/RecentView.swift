@@ -68,7 +68,7 @@ struct RecentView: View {
                             ToastManager.shared.show("코멘트가 작성되었습니다.")
                             saveComment = vm.comment
                         } catch {
-                            ToastManager.shared.show(error.localizedDescription, type: .error)
+                            ToastManager.shared.show(error)
                         }
                     }
                 }

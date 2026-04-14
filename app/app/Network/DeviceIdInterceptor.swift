@@ -2,6 +2,7 @@ import Foundation
 import Alamofire
 
 final class DeviceIdInterceptor: RequestInterceptor, @unchecked Sendable {
+    
     func adapt(
         _ urlRequest: URLRequest,
         for session: Session,

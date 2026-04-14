@@ -55,7 +55,7 @@ struct SignupView: View {
 
                             ToastManager.shared.show("인증 번호가 전송되었습니다.")
                         } catch {
-                            ToastManager.shared.show(error.localizedDescription, type: .error)
+                            ToastManager.shared.show(error)
                         }
                     }
                 } label: {
@@ -142,7 +142,7 @@ struct SignupView: View {
                     ToastManager.shared.show("회원가입이 완료되었습니다.")
                     goActivate = true
                 } catch {
-                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                    ToastManager.shared.show(error)
                 }
             }
         } label: {

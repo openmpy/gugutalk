@@ -29,7 +29,7 @@ struct ReportView: View {
                         ToastManager.shared.show("신고가 접수되었습니다.")
                         dismiss()
                     } catch {
-                        ToastManager.shared.show(error.localizedDescription, type: .error)
+                        ToastManager.shared.show(error)
                     }
                 }
             } label: {

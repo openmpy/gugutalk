@@ -81,7 +81,7 @@ struct MemberProfileView: View {
                         try await vm.createChatRoom(targetId: memberId, content: vm.message)
                         ToastManager.shared.show("쪽지가 전송되었습니다.")
                     } catch {
-                        ToastManager.shared.show(error.localizedDescription, type: .error)
+                        ToastManager.shared.show(error)
                     }
                 }
             }
@@ -158,7 +158,7 @@ struct MemberProfileView: View {
                     try await vm.getPrivateImages(granterId: memberId)
                     goPrivateImage = true
                 } catch {
-                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                    ToastManager.shared.show(error)
                 }
             }
         } label: {

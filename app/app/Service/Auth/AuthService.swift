@@ -95,7 +95,7 @@ final class AuthService {
             password: password
         )
         
-        return try await AF.request(
+        return try await APISession.plain.request(
             url,
             method: .post,
             parameters: body,

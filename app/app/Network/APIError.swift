@@ -11,6 +11,7 @@ enum APIError: Error {
 }
 
 extension APIError: LocalizedError {
+
     var errorDescription: String? {
         switch self {
         case .server(let message):
@@ -26,5 +27,10 @@ extension APIError: LocalizedError {
         case .unknown:
             return "알 수 없는 오류"
         }
+    }
+
+    var shouldShowToast: Bool {
+        if case .ban = self { return false }
+        return true
     }
 }

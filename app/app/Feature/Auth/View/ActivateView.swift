@@ -103,7 +103,7 @@ struct ActivateView: View {
                     ToastManager.shared.show("계정이 활성화되었습니다.")
                     isLoggedIn = true
                 } catch {
-                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                    ToastManager.shared.show(error)
                 }
             }
         } label: {

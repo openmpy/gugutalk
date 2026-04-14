@@ -87,7 +87,7 @@ struct LoginView: View {
                     isLoggedIn = true
                     ToastManager.shared.show("로그인 되었습니다.")
                 } catch {
-                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                    ToastManager.shared.show(error)
                 }
             }
         } label: {

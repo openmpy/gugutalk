@@ -49,7 +49,7 @@ struct PrivateImageGrantListView: View {
                                 do {
                                     try await vm.close(memberId: it.memberId)
                                 } catch {
-                                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                                    ToastManager.shared.show(error)
                                 }
                             }
                         }

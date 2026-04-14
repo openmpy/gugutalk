@@ -134,7 +134,7 @@ struct ProfileEditorView: View {
                     ToastManager.shared.show("프로필이 편집되었습니다.")
                     dismiss()
                 } catch {
-                    ToastManager.shared.show(error.localizedDescription, type: .error)
+                    ToastManager.shared.show(error)
                 }
             }
         } label: {

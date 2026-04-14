@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 import Alamofire
 
 final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
@@ -29,33 +29,10 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
         dueTo error: Error,
         completion: @escaping (RetryResult) -> Void
     ) {
-        guard let response = request.task?.response as? HTTPURLResponse else {
+        guard let response = request.task?.response as? HTTPURLResponse, response.statusCode == 401 else {
             completion(.doNotRetry)
             return
         }
-
-        switch response.statusCode {
-        case 401:
-            break
-        case 423:
-            let message: String
-            if let dataRequest = request as? DataRequest,
-               let data = dataRequest.data,
-               let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
-                message = errorResponse.message
-            } else {
-                message = "정지된 기기입니다."
-            }
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: .didDeviceBanned, object: nil, userInfo: ["message": message])
-            }
-            completion(.doNotRetryWithError(APIError.ban))
-            return
-        default:
-            completion(.doNotRetry)
-            return
-        }
-
         guard let refreshToken = AuthStore.shared.refreshToken else {
             completion(.doNotRetryWithError(APIError.token))
             return
@@ -87,6 +64,7 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
                     encoder: JSONParameterEncoder.default
                 ).decodingWithErrorHandling(RotateTokenResponse.self)
 
+                // 새 토큰 저장
                 AuthStore.shared.accessToken = response.accessToken
                 AuthStore.shared.refreshToken = response.refreshToken
                 StompManager.shared.reconnect(accessToken: response.accessToken)
@@ -104,7 +82,9 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
 
     private func resolvePendingRetries(with result: RetryResult) {
         lock.lock()
+
         let retries = pendingRetries
+
         pendingRetries.removeAll()
         isRefreshing = false
         lock.unlock()

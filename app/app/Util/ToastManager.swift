@@ -1,3 +1,4 @@
+import Foundation
 import Combine
 
 enum ToastType {
@@ -23,5 +24,13 @@ final class ToastManager: ObservableObject {
     func show(_ message: String, type: ToastType = .info) {
         toast = ToastData(message: message, type: type)
         isShow = true
+    }
+
+    func show(_ error: Error) {
+        if let apiError = error as? APIError, !apiError.shouldShowToast {
+            return
+        }
+
+        show(error.localizedDescription, type: .error)
     }
 }
