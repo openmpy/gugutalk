@@ -1,6 +1,7 @@
 package com.pidulgi.server.ban.controller
 
 import com.pidulgi.server.ban.dto.request.BanAddRequest
+import com.pidulgi.server.ban.dto.response.BanGetDetailResponse
 import com.pidulgi.server.ban.dto.response.BanGetResponse
 import com.pidulgi.server.ban.service.BanService
 import com.pidulgi.server.ban.service.query.BanGetsQuery
@@ -38,6 +39,12 @@ class BanController(
     ): ResponseEntity<CursorResponse<BanGetResponse>> {
         val query = BanGetsQuery(type, keyword, cursorId, cursorDate, size)
         val response = banService.gets(query)
+        return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/v1/admin/bans/{banId}")
+    fun get(@PathVariable banId: Long): ResponseEntity<BanGetDetailResponse> {
+        val response = banService.get(banId)
         return ResponseEntity.ok(response)
     }
 }

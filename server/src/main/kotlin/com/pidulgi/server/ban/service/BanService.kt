@@ -1,6 +1,7 @@
 package com.pidulgi.server.ban.service
 
 import com.pidulgi.server.ban.dto.request.BanAddRequest
+import com.pidulgi.server.ban.dto.response.BanGetDetailResponse
 import com.pidulgi.server.ban.dto.response.BanGetResponse
 import com.pidulgi.server.ban.entity.Ban
 import com.pidulgi.server.ban.entity.BanHistory
@@ -11,6 +12,8 @@ import com.pidulgi.server.ban.service.query.BanGetsQuery
 import com.pidulgi.server.common.dto.CursorResponse
 import com.pidulgi.server.common.exception.CustomException
 import com.pidulgi.server.report.entity.type.ReportType
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -76,6 +79,27 @@ class BanService(
             nextId = items.lastOrNull()?.banId,
             nextDateAt = items.lastOrNull()?.createdAt,
             hasNext = hasNext
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun get(banId: Long): BanGetDetailResponse {
+        val ban = (banRepository.findByIdOrNull(banId)
+            ?: throw CustomException("존재하지 않는 정지 정보입니다."))
+
+        val pageRequest = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt"))
+        val banHistoryResponses = banHistoryRepository.findAllByUuid(ban.uuid, pageRequest)
+            .map { it.toGetResponse() }
+
+        return BanGetDetailResponse(
+            banId = ban.id,
+            type = ban.type,
+            uuid = ban.uuid,
+            phoneNumber = ban.phoneNumber,
+            reason = ban.reason,
+            createdAt = ban.createdAt,
+            expiredAt = ban.expiredAt,
+            histories = banHistoryResponses,
         )
     }
 }
