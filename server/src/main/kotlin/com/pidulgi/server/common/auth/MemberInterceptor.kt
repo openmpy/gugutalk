@@ -39,6 +39,9 @@ class MemberInterceptor(
         val memberId = jwtProvider.extractMemberId(accessToken)
         val member = memberRepository.findByIdOrNull(memberId) ?: return true
 
+        banRepository.findByUuid(member.uuid.value)?.let {
+            throwBanException(it)
+        }
         banRepository.findByPhoneNumber(member.phoneNumber.value)?.let {
             throwBanException(it)
         }
