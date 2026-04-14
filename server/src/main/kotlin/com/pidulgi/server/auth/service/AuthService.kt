@@ -6,6 +6,7 @@ import com.pidulgi.server.auth.dto.response.RotateTokenResponse
 import com.pidulgi.server.auth.dto.response.SignupResponse
 import com.pidulgi.server.auth.entity.PhoneVerification
 import com.pidulgi.server.auth.repository.PhoneVerificationRepository
+import com.pidulgi.server.ban.repository.BanRepository
 import com.pidulgi.server.common.auth.AuthenticationExtractor
 import com.pidulgi.server.common.auth.JwtProvider
 import com.pidulgi.server.common.exception.CustomException
@@ -36,6 +37,7 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 const val AUTH_REFRESH_TOKEN_KEY = "auth:refresh-token:"
 const val AUTH_ACCESS_TOKEN_BLACKLIST_KEY = "auth:access-token:blacklist:"
@@ -49,6 +51,7 @@ class AuthService(
     private val memberImageRepository: MemberImageRepository,
     private val phoneVerificationRepository: PhoneVerificationRepository,
     private val pointRepository: PointRepository,
+    private val banRepository: BanRepository,
     private val redisTemplate: StringRedisTemplate,
     private val jwtProvider: JwtProvider,
     private val smsSender: SmsSender,
@@ -60,6 +63,9 @@ class AuthService(
 
         private const val AUTH_SMS_MAX_DAILY_SEND_COUNT = 3
         private const val AUTH_VERIFICATION_CODE_MINUTES = 5L
+
+        private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")
+        private const val SUPPORT_EMAIL = "gugutalk@proton.me"
     }
 
     private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
@@ -214,6 +220,20 @@ class AuthService(
 
         if (!passwordEncoder.matches(request.password, member.password.value)) {
             throw InvalidCredentialsException("다시 한번 확인해주시길 바랍니다.")
+        }
+
+        banRepository.findByPhoneNumber(member.phoneNumber.value)?.let {
+            throw ResponseStatusException(
+                HttpStatus.LOCKED,
+                """
+                    번호: ${it.uuid}
+                    유형: ${it.type.text}
+                    사유: ${it.reason ?: "-"}
+                    해제일: ${it.expiredAt.format(DATE_FORMATTER)}
+                    
+                    문의: $SUPPORT_EMAIL
+                """.trimIndent()
+            )
         }
 
         val accessToken = jwtProvider.generateAccessToken(member.id, member.role)

@@ -1,5 +1,6 @@
 package com.pidulgi.server.admin.service
 
+import com.pidulgi.server.admin.dto.request.AdminLoginRequest
 import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
 import com.pidulgi.server.admin.dto.response.AdminGetReportDetailResponse
@@ -8,7 +9,6 @@ import com.pidulgi.server.admin.service.extension.toAdminGetMemberResponse
 import com.pidulgi.server.admin.service.extension.toAdminGetReportResponse
 import com.pidulgi.server.admin.service.query.AdminGetMembersQuery
 import com.pidulgi.server.admin.service.query.AdminGetReportsQuery
-import com.pidulgi.server.auth.dto.request.LoginRequest
 import com.pidulgi.server.auth.dto.response.LoginResponse
 import com.pidulgi.server.auth.service.AUTH_REFRESH_TOKEN_KEY
 import com.pidulgi.server.common.auth.JwtProvider
@@ -20,7 +20,6 @@ import com.pidulgi.server.member.entity.Member
 import com.pidulgi.server.member.entity.type.ImageType
 import com.pidulgi.server.member.entity.type.MemberRole
 import com.pidulgi.server.member.entity.vo.MemberPhoneNumber
-import com.pidulgi.server.member.entity.vo.MemberUuid
 import com.pidulgi.server.member.repository.MemberImageRepository
 import com.pidulgi.server.member.repository.MemberRepository
 import com.pidulgi.server.member.service.extension.toResponses
@@ -222,7 +221,7 @@ class AdminService(
     }
 
     @Transactional
-    fun login(request: LoginRequest): LoginResponse {
+    fun login(request: AdminLoginRequest): LoginResponse {
         val memberPhoneNumber = MemberPhoneNumber(request.phoneNumber)
 
         val member = (memberRepository.findByPhoneNumber(memberPhoneNumber)
@@ -241,8 +240,6 @@ class AdminService(
 
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
         redisTemplate.opsForValue().set(refreshTokenKey, member.id.toString())
-
-        member.updateUuid(MemberUuid(request.uuid))
 
         return LoginResponse(
             member.id,

@@ -1,5 +1,6 @@
 package com.pidulgi.server.admin.controller
 
+import com.pidulgi.server.admin.dto.request.AdminLoginRequest
 import com.pidulgi.server.admin.dto.response.AdminGetMemberDetailResponse
 import com.pidulgi.server.admin.dto.response.AdminGetMemberResponse
 import com.pidulgi.server.admin.dto.response.AdminGetReportDetailResponse
@@ -109,7 +110,7 @@ class AdminController(
 
     @PostMapping("/v1/admin/login")
     fun login(
-        @RequestBody request: LoginRequest
+        @RequestBody request: AdminLoginRequest
     ): ResponseEntity<LoginResponse> {
         val response = adminService.login(request)
         return ResponseEntity.ok(response)
