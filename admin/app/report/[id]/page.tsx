@@ -1,5 +1,6 @@
 import ListButton from "@/component/ListButton";
 import ReportAdminStatusBar from "@/component/ReportAdminStatusBar";
+import { fetchAdminBanByReportedUuid } from "@/lib/bans";
 import { formatAdminMemberDateTime } from "@/lib/members";
 import {
   fetchAdminReportDetail,
@@ -7,6 +8,7 @@ import {
   formatAdminReportTypeLabel,
 } from "@/lib/reports";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export default async function ReportDetailPage({
@@ -27,6 +29,7 @@ export default async function ReportDetailPage({
 
   const r = result.data;
   const sortedImages = [...r.images].sort((a, b) => a.index - b.index);
+  const banLookup = await fetchAdminBanByReportedUuid(r.reportedUuid);
 
   return (
     <div>
@@ -83,6 +86,51 @@ export default async function ReportDetailPage({
             <p className="text-sm font-bold">닉네임</p>
             <p className="text-sm">{r.reportedNickname}</p>
           </div>
+        </div>
+      </div>
+      <div>
+        <div className="flex items-center justify-center bg-slate-300 py-1">
+          <h2 className="font-bold">피신고자 정지 현황</h2>
+        </div>
+        <div className="flex flex-col gap-1 px-2 py-2">
+          {!banLookup.ok ? (
+            <p className="text-sm text-red-600">
+              정지 정보를 불러오지 못했습니다. (HTTP {banLookup.status})
+            </p>
+          ) : banLookup.ban === null ? (
+            <p className="text-sm text-slate-600">
+              현재 정지 중인 계정이 아닙니다.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2 border border-slate-200 rounded-md bg-white p-2 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-bold">
+                  {formatAdminReportTypeLabel(banLookup.ban.type)}
+                </span>
+                <Link
+                  href={`/ban/${banLookup.ban.banId}`}
+                  className="shrink-0 rounded-md bg-slate-400 px-2 py-1 text-xs text-white"
+                >
+                  상세보기
+                </Link>
+              </div>
+              <p className="text-xs text-slate-600">
+                정지일:{" "}
+                <span className="tabular-nums text-slate-800">
+                  {formatAdminMemberDateTime(banLookup.ban.createdAt)}
+                </span>
+              </p>
+              <p className="text-xs text-slate-600">
+                만료일:{" "}
+                <span className="tabular-nums text-slate-800">
+                  {formatAdminMemberDateTime(banLookup.ban.expiredAt)}
+                </span>
+              </p>
+              <p className="line-clamp-3 text-xs text-slate-700">
+                사유: {banLookup.ban.reason?.trim() || "—"}
+              </p>
+            </div>
+          )}
         </div>
       </div>
       <div>
