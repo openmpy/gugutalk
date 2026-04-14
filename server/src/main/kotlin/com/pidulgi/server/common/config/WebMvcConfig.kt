@@ -1,5 +1,6 @@
 package com.pidulgi.server.common.config
 
+import com.pidulgi.server.common.auth.AdminInterceptor
 import com.pidulgi.server.common.auth.AuthenticationPrincipalArgumentResolver
 import com.pidulgi.server.common.auth.JwtProvider
 import org.springframework.beans.factory.annotation.Value
@@ -34,8 +35,9 @@ class WebMvcConfig(
 ) : WebMvcConfigurer {
 
     override fun addInterceptors(registry: InterceptorRegistry) {
-//        registry.addInterceptor(AdminInterceptor(jwtProvider))
-//            .addPathPatterns("/api/*/admin/**")
+        registry.addInterceptor(AdminInterceptor(jwtProvider))
+            .addPathPatterns("/api/*/admin/**")
+            .excludePathPatterns("/api/*/admin/login")
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
