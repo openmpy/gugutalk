@@ -172,7 +172,13 @@ export default async function ReportDetailPage({
           ) : (
             <div className="flex flex-wrap gap-2">
               {sortedImages.map((img) => (
-                <div key={img.imageId} className="relative">
+                <a
+                  key={img.imageId}
+                  href={img.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative inline-block cursor-pointer"
+                >
                   <Image
                     src={img.url}
                     alt=""
@@ -181,7 +187,7 @@ export default async function ReportDetailPage({
                     className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300 object-cover"
                     unoptimized
                   />
-                </div>
+                </a>
               ))}
             </div>
           )}

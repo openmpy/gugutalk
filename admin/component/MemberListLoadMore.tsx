@@ -77,14 +77,21 @@ export default function MemberListLoadMore({
           <div key={member.memberId} className="flex flex-col border-b border-slate-200">
             <div className="flex items-center">
               {member.profileUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={member.profileUrl}
-                  alt=""
-                  width={85}
-                  height={85}
-                  className="h-[85px] w-[85px] shrink-0 object-cover"
-                />
+                <a
+                  href={member.profileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative inline-block h-[85px] w-[85px] shrink-0 cursor-pointer"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={member.profileUrl}
+                    alt=""
+                    width={85}
+                    height={85}
+                    className="h-[85px] w-[85px] object-cover"
+                  />
+                </a>
               ) : (
                 <div
                   className="flex h-[85px] w-[85px] shrink-0 items-center justify-center bg-slate-100 text-xs text-slate-400"

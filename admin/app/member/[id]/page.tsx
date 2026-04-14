@@ -145,14 +145,21 @@ export default async function MemberDetailPage({
               <div className="flex flex-wrap gap-2">
                 {m.publicImages.map((img) => (
                   <div key={img.imageId} className="relative">
-                    <Image
-                      src={img.url}
-                      alt=""
-                      width={100}
-                      height={100}
-                      className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300 object-cover"
-                      unoptimized
-                    />
+                    <a
+                      href={img.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative inline-block cursor-pointer"
+                    >
+                      <Image
+                        src={img.url}
+                        alt=""
+                        width={100}
+                        height={100}
+                        className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300 object-cover"
+                        unoptimized
+                      />
+                    </a>
                     <MemberAdminImageDeleteButton memberId={m.memberId} imageId={img.imageId} />
                   </div>
                 ))}
@@ -167,14 +174,21 @@ export default async function MemberDetailPage({
               <div className="flex flex-wrap gap-2">
                 {m.privateImages.map((img) => (
                   <div key={img.imageId} className="relative">
-                    <Image
-                      src={img.url}
-                      alt=""
-                      width={100}
-                      height={100}
-                      className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300 object-cover"
-                      unoptimized
-                    />
+                    <a
+                      href={img.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative inline-block cursor-pointer"
+                    >
+                      <Image
+                        src={img.url}
+                        alt=""
+                        width={100}
+                        height={100}
+                        className="w-[100px] h-[100px] shrink-0 rounded-md border border-slate-300 object-cover"
+                        unoptimized
+                      />
+                    </a>
                     <MemberAdminImageDeleteButton memberId={m.memberId} imageId={img.imageId} />
                   </div>
                 ))}
