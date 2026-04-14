@@ -5,12 +5,16 @@ import GoogleMobileAds
 import SimpleToast
 
 class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
-
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
-
+        
+        if AuthStore.shared.uuid == nil {
+            AuthStore.shared.uuid = UUID().uuidString
+        }
+        
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
             if granted {
                 DispatchQueue.main.async {
@@ -20,33 +24,33 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNot
         }
         return true
     }
-
+    
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         guard let token = fcmToken else { return }
-
+        
         print("FCM Token: \(token)")
     }
 }
 
 @main
 struct GuguApp: App {
-
+    
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-
+    
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
-
+    
     @StateObject private var stomp = StompManager.shared
     @StateObject private var toast = ToastManager.shared
-
+    
     @State private var showBannedAlert: Bool = false
     @State private var bannedMessage: String = ""
-
+    
     private let toastOptions = SimpleToastOptions(alignment: .top, hideAfter: 5)
-
+    
     init() {
         MobileAds.shared.start(completionHandler: nil)
     }
-
+    
     var body: some Scene {
         WindowGroup {
             ZStack {

@@ -19,7 +19,6 @@ class MemberInterceptor(
         handler: Any
     ): Boolean {
         val deviceId = request.getHeader("X-Device-Id") ?: return true
-        println("Device ID is $deviceId")
 
         banRepository.findByUuid(deviceId)?.let {
             val formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")
@@ -27,13 +26,13 @@ class MemberInterceptor(
             throw ResponseStatusException(
                 HttpStatus.LOCKED,
                 """
-                        번호: ${it.uuid}
-                        유형: ${it.type.text}
-                        사유: ${it.reason ?: "-"}
-                        해제일: ${it.expiredAt.format(formatter)}
-                        
-                        문의: gugutalk@proton.me
-                    """.trimIndent()
+                    번호: ${it.uuid}
+                    유형: ${it.type.text}
+                    사유: ${it.reason ?: "-"}
+                    해제일: ${it.expiredAt.format(formatter)}
+                    
+                    문의: gugutalk@proton.me
+                """.trimIndent()
             )
         }
         return true
