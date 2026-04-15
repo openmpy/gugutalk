@@ -23,18 +23,27 @@ class LogFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val method = request.method
         val uri = request.requestURI
-        val ip = ClientIpExtractor.extract(request)
 
-        val accessToken = AuthenticationExtractor.extract(request)
-        val memberId = accessToken?.takeIf { jwtProvider.validateToken(it) }
-            ?.let { jwtProvider.extractMemberId(it) }
-        val nickname = accessToken?.takeIf { jwtProvider.validateToken(it) }
-            ?.let { jwtProvider.extractNickname(it) }
+        if (uri.startsWith("/api")) {
+            val method = request.method
+            val ip = ClientIpExtractor.extract(request)
 
-        log.info { "request method = $method, uri = $uri, ip = $ip, memberId = $memberId, nickname = $nickname" }
+            val accessToken = AuthenticationExtractor.extract(request)
 
+            val memberId: Long?
+            val nickname: String?
+
+            if (accessToken != null && jwtProvider.validateToken(accessToken)) {
+                memberId = jwtProvider.extractMemberId(accessToken)
+                nickname = jwtProvider.extractNickname(accessToken)
+            } else {
+                memberId = null
+                nickname = null
+            }
+
+            log.info { "request method = $method, uri = $uri, ip = $ip, memberId = $memberId, nickname = $nickname" }
+        }
         filterChain.doFilter(request, response)
     }
 }
