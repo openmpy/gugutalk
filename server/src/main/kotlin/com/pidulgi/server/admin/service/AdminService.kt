@@ -235,7 +235,7 @@ class AdminService(
             throw CustomException("관리자 계정이 아닙니다.")
         }
 
-        val accessToken = jwtProvider.generateAccessToken(member.id, member.role)
+        val accessToken = jwtProvider.generateAccessToken(member.id, member.role, member.nickname)
         val refreshToken = jwtProvider.generateRefreshToken(member.id)
 
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken

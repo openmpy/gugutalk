@@ -168,7 +168,7 @@ class AuthService(
         pointRepository.save(point)
 
         // 토큰 발급
-        val accessToken = jwtProvider.generateAccessToken(member.id, member.role)
+        val accessToken = jwtProvider.generateAccessToken(member.id, member.role, member.nickname)
         val refreshToken = jwtProvider.generateRefreshToken(member.id)
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
 
@@ -251,7 +251,7 @@ class AuthService(
             )
         }
 
-        val accessToken = jwtProvider.generateAccessToken(member.id, member.role)
+        val accessToken = jwtProvider.generateAccessToken(member.id, member.role, member.nickname)
         val refreshToken = jwtProvider.generateRefreshToken(member.id)
 
         val refreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
@@ -292,7 +292,7 @@ class AuthService(
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "로그인을 다시 해주시길 바랍니다.")
         }
 
-        val accessToken = jwtProvider.generateAccessToken(member.id, member.role)
+        val accessToken = jwtProvider.generateAccessToken(member.id, member.role, member.nickname)
         val refreshToken = jwtProvider.generateRefreshToken(member.id)
         val newRefreshTokenKey = AUTH_REFRESH_TOKEN_KEY + refreshToken
 

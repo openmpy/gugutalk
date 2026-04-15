@@ -30,8 +30,10 @@ class LogFilter(
         val accessToken = AuthenticationExtractor.extract(request)
         val memberId = accessToken?.takeIf { jwtProvider.validateToken(it) }
             ?.let { jwtProvider.extractMemberId(it) }
+        val nickname = accessToken?.takeIf { jwtProvider.validateToken(it) }
+            ?.let { jwtProvider.extractNickname(it) }
 
-        log.info { "request method = $method, uri = $uri, ip = $ip, memberId = $memberId" }
+        log.info { "request method = $method, uri = $uri, ip = $ip, memberId = $memberId, nickname = $nickname" }
 
         filterChain.doFilter(request, response)
     }

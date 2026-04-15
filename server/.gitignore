@@ -40,6 +40,5 @@ out/
 .kotlin
 
 ### Others ###
-application-local.yaml
-application-test.yaml
+application-*.yaml
 *firebase-adminsdk*.json

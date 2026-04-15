@@ -2,6 +2,7 @@ package com.pidulgi.server.common.auth
 
 import com.pidulgi.server.auth.service.AUTH_ACCESS_TOKEN_BLACKLIST_KEY
 import com.pidulgi.server.member.entity.type.MemberRole
+import com.pidulgi.server.member.entity.vo.MemberNickname
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.*
 import org.springframework.beans.factory.annotation.Value
@@ -24,13 +25,14 @@ class JwtProvider(
     private val accessTokenExpiry = Duration.ofSeconds(accessTokenExpireSeconds)
     private val refreshTokenExpiry = Duration.ofDays(30)
 
-    fun generateAccessToken(memberId: Long, role: MemberRole): String {
+    fun generateAccessToken(memberId: Long, role: MemberRole, nickname: MemberNickname): String {
         return Jwts.builder()
             .setSubject(memberId.toString())
             .setIssuedAt(Date())
             .setExpiration(Date(System.currentTimeMillis() + accessTokenExpiry.toMillis()))
             .claim("type", "access")
             .claim("role", role.name)
+            .claim("nickname", nickname.value)
             .signWith(SignatureAlgorithm.HS256, secretKey)
             .compact()
     }
@@ -76,6 +78,11 @@ class JwtProvider(
             ?: throw IllegalArgumentException("토큰에 역할이 존재하지 않습니다.")
 
         return MemberRole.valueOf(role)
+    }
+
+    fun extractNickname(token: String): String? {
+        val payload = getPayload(token)
+        return payload["nickname"] as? String
     }
 
     private fun getPayload(token: String): Claims {
