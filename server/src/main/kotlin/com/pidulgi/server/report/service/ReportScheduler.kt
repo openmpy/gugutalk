@@ -39,7 +39,7 @@ class ReportScheduler(
     @Scheduled(cron = "0 0 9 * * *")
     fun cleanUpReports() {
         val expiredBefore = LocalDateTime.now().minusYears(1)
-        val deletedReports = reportRepository.findAllDeleted(expiredBefore)
+        val deletedReports = reportRepository.findAllByDeleted(expiredBefore)
 
         if (deletedReports.isEmpty()) {
             return

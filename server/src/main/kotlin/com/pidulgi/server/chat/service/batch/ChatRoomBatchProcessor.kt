@@ -19,11 +19,11 @@ class ChatRoomBatchProcessor(
     @Transactional
     fun processBatch(chatRooms: List<ChatRoom>) {
         val chatRoomIds = chatRooms.map { it.id }
-        val s3Keys = messageRepository.findAllKeysByChatRoomIdIn(chatRoomIds)
+        val keys = messageRepository.findAllKeysByChatRoomIdIn(chatRoomIds)
 
         messageRepository.deleteAllByChatRoomIdIn(chatRoomIds)
         chatRoomRepository.hardDeleteByIdIn(chatRoomIds)
 
-        applicationEventPublisher.publishEvent(S3CleanupEvent(s3Keys))
+        applicationEventPublisher.publishEvent(S3CleanupEvent(keys))
     }
 }

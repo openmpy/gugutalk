@@ -16,5 +16,5 @@ interface ReportRepository : JpaRepository<Report, Long>, ReportCustomRepository
         """,
         nativeQuery = true
     )
-    fun findAllDeleted(@Param("deletedAt") deletedAt: LocalDateTime): List<Report>
+    fun findAllByDeleted(@Param("deletedAt") deletedAt: LocalDateTime): List<Report>
 }

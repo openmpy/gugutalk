@@ -19,7 +19,7 @@ class ChatRoomScheduler(
     @Scheduled(cron = "0 0 9 * * *")
     fun cleanUpChatRooms() {
         val expiredBefore = LocalDateTime.now().minusDays(30)
-        val deletedChatRooms = chatRoomRepository.findAllDeleted(expiredBefore)
+        val deletedChatRooms = chatRoomRepository.findAllByDeleted(expiredBefore)
 
         if (deletedChatRooms.isEmpty()) {
             return

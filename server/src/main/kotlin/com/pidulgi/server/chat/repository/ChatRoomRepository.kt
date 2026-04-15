@@ -40,7 +40,7 @@ interface ChatRoomRepository : JpaRepository<ChatRoom, Long>, ChatRoomCustomRepo
         """,
         nativeQuery = true
     )
-    fun findAllDeleted(@Param("deletedAt") deletedAt: LocalDateTime): List<ChatRoom>
+    fun findAllByDeleted(@Param("deletedAt") deletedAt: LocalDateTime): List<ChatRoom>
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(
