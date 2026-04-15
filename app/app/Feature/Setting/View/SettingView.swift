@@ -12,6 +12,8 @@ struct SettingView: View {
 
     @State private var showMenu: Bool = false
     @State private var showDelete: Bool = false
+    @State private var showInquiryMail: Bool = false
+    @State private var showBugMail: Bool = false
     @State private var safariItem: IdentifiableURL? = nil
 
     var body: some View {
@@ -142,13 +144,61 @@ struct SettingView: View {
     private var noticeSection: some View {
         VStack(spacing: 0) {
             Button {
+                showInquiryMail = true
             } label: {
                 SettingRow(title: "문의사항", icon: "envelope.fill", color: .indigo)
             }
+            .disabled(!MFMailComposeViewController.canSendMail())
+            .sheet(isPresented: $showInquiryMail) {
+                let uuid = AuthStore.shared.uuid ?? "알 수 없음"
+                let deviceModel = machineIdentifier()
+                let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "알 수 없음"
+
+                MailView(
+                    subject: "구구톡 - 문의사항",
+                    body: """
+                    문의 내용:
+                    
+                    
+                    아래 정보를 삭제하지 마세요.
+                    ─────────────────
+                    UUID: \(uuid)
+                    기기: \(deviceModel)
+                    버전: \(appVersion)
+                    ─────────────────
+                    """,
+                    recipient: "gugutalk@proton.me",
+                    isShowing: $showInquiryMail,
+                )
+            }
 
             Button {
+                showBugMail = true
             } label: {
                 SettingRow(title: "버그제보", icon: "exclamationmark.triangle.fill", color: .red)
+            }
+            .disabled(!MFMailComposeViewController.canSendMail())
+            .sheet(isPresented: $showBugMail) {
+                let uuid = AuthStore.shared.uuid ?? "알 수 없음"
+                let deviceModel = machineIdentifier()
+                let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "알 수 없음"
+
+                MailView(
+                    subject: "구구톡 - 버그제보",
+                    body: """
+                    버그 내용:
+                    
+                    
+                    아래 정보를 삭제하지 마세요.
+                    ─────────────────
+                    UUID: \(uuid)
+                    기기: \(deviceModel)
+                    버전: \(appVersion)
+                    ─────────────────
+                    """,
+                    recipient: "gugutalk@proton.me",
+                    isShowing: $showBugMail,
+                )
             }
 
             SettingRow(title: "서비스 이용약관", icon: "doc.text.fill", color: .gray)
@@ -200,6 +250,17 @@ struct SettingView: View {
                 Task {
                     try? await vm.earnByAdReward()
                 }
+            }
+        }
+    }
+
+    func machineIdentifier() -> String {
+        var systemInfo = utsname()
+        uname(&systemInfo)
+
+        return withUnsafePointer(to: &systemInfo.machine) {
+            $0.withMemoryRebound(to: CChar.self, capacity: 1) {
+                String(validatingUTF8: $0) ?? "Unknown"
             }
         }
     }
