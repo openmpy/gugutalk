@@ -1,53 +1,67 @@
 import SwiftUI
 
+struct ChatRoute: Hashable {
+
+    let chatRoomId: Int64
+    let memberId: Int64
+}
+
 struct ChatView: View {
+
+    @ObservedObject private var router: NotificationRouter
 
     @StateObject private var vm = ChatViewModel()
 
+    @State private var path = NavigationPath()
+
+    init() {
+        self.router = NotificationRouter.shared
+    }
+
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack {
                 ChatStatusSelector(selectStatus: $vm.selectStatus)
 
                 switch vm.state {
-
                 case .idle:
-                    Spacer()
-                    EmptyView()
-                    Spacer()
-
+                    Spacer(); EmptyView(); Spacer()
                 case .loading:
-                    Spacer()
-                    ProgressView()
-                    Spacer()
-
+                    Spacer(); ProgressView(); Spacer()
                 case .empty:
-                    Spacer()
-                    Text("내역이 비어있습니다.")
-                    Spacer()
-
+                    Spacer(); Text("내역이 비어있습니다."); Spacer()
                 case .data:
                     listSection
-
                 case .error(let message):
                     errorSection(message: message)
                 }
             }
-            .onChange(of: vm.selectStatus) { _, newStatus in
-                Task {
-                    await vm.gets()
-                }
+            .navigationDestination(for: ChatRoute.self) { route in
+                MessageView(
+                    chatRoomId: route.chatRoomId,
+                    memberId: route.memberId
+                )
+            }
+            .onChange(of: vm.selectStatus) { _, _ in
+                Task { await vm.gets() }
+            }
+            .onChange(of: router.pendingChat) { _, newValue in
+                guard let chat = newValue else { return }
+
+                path.append(ChatRoute(chatRoomId: chat.chatRoomId, memberId: chat.memberId))
+                router.pendingChat = nil
             }
             .onAppear {
                 vm.subscribe()
-            }
-            .onDisappear {
-                vm.unsubscribe()
-            }
-            .overlay {
-                if vm.isLoading {
-                    LoadingOverlay()
+
+                if let chat = router.pendingChat {
+                    path.append(ChatRoute(chatRoomId: chat.chatRoomId, memberId: chat.memberId))
+                    router.pendingChat = nil
                 }
+            }
+            .onDisappear { vm.unsubscribe() }
+            .overlay {
+                if vm.isLoading { LoadingOverlay() }
             }
             .task {
                 await vm.gets()
@@ -65,12 +79,9 @@ struct ChatView: View {
                             .foregroundColor(.primary)
                     }
                 }
-
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        Task {
-                            try? await vm.toggleChatEnabled()
-                        }
+                        Task { try? await vm.toggleChatEnabled() }
                     } label: {
                         Image(systemName: vm.isChatEnabled ? "bell" : "bell.slash")
                             .font(.title3)
@@ -82,18 +93,13 @@ struct ChatView: View {
         }
     }
 
-    // MARK: - SECTION
-
     private var listSection: some View {
         ScrollView {
             LazyVStack {
                 ForEach(vm.chatRooms) { it in
-                    NavigationLink {
-                        MessageView(
-                            chatRoomId: it.chatRoomId,
-                            memberId: it.targetId
-                        )
-                    } label: {
+                    NavigationLink(
+                        value: ChatRoute(chatRoomId: it.chatRoomId, memberId: it.targetId)
+                    ) {
                         ChatRow(
                             profileUrl: it.profileUrl,
                             nickname: it.nickname,
@@ -118,16 +124,13 @@ struct ChatView: View {
                     }
                     .onAppear {
                         if it.id == vm.chatRooms.last?.id && vm.hasNext {
-                            Task {
-                                try? await vm.loadMore()
-                            }
+                            Task { try? await vm.loadMore() }
                         }
                     }
                 }
 
                 if vm.isPaging {
-                    ProgressView()
-                        .padding()
+                    ProgressView().padding()
                 }
             }
         }
@@ -136,16 +139,10 @@ struct ChatView: View {
     private func errorSection(message: String) -> some View {
         VStack {
             Spacer()
-
-            Text(message)
-                .padding(.bottom)
-
+            Text(message).padding(.bottom)
             Button("다시 시도") {
-                Task {
-                    await vm.gets()
-                }
+                Task { await vm.gets() }
             }
-
             Spacer()
         }
     }

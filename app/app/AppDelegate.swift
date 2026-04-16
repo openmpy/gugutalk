@@ -56,4 +56,18 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNot
             }
         }
     }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+
+        Task { @MainActor in
+            NotificationRouter.shared.handle(userInfo: userInfo)
+        }
+
+        completionHandler()
+    }
 }

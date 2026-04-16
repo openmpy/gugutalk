@@ -112,7 +112,7 @@ class MessageService(
         applicationEventPublisher.publishEvent(ChatQueueEvent(targetId, chatRoomEvent))
 
         // 알림
-        sendFcmOfMessage(targetId, chatRoomId, request.content, TEXT)
+        sendFcmOfMessage(senderId, targetId, chatRoomId, request.content, TEXT)
     }
 
     @Transactional
@@ -131,7 +131,7 @@ class MessageService(
         val mediaKeys = (request.imageKeys.map { it to IMAGE }) + (request.videoKeys.map { it to VIDEO })
         for ((key, type) in mediaKeys) {
             sendMediaMessage(chatRoom, sender, senderId, targetId, chatRoomId, key, type, isActive)
-            sendFcmOfMessage(targetId, chatRoomId, null, type)
+            sendFcmOfMessage(senderId, targetId, chatRoomId, null, type)
         }
     }
 
@@ -235,7 +235,13 @@ class MessageService(
         applicationEventPublisher.publishEvent(ChatQueueEvent(targetId, chatRoomEvent))
     }
 
-    private fun sendFcmOfMessage(memberId: Long, chatRoomId: Long, content: String?, type: MessageType) {
+    private fun sendFcmOfMessage(
+        senderId: Long,
+        targetId: Long,
+        chatRoomId: Long,
+        content: String?,
+        type: MessageType
+    ) {
         val preview = content?.let {
             if (it.length > PREVIEW_MAX_LENGTH) {
                 content.substring(0, PREVIEW_MAX_LENGTH - 3) + "..."
@@ -250,7 +256,7 @@ class MessageService(
             TEXT -> preview
         }
 
-        fcmTokenRepository.findByMemberIdAndIsActiveTrue(memberId).forEach {
+        fcmTokenRepository.findByMemberIdAndIsActiveTrue(targetId).forEach {
             val notification = Notification.builder()
                 .setTitle("새로운 쪽지")
                 .setBody(body)
@@ -271,6 +277,7 @@ class MessageService(
                 .setApnsConfig(apnsConfig)
                 .putData("type", "CHAT")
                 .putData("chatRoomId", chatRoomId.toString())
+                .putData("memberId", senderId.toString())
                 .build()
 
             try {

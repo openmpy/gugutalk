@@ -3,43 +3,43 @@ import PhotosUI
 import Kingfisher
 
 struct MessageView: View {
-    
+
     let chatRoomId: Int64
     let memberId: Int64
-    
+
     @StateObject private var vm = MessageViewModel()
     @StateObject private var stomp = StompManager.shared
-    
+
     @Environment(\.dismiss) var dismiss
     @Environment(\.scenePhase) private var scenePhase
-    
+
     @State private var selectMedia: [PhotosPickerItem] = []
     @State private var playingVideoURL: URL? = nil
-    
+
     var body: some View {
         VStack {
             VStack {
                 switch vm.state {
-                    
+
                 case .idle:
                     Spacer()
                     EmptyView()
                     Spacer()
-                    
+
                 case .loading:
                     Spacer()
                     ProgressView()
                     Spacer()
-                    
+
                 case .empty:
                     Spacer()
                     Text("내역이 비어있습니다.")
                         .rotationEffect(.degrees(180))
                     Spacer()
-                    
+
                 case .data:
                     listSection
-                    
+
                 case .error(let message):
                     errorSection(message: message)
                 }
@@ -75,7 +75,7 @@ struct MessageView: View {
             GlassEffectContainer(spacing: 5) {
                 HStack(alignment: .bottom) {
                     uploadSection
-                    
+
                     inputSection
                 }
                 .padding()
@@ -113,16 +113,16 @@ struct MessageView: View {
             }
         }
     }
-    
+
     // MARK: - Helper
-    
+
     private func shouldShowDateSeparator(at index: Int) -> Bool {
         let messages = vm.messages
         guard index < messages.count else { return false }
         if index == messages.count - 1 { return true }
         return !isSameDay(messages[index].createdAt, messages[index + 1].createdAt)
     }
-    
+
     private func isSameDay(_ a: String, _ b: String) -> Bool {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -131,14 +131,14 @@ struct MessageView: View {
         }
         return String(a.prefix(10)) == String(b.prefix(10))
     }
-    
+
     // MARK: - Section
-    
+
     private var listSection: some View {
         ScrollView {
             LazyVStack(spacing: 2) {
                 ForEach(Array(vm.messages.enumerated()), id: \.element.id) { index, message in
-                    
+
                     MessageBubble(
                         isMe: message.senderId == AuthStore.shared.memberId,
                         content: message.content,
@@ -154,12 +154,12 @@ struct MessageView: View {
                             }
                         }
                     }
-                    
+
                     if shouldShowDateSeparator(at: index) {
                         DateSeparatorView(dateString: message.createdAt)
                     }
                 }
-                
+
                 if vm.isPaging {
                     ProgressView()
                         .padding()
@@ -172,7 +172,7 @@ struct MessageView: View {
             hideKeyboard()
         }
     }
-    
+
     private var uploadSection: some View {
         Group {
             if vm.isUploading {
@@ -195,7 +195,7 @@ struct MessageView: View {
         }
         .onChange(of: selectMedia) { _, newItems in
             guard !newItems.isEmpty else { return }
-            
+
             Task {
                 for item in newItems {
                     if let data = try? await item.loadTransferable(type: Data.self),
@@ -203,18 +203,18 @@ struct MessageView: View {
                         vm.images.append(IdentifiableImage(image: image))
                         continue
                     }
-                    
+
                     if let videoItem = try? await item.loadTransferable(type: VideoItem.self) {
                         vm.videos.append(IdentifiableVideo(video: videoItem.url))
                     }
                 }
-                
+
                 try await vm.sendMedia(chatRoomId: chatRoomId)
                 selectMedia = []
             }
         }
     }
-    
+
     private var inputSection: some View {
         TextField("메시지 입력", text: $vm.message, axis: .vertical)
             .font(.subheadline)
@@ -227,7 +227,7 @@ struct MessageView: View {
             .overlay(
                 HStack {
                     Spacer()
-                    
+
                     Button {
                         Task {
                             try? await vm.send(chatRoomId: chatRoomId)
@@ -252,7 +252,7 @@ struct MessageView: View {
             .autocorrectionDisabled(true)
             .textInputAutocapitalization(.never)
     }
-    
+
     private func errorSection(message: String) -> some View {
         VStack {
             Spacer()
