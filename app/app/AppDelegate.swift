@@ -3,9 +3,9 @@ import FirebaseCore
 import FirebaseMessaging
 
 class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
-
+    
     private let fcmService = FcmService.shared
-
+    
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
@@ -13,11 +13,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNot
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
-
+        
         if AuthStore.shared.uuid == nil {
             AuthStore.shared.uuid = UUID().uuidString
         }
-
+        
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.alert, .badge, .sound]
         ) { granted, error in
@@ -29,45 +29,49 @@ class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate, UNUserNot
         }
         return true
     }
-
+    
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
         Messaging.messaging().apnsToken = deviceToken
     }
-
+    
     func messaging(
         _ messaging: Messaging,
         didReceiveRegistrationToken fcmToken: String?
     ) {
         guard let token = fcmToken else { return }
         guard let uuid = AuthStore.shared.uuid else { return }
-
+        
         Task {
-            do {
-                try await fcmService.register(
-                    token: token,
-                    uuid: uuid,
-                    memberId: AuthStore.shared.memberId
-                )
-            } catch {
-                print("FCM 등록 실패: \(error)")
-            }
+            try await fcmService.register(
+                token: token,
+                uuid: uuid,
+                memberId: AuthStore.shared.memberId
+            )
         }
     }
-
+    
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         let userInfo = response.notification.request.content.userInfo
-
+        
+        clearBadge()
+        
         Task { @MainActor in
             NotificationRouter.shared.handle(userInfo: userInfo)
         }
-
+        
         completionHandler()
+    }
+    
+    private func clearBadge() {
+        DispatchQueue.main.async {
+            UNUserNotificationCenter.current().setBadgeCount(0)
+        }
     }
 }

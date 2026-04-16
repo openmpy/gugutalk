@@ -31,6 +31,11 @@ class FcmToken(
     fun update(uuid: String, memberId: Long?) {
         this.uuid = uuid
         this.memberId = memberId
+        this.isActive = true
         this.updatedAt = LocalDateTime.now()
+    }
+
+    fun inactive() {
+        this.isActive = false
     }
 }

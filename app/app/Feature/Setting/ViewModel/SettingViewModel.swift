@@ -7,6 +7,7 @@ final class SettingViewModel: ObservableObject {
     private let authService = AuthService.shared
     private let memberService = MemberService.shared
     private let pointService = PointService.shared
+    private let fcmService = FcmService.shared
 
     @Published var state: SettingViewState = .idle
 
@@ -16,6 +17,7 @@ final class SettingViewModel: ObservableObject {
         if let refreshToken = AuthStore.shared.refreshToken {
             try? await authService.logout(refreshToken: refreshToken)
         }
+        try? await fcmService.inactive(uuid: AuthStore.shared.uuid ?? "")
 
         AuthStore.shared.clearAll()
         state = .success(.logout)
@@ -37,7 +39,8 @@ final class SettingViewModel: ObservableObject {
                 accessToken: accessToken,
                 refreshToken: refreshToken
             )
-
+            try? await fcmService.inactive(uuid: AuthStore.shared.uuid ?? "")
+            
             AuthStore.shared.clearAll()
             state = .success(.withdraw)
         } catch {

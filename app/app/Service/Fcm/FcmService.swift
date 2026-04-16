@@ -22,4 +22,14 @@ final class FcmService {
         )
         .validateWithErrorHandling()
     }
+
+    func inactive(uuid: String) async throws {
+        let url = "\(baseURL)/v1/fcm/inactive?uuid=\(uuid)"
+
+        try await APISession.plain.request(
+            url,
+            method: .put,
+        )
+        .validateWithErrorHandling()
+    }
 }

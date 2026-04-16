@@ -29,4 +29,9 @@ class FcmTokenService(
 
         fcmToken.update(request.uuid, request.memberId)
     }
+
+    @Transactional
+    fun inactive(uuid: String) {
+        fcmTokenRepository.findByUuid(uuid)?.inactive()
+    }
 }
