@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class FcmTokenController(
 
-    private val fcmTokenService: FcmTokenService
+    private val fcmTokenService: FcmTokenService,
 ) {
 
     @PostMapping("/v1/fcm/token")

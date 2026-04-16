@@ -6,7 +6,7 @@ import jakarta.persistence.*
 import org.hibernate.annotations.SQLRestriction
 import java.time.LocalDateTime
 
-private const val PREVIEW_MAX_LENGTH = 70
+const val PREVIEW_MAX_LENGTH = 70
 
 @SQLRestriction("deleted_at IS NULL")
 @Entity
