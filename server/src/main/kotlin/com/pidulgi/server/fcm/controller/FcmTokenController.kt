@@ -1,6 +1,5 @@
 package com.pidulgi.server.fcm.controller
 
-import com.pidulgi.server.common.auth.Login
 import com.pidulgi.server.fcm.dto.request.FcmTokenRegisterRequest
 import com.pidulgi.server.fcm.service.FcmTokenService
 import org.springframework.http.ResponseEntity
@@ -18,10 +17,9 @@ class FcmTokenController(
 
     @PostMapping("/v1/fcm/token")
     fun register(
-        @Login memberId: Long,
         @RequestBody request: FcmTokenRegisterRequest
     ): ResponseEntity<Unit> {
-        fcmTokenService.register(memberId, request)
+        fcmTokenService.register(request)
         return ResponseEntity.ok().build()
     }
 }

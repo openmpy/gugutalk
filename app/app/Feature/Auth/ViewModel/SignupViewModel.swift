@@ -1,10 +1,12 @@
 import SwiftUI
 import Combine
+import FirebaseMessaging
 
 @MainActor
 final class SignupViewModel: ObservableObject {
 
     private let authService = AuthService.shared
+    private let fcmService = FcmService.shared
 
     @Published var isLoading: Bool = false
     @Published var isSent: Bool = false
@@ -63,6 +65,14 @@ final class SignupViewModel: ObservableObject {
         AuthStore.shared.uuid = uuid
         AuthStore.shared.accessToken = response.accessToken
         AuthStore.shared.refreshToken = response.refreshToken
+
+        if let token = Messaging.messaging().fcmToken {
+            try await fcmService.register(
+                token: token,
+                uuid: uuid,
+                memberId: response.memberId
+            )
+        }
     }
 
     private func startTimer() {

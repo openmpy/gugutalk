@@ -12,14 +12,14 @@ class FcmToken(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @Column(name = "member_id", nullable = false)
-    val memberId: Long,
-
     @Column(name = "token", unique = true, nullable = false)
     var token: String,
 
-    @Column(name = "uuid")
-    val uuid: String? = null,
+    @Column(name = "uuid", nullable = false)
+    var uuid: String,
+
+    @Column(name = "member_id")
+    var memberId: Long? = null,
 
     @Column(name = "is_active")
     var isActive: Boolean = true,
@@ -28,9 +28,9 @@ class FcmToken(
     var updatedAt: LocalDateTime = LocalDateTime.now()
 ) : BaseEntity() {
 
-    fun update(token: String) {
-        this.token = token
-        this.isActive = true
+    fun update(uuid: String, memberId: Long?) {
+        this.uuid = uuid
+        this.memberId = memberId
         this.updatedAt = LocalDateTime.now()
     }
 }
