@@ -48,6 +48,7 @@ struct ChatView: View {
             .onChange(of: router.pendingChat) { _, newValue in
                 guard let chat = newValue else { return }
 
+                path = NavigationPath()
                 path.append(ChatRoute(chatRoomId: chat.chatRoomId, memberId: chat.memberId))
                 router.pendingChat = nil
             }
@@ -55,6 +56,7 @@ struct ChatView: View {
                 vm.subscribe()
 
                 if let chat = router.pendingChat {
+                    path = NavigationPath()
                     path.append(ChatRoute(chatRoomId: chat.chatRoomId, memberId: chat.memberId))
                     router.pendingChat = nil
                 }
